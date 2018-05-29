@@ -10,3 +10,8 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
+function getSiteConfig($type = '')
+{
+    $list = db('config')->where('type', $type)->column('value', 'name');
+    return $list;
+}
