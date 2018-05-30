@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INSPINIA | Login</title>
+    <title>天源美容 | Login</title>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
     <link href="/static/css/animate.css" rel="stylesheet">
@@ -16,31 +16,80 @@
     <div class="middle-box text-center loginscreen animated fadeInDown">
         <div>
             <div>
-
-                <h1 class="logo-name">IN+</h1>
-
+                <h1 class="logo-name">&nbsp;</h1>
             </div>
             <h3>{$config.site_title} 管理系统</h3>
             <p>Welcome to {$config.site_title} content manage system</p>
             <p>Login in. To manager your business.</p>
-            <form class="m-t" role="form" method="post">
+            <form class="m-t" role="form" method="post" id="login_form">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Username" required="">
+                    <input type="text" class="form-control" placeholder="Username" name="username">
                 </div>
                 <div class="form-group">
-                    <input type="password" class="form-control" placeholder="Password" required="">
+                    <input type="password" class="form-control" placeholder="Password" name="password">
+                </div>
+                <div class="input-group hidden animated fadeInDown">
+                    <input type="hidden" value="3" id="error_count" name="error_count">
+                    <input type="text" class="form-control" placeholder="请输入验证码" aria-describedby="basic-addon2" name="notify" id="notify">
+                    <span class="input-group-addon" id="basic-addon2"><img src="{:url('admin/login/verify')}" onclick="this.src=this.src+'?'+Math.random()" alt="验证码"></span>
                 </div>
                 <button type="submit" class="btn btn-primary block full-width m-b">Login</button>
-
             </form>
-            <p class="m-t"> <small>Inspinia we app framework base on Bootstrap 3 &copy; 2014</small> </p>
+            <p class="m-t-xl"> <small>Design by Alex Pan &copy; 2014</small> </p>
         </div>
     </div>
 
     <!-- Mainly scripts -->
     <script src="/static/js/jquery-3.1.1.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/plugins/layer/mobile/layer.js"></script>
+    <script>
+        $("#login_form").validate({
+            rules:{
+                username:"required",
+                password:{
+                    required:true,
+                    minlength:6
+                }
+            },
+            messages:{
+                username:"账号一定要填哦",
+                password:{
+                    required:"密码不写怎么行呢",
+                    minlength:"密码最少6位哦"
+                }
+            },
+            submitHandler:function(form){
+                var count=$("#error_count");
+                if (!count.val() && !$("#notify").val()){
+                    return;
+                }
+                var index=layer.open({
+                    type: 2
+                    ,content: '登录中',
+                    shadeClose:false
+                });
+                $.ajax({
+                    type: 'POST',
+                    url: "{:url('login/index')}",
+                    data: $(form).serialize(),
+                    success: function (data) {
+                        layer.close(index);
 
+                    },
+                    error: function (e) {
+                        layer.close(index);
+                        layer.open({
+                            content:"网络错误，请稍后再试",
+                            skin:'msg',
+                            time:3
+                        });
+                    }
+                });
+            }
+        });
+
+    </script>
 </body>
-
 </html>
