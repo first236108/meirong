@@ -6,6 +6,7 @@ class Index extends Base
 {
     public function index()
     {
-
+        //dump([session('admin'),session('auth'),session('adminGroup')]);
+        return view();
     }
 }

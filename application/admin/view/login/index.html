@@ -8,88 +8,101 @@
     <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
     <link href="/static/css/animate.css" rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
-
+    <style>
+        #basic-addon2 img {
+            max-height: 32px;
+        }
+    </style>
 </head>
 
 <body class="gray-bg">
 
-    <div class="middle-box text-center loginscreen animated fadeInDown">
+<div class="middle-box text-center loginscreen animated fadeInDown">
+    <div>
         <div>
-            <div>
-                <h1 class="logo-name">&nbsp;</h1>
-            </div>
-            <h3>{$config.site_title} 管理系统</h3>
-            <p>Welcome to {$config.site_title} content manage system</p>
-            <p>Login in. To manager your business.</p>
-            <form class="m-t" role="form" method="post" id="login_form">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Username" name="username">
-                </div>
-                <div class="form-group">
-                    <input type="password" class="form-control" placeholder="Password" name="password">
-                </div>
-                <div class="input-group hidden animated fadeInDown">
-                    <input type="hidden" value="3" id="error_count" name="error_count">
-                    <input type="text" class="form-control" placeholder="请输入验证码" aria-describedby="basic-addon2" name="notify" id="notify">
-                    <span class="input-group-addon" id="basic-addon2"><img src="{:url('admin/login/verify')}" onclick="this.src=this.src+'?'+Math.random()" alt="验证码"></span>
-                </div>
-                <button type="submit" class="btn btn-primary block full-width m-b">Login</button>
-            </form>
-            <p class="m-t-xl"> <small>Design by Alex Pan &copy; 2014</small> </p>
+            <h1 class="logo-name">&nbsp;</h1>
         </div>
+        <h3>{$config.site_title} 管理系统</h3>
+        <p>Welcome to {$config.site_title} content manage system</p>
+        <p>Login in. To manager your business.</p>
+        <form class="m-t" role="form" method="post" id="login_form">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="Username" name="username">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" placeholder="Password" name="password">
+            </div>
+            <div class="input-group hidden animated fadeInDown m-b">
+                <input type="hidden" value="3" id="error_count" name="error_count">
+                <input type="text" class="form-control" placeholder="请输入验证码" aria-describedby="basic-addon2" name="verify" id="verify">
+                <span class="input-group-addon p-0" id="basic-addon2"><img src="{:url('admin/login/verify')}" onclick="this.src=this.src+'?'+1" alt="验证码"></span>
+            </div>
+            <button type="submit" class="btn btn-primary block full-width m-b">Login</button>
+        </form>
+        <p class="m-t-xl">
+            <small>Design by Alex Pan &copy; 2014</small>
+        </p>
     </div>
+</div>
 
-    <!-- Mainly scripts -->
-    <script src="/static/js/jquery-3.1.1.min.js"></script>
-    <script src="/static/js/bootstrap.min.js"></script>
-    <script src="/static/plugins/validate/jquery.validate.min.js"></script>
-    <script src="/static/plugins/layer/mobile/layer.js"></script>
-    <script>
-        $("#login_form").validate({
-            rules:{
-                username:"required",
-                password:{
-                    required:true,
-                    minlength:6
-                }
-            },
-            messages:{
-                username:"账号一定要填哦",
-                password:{
-                    required:"密码不写怎么行呢",
-                    minlength:"密码最少6位哦"
-                }
-            },
-            submitHandler:function(form){
-                var count=$("#error_count");
-                if (!count.val() && !$("#notify").val()){
-                    return;
-                }
-                var index=layer.open({
-                    type: 2
-                    ,content: '登录中',
-                    shadeClose:false
-                });
-                $.ajax({
-                    type: 'POST',
-                    url: "{:url('login/index')}",
-                    data: $(form).serialize(),
-                    success: function (data) {
-                        layer.close(index);
-
-                    },
-                    error: function (e) {
-                        layer.close(index);
-                        layer.open({
-                            content:"网络错误，请稍后再试",
-                            skin:'msg',
-                            time:3
-                        });
-                    }
-                });
+<!-- Mainly scripts -->
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/plugins/validate/jquery.validate.min.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script>
+    $("#login_form").validate({
+        rules: {
+            username: "required",
+            password: {
+                required: true,
+                minlength: 6
             }
-        });
-
-    </script>
+        },
+        messages: {
+            username: "账号一定要填哦",
+            password: {
+                required: "密码不写怎么行呢",
+                minlength: "密码最少6位哦"
+            }
+        },
+        submitHandler: function (form) {
+            var count = $("#error_count");
+            if (!count.val() && !$("#verify").val()) {
+                return;
+            }
+            var index = layer.open({
+                type: 2
+                , content: '登录中',
+                shadeClose: false
+            });
+            $.ajax({
+                type: 'POST',
+                url: "{:url('login/index')}",
+                data: $(form).serialize(),
+                success: function (data) {
+                    layer.close(index);
+                    if (data.succ != 0) {
+                        if (count.val(count.val() - 1).val() == 0)
+                            count.parent().removeClass('hidden');
+                        layer.open({content: data.msg, skin: 'msg', time: 2});
+                        verify_img = $("#basic-addon2>img")[0];
+                        verify_img.src = verify_img.src +'?'+ 1;
+                    } else {
+                        location.href = data.url;
+                    }
+                },
+                error: function (e) {
+                    layer.close(index);
+                    layer.open({
+                        content: "网络错误，请稍后再试",
+                        skin: 'msg',
+                        time: 3
+                    });
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
