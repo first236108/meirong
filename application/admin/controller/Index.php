@@ -9,4 +9,9 @@ class Index extends Base
         //dump([session('admin'),session('auth'),session('adminGroup')]);
         return view();
     }
+
+    public function systemInfo()
+    {
+        return view();
+    }
 }

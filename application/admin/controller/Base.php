@@ -45,23 +45,23 @@ class Base extends Controller
             }
             isset($auth) && session('auth', $auth);
         }
-        $this->auth_control();
+        $this->authControl();
+        $this->publicAssign();
     }
 
-    public function auth_control()
+    //验证当前访问权限
+    public function authControl()
     {
-        $a = $this->rbacAuth->check(request()->module() . '/' . request()->controller(), session('admin.id'));
+        $a = $this->rbacAuth->check(request()->module() . '/' . request()->controller() . '/' . request()->action(), session('admin.id'));
         if (!$a) {
-            $a = $this->rbacAuth->check(request()->module() . '/' . request()->controller() . '/' . request()->action(), session('admin.id'));
-            if (!$a) {
-                $this->error('权限不足!');
-            }
+            $this->error('权限不足!');
         }
     }
 
+    //获取权限title数组
     public function authChk($uid)
     {
-        $rules = Db::name('auth_rule')->select();
+        $rules = Db::name('auth_rule')->cache(true)->select();
         $arr   = [];
         foreach ($rules as $key => $value) {
             $arr[$value['title']] = $this->rbacAuth->check($value['name'], $uid);
@@ -69,4 +69,21 @@ class Base extends Controller
         return $arr;
     }
 
+    //面包屑导航
+    public function publicAssign()
+    {
+        $rules                  = Db::name('auth_rule')->cache(true)->select();
+        $second                 = request()->module() . '/' . request()->controller() . '/' . 'index';
+        $third                  = request()->module() . '/' . request()->controller() . '/' . request()->action();
+        $second_key             = array_search(strtolower($second), array_column($rules, 'name'), true);
+        $third_key              = array_search(strtolower($third), array_column($rules, 'name'), true);
+        $breadcrumb[0]['title'] = 'Home';
+        $breadcrumb[0]['link']  = url('admin/index/index');
+        $breadcrumb[1]['title'] = $rules[$second_key]['title'];
+        $breadcrumb[1]['link']  = url($second);
+        $breadcrumb[2]['title'] = $rules[$third_key]['title'];
+        $breadcrumb[2]['link']  = url($third);
+//        dump($breadcrumb);
+        $this->assign('breadcrumb', $breadcrumb);
+    }
 }

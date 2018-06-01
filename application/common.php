@@ -14,7 +14,7 @@ use think\Db;
 // 应用公共文件
 function getSiteConfig($type = '')
 {
-    $list = Db::name('config')->where('type', $type)->column('value', 'name');
+    $list = Db::name('config')->where('type', $type)->cache(true)->column('value', 'name');
     return $list;
 }
 

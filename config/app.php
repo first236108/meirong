@@ -15,9 +15,9 @@
 
 return [
     // 应用名称
-    'app_name'               => '',
+    'app_name'               => '天源美容',
     // 应用地址
-    'app_host'               => '',
+    'app_host'               => 'igccc.com',
     // 应用调试模式
     'app_debug'              => true,
     // 应用Trace
@@ -142,6 +142,7 @@ return [
     'exception_handle'       => '',
 
     'auth' => [
+        'AUTH_ON'   => false,
         'AUTH_USER' => 'ty_admin', // 用户信息表
     ],
 

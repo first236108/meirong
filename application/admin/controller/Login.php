@@ -58,6 +58,15 @@ Class Login extends Controller
         return view();
     }
 
+    public function logout()
+    {
+        session('admin', null);
+        session('auth', null);
+        session('adminGroup', null);
+        cookie('admin', null);
+        $this->redirect('admin/login/index');
+    }
+
     public function verify()
     {
         $code = input('code', 'login');
