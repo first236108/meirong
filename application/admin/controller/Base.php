@@ -83,7 +83,8 @@ class Base extends Controller
         $breadcrumb[1]['link']  = url($second);
         $breadcrumb[2]['title'] = $rules[$third_key]['title'];
         $breadcrumb[2]['link']  = url($third);
-//        dump($breadcrumb);
         $this->assign('breadcrumb', $breadcrumb);
+        $config = getSiteConfig('site_info');
+        $this->assign('config', $config);
     }
 }

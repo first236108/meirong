@@ -8,6 +8,7 @@
     <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
     <link href="/static/css/animate.css" rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/toastr/toastr.min.css" rel="stylesheet">
     <style>
         #basic-addon2 img {
             max-height: 32px;
@@ -50,7 +51,15 @@
 <script src="/static/js/bootstrap.min.js"></script>
 <script src="/static/plugins/validate/jquery.validate.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/toastr/toastr.min.js"></script>
 <script>
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        positionClass: "toast-top-full-width",
+        showMethod: 'slideDown',
+        timeOut: 3000
+    };
     $("#login_form").validate({
         rules: {
             username: "required",
@@ -68,7 +77,8 @@
         },
         submitHandler: function (form) {
             var count = $("#error_count");
-            if (!count.val() && !$("#verify").val()) {
+            if (count.val() < 1 && !$("#verify").val()) {
+                toastr.warning('请输入验证码');
                 return;
             }
             var index = layer.open({
@@ -85,7 +95,7 @@
                     if (data.succ != 0) {
                         if (count.val(count.val() - 1).val() == 0)
                             count.parent().removeClass('hidden');
-                        layer.open({content: data.msg, skin: 'msg', time: 2});
+                        toastr.error(data.msg);
                         verify_img = $("#basic-addon2>img")[0];
                         verify_img.src = verify_img.src +'?'+ 1;
                     } else {
@@ -94,11 +104,7 @@
                 },
                 error: function (e) {
                     layer.close(index);
-                    layer.open({
-                        content: "网络错误，请稍后再试",
-                        skin: 'msg',
-                        time: 3
-                    });
+                    toastr.error("网络错误，请稍后再试");
                 }
             });
         }
