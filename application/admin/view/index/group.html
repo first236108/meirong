@@ -1,0 +1,202 @@
+{include file="public/header" /}
+{include file="public/breadcrumb" /}
+    <div class="wrapper wrapper-content animated fadeInRight tooltip-demo" v-cloak>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>权限角色组</h5>
+                        <div class="ibox-tools">
+                            <span class="btn btn-success btn-xs pull-left" type="button" onclick="$('#admin-group-modal').modal('show');" data-target="#admin-group-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加权限角色"><i class="fa fa-plus"></i>&nbsp;添加</span>
+                            <a class="collapse-link" data-tip="tooltip" data-placement="left" title="" data-original-title="折叠/展开列表">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover dataTables-example" >
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>权限组名</th>
+                                        <th>描述</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="gradeX text-center" v-for="(vo,index) in init_data.list">
+                                        <td><input type="hidden" name="id" v-model="vo.id">{{vo.id}}</td>
+                                        <td>{{vo.title}}</td>
+                                        <td>{{vo.description}}</td>
+                                        <td>
+                                            <span v-if="vo.status==1" class="yes" @click="changeTableVal('auth_group','id',vo.id,'status',$event,'禁用')" data-current="1" data-val="0"><i class="fa fa-check-circle"></i>正常</span>
+                                            <span v-else class="no" @click="changeTableVal('auth_group','id',vo.id,'status',$event,'正常')" data-current="0" data-val="1"><i class="fa fa-ban"></i>禁用</span>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-white btn-sm" @click="getDataForModal('/admin/index/groupAddEdit/id/'+vo.id)" data-toggle="modal" data-target="#admin-group-modal"><i class="fa fa-pencil"></i>修改</a>
+                                            <a class="btn btn-white btn-sm" @click="delItem('/admin/index/groupDel',vo.id,'',index)"><i class="fa fa-trash-o"></i>删除</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal inmodal" id="admin-group-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content animated fadeIn">
+                    <div class="modal-header">
+                        <button type="button" class="close" onclick="closeModal()"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                        <h5 class="modal-title">添加/修改 权限组</h5>
+                    </div>
+                    <form id="addEditGroupForm">
+                        <div class="modal-body" v-if="list.hasOwnProperty('group') && list.group.hasOwnProperty('id')">
+                            <div class="form-group"><label>权限组名<span class="text-danger">*</span></label>
+                                <input type="text" name="title" v-model="list.group.title" placeholder="角色名称" class="form-control">
+                            </div>
+                            <div class="form-group"><label>描述</label>
+                                <textarea type="text" name="description" v-model="list.group.description" placeholder="" class="form-control"></textarea>
+                            </div>
+                            <div class="form-group m-b-xs"><label>权限分配</label>
+                                <br />
+                                <span><input type="checkbox" onclick="choosebox(this)" id="chooseAll"><label for="chooseAll">全选</label></span>
+                            </div>
+                            <div class="from-group" v-for="(vo, index) in list.rule">
+                                <div class="m-b-sm">
+                                    <label class="m-r-xs">{{index}}&nbsp;</label><label :for="index" class="m-r-xs"><input type="checkbox" :cka="'mod'+index" :id="index" onclick="chooseCate(this)">全部</label><br />
+                                    <div class="checkbox-inline" v-for="(vr, second) in vo">
+                                        <label :for="'rules'+index+second"><input type="checkbox" name="rules[]" :ck="'mod'+index" :id="'rules'+index+second" v-model="vr.enable" :value="vr.id">{{vr.title}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="id" v-model="list.group.id">
+                        </div>
+
+
+
+                        <div class="modal-body" v-else>
+                            <div class="form-group"><label>权限组名<span class="text-danger">*</span></label>
+                                <input type="text" name="title" placeholder="角色名称" class="form-control">
+                            </div>
+                            <div class="form-group"><label>描述</label>
+                                <textarea type="text" name="description" placeholder="" class="form-control"></textarea>
+                            </div>
+                            <div class="form-group m-b-xs"><label>权限分配</label>
+                                <br />
+                                <span><input type="checkbox" onclick="choosebox(this)" id="chooseAll"><label for="chooseAll">全选</label></span>
+                            </div>
+                            <div class="from-group" v-for="(vo, index) in list.rule">
+                                <div class="m-b-sm">
+                                    <label class="m-r-xs">{{index}}&nbsp;</label><label :for="index" class="m-r-xs"><input type="checkbox" :cka="'mod'+index" :id="index" onclick="chooseCate(this)">全部</label><br />
+                                    <div class="checkbox-inline" v-for="(vr, second) in vo">
+                                        <label :for="'rules'+index+second"><input type="checkbox" name="rules[]" :ck="'mod'+index" :id="'rules'+index+second" :value="vr.id">{{vr.title}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-white" onclick="closeModal()">关 闭</button>
+                            <button type="submit" class="btn btn-primary">保 存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<script src="/static/js/vue.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#addEditGroupForm").validate({
+            rules: {
+                title: "required"
+            },
+            messages: {
+                title: "角色名称要填写哦"
+            },
+            submitHandler: function (form) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/index/groupAddEdit',
+                    data: $(form).serialize(),
+                    success: function (data) {
+                        if (data.succ == 0){
+                            toastr.success(data.msg);
+                            vm.list.group={};
+                            init();
+                            $('#admin-group-modal').modal('hide');
+                        }
+                        else
+                            toastr.warning(data.msg);
+                    },
+                    error: function (e) {
+                        err();
+                    }
+                });
+            }
+        });
+    });
+
+    function closeModal() {
+        vm.list.group = {};
+        $("#admin-group-modal").modal('hide');
+    }
+
+    function init() {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/group.html',
+            success: function (res) {
+                if (res.succ == 0){
+                    vm.init_data.list = res.data;
+                    vm.list.rule=res.rule;
+                }
+                else
+                    toastr.warning(res.msg);
+            },
+            error: function (e) {
+                err();
+            }
+        });
+    }
+    var vm=new Vue({
+        el:"#wrapper",
+        data:{
+            init_data:{
+                list:{}
+            },
+            list:{},
+            total:1,
+            p:1
+        },
+        created:function(){
+            init();
+        }
+    });
+
+    function choosebox(o){
+        var vt = $(o).is(':checked');
+        if(vt){
+            $('input[type=checkbox]').prop('checked',vt);
+        }else{
+            $('input[type=checkbox]').prop("checked",false);
+        }
+    }
+
+    function chooseCate(e){
+        var $cks = $(":checkbox[ck='"+$(e).attr("cka")+"']");
+        if($(e).is(':checked')){
+            $cks.each(function(){$(this).prop("checked",true);});
+        }else{
+            $cks.each(function(){$(this).prop("checked",false);});
+        }
+    }
+</script>
+
+{include file="public/footer" /}

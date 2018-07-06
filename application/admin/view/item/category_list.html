@@ -1,0 +1,296 @@
+{include file="public/header" /}
+{include file="public/breadcrumb" /}
+<link rel="stylesheet" href="/static/plugins/webuploader/webuploader.css">
+<div class="wrapper wrapper-content  animated fadeInRight tooltip-demo">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox ">
+                <div class="ibox-title" id="nestable-menubar">
+                    <button type="button" data-action="expand-all" class="btn btn-warning btn-sm">展开</button>
+                    <button type="button" data-action="collapse-all" class="btn btn-primary btn-sm">折叠</button>
+                    <button class="btn btn-success btn-sm" type="button" onclick="vm.list={};$('#item-cate-modal').modal('show');" data-target="#item-cate-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加分类"><i class="fa fa-plus"></i>&nbsp;添加</button>
+                </div>
+                <div class="ibox-content">
+                    <div class="dd" id="nestable2" v-cloak>
+                        <ol class="dd-list">
+                            <li class="dd-item" v-for="(vo,index) in init_data.list">
+                                <button data-action="collapse" type="button" onclick="collapse(this)">Collapse</button>
+                                <button data-action="expand" type="button" style="display: none;" onclick="expand(this)">Expand</button>
+                                <div class="dd-handle">
+                                    <img class="chat-avatar pull-right" :src="vo.image" v-if="vo.image">
+                                    <span class="label label-info"><i class="fa fa-sort-desc"></i></span>
+                                    <input type="text" v-model="vo.name" data-id="" @blur="changeTableVal2('item_cate','cate_id',vo.cate_id,'name',this)">
+                                    <button class="btn btn-sm btn-outline btn-primary p-h-1" @click="getDataForModal('/admin/item/addEditCate/cate_id/'+vo.cate_id)" data-toggle="modal" data-target="#item-cate-modal">编辑</button>
+                                    <button class="btn btn-sm btn-outline btn-danger p-h-1" @click="delItem('/admin/item/categoryDel',vo.cate_id,'init',index)">删除</button>
+                                </div>
+                                <ol class="dd-list" v-if="vo.hasOwnProperty('children')">
+                                    <li class="dd-item" v-for="(vc, vck) in vo.children">
+                                        <div class="dd-handle">
+                                            <img class="chat-avatar pull-right" :src="vc.image" v-if="vc.image">
+                                            <span class="label label-info"><i class="fa fa-sort-desc"></i></span>
+                                            <input type="text" v-model="vc.name">
+                                            <button class="btn btn-sm btn-outline btn-primary p-h-1" @click="getDataForModal('/admin/item/addEditCate/cate_id/'+vc.cate_id)" data-toggle="modal" data-target="#item-cate-modal">编辑</button>
+                                            <button class="btn btn-sm btn-outline btn-danger p-h-1" @click="delItem('/admin/item/categoryDel',vc.cate_id,'init',vck)">删除</button>
+                                        </div>
+                                    </li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="modal inmodal" id="item-cate-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content animated fadeIn">
+                        <div class="modal-header">
+                            <button type="button" class="close" onclick="closeModal()"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                            <h5 class="modal-title">添加/修改项目分类</h5>
+                        </div>
+                        <form id="addEditCateForm">
+
+                            <div class="modal-body">
+                                <div class="form-group"><label>分类名称<span class="text-danger">*</span></label>
+                                    <input type="text" name="name" v-model="list.name" placeholder="分类名称" class="form-control">
+                                </div>
+                                <div class="form-group"><label>分类<span class="text-danger">*</span></label>
+                                    <select name="parent" class="form-control" v-model="list.parent_id">
+                                        <option value="0">顶级分类</option>
+                                        <option :value="vf.cate_id" v-for="(vf, vfk) in init_data.first">{{vf.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <fieldset>
+                                        <legend>分类图标<span class="c-red">*</span></legend>
+                                        <div class="col-md-6">
+                                            <div class="am-margin-top-sm am-link-muted">建议尺寸400*400显示效果最佳</div>
+                                            <div id="uploader-demo">
+                                                <div id="fileList" class="uploader-list"></div>
+                                                <div id="filePicker">选择图片</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" v-if="list.image">
+                                            <img :src="list.image" id="cate_img" v-once>
+                                        </div>
+                                    </fieldset>
+                                    <input type="hidden" name="image" id="image" v-model="list.image">
+                                    <input type="hidden" name="cate_id" v-model="list.cate_id">
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-white" onclick="closeModal()">关 闭</button>
+                                <button type="submit" class="btn btn-primary">保 存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/plugins/webuploader/webuploader.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#nestable-menubar').on('click', function (e) {
+            var target = $(e.target),
+                action = target.data('action');
+            if (action === 'expand-all') {
+                $('.dd').nestable('expandAll');
+            }
+            if (action === 'collapse-all') {
+                $('.dd').nestable('collapseAll');
+            }
+        });
+
+        $("#addEditCateForm").validate({
+            rules: {
+                name: "required",
+            },
+            messages: {
+                name: "分类名称一定要填",
+                // image:"请上传分类图标"
+            },
+            ignore:'',
+            submitHandler: function (form) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/item/addEditCate',
+                    data: $(form).serialize(),
+                    success: function (data) {
+                        if (data.succ == 0){
+                            location.reload();
+                        }
+                        else
+                            toastr.warning(data.msg);
+                    },
+                    error: function (e) {
+                        err();
+                    }
+                });
+            }
+        });
+    });
+
+    function init() {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/item/categoryList.html',
+            success: function (res) {
+                if (res.succ == 0) {
+                    vm.init_data = res.data;
+                }
+                else
+                    toastr.warning(res.msg);
+            },
+            error: function (e) {
+                err();
+            }
+        });
+    }
+
+    var vm = new Vue({
+        el: "#wrapper",
+        data: {
+            init_data: {
+                list:{}
+            },
+            list: {},
+            total: 1,
+            p: 1
+        },
+        created: function () {
+            init();
+        }
+    });
+
+    function expand(e){
+        $(e).hide();
+        $(e).prev().show();
+        $(e).parent().children('ol').show();
+    }
+
+    function collapse(e){
+        $(e).hide();
+        $(e).next().show();
+        $(e).parent().children('ol').hide();
+    }
+
+    function serialise() {
+        var data,
+            depth = 0,
+            list  = $('#nestable2');
+        step  = function(level, depth)
+        {
+            var array = [ ],
+                items = level.children('li');
+            items.each(function()
+            {
+                var li   = $(this),
+                    item = $.extend({}, li.data()),
+                    sub  = li.children('ol');
+                if (sub.length) {
+                    item.children = step(sub, depth + 1);
+                }
+                array.push(item);
+            });
+            return array;
+        };
+        data = step(list.find('ol').first(), depth);
+    }
+
+    function closeModal() {
+        init();
+        $("#item-cate-modal").modal('hide');
+    }
+
+    var uploader = WebUploader.create({
+        // 选完文件后，是否自动上传。
+        auto: true,
+        // 文件接收服务端。
+        server: '{:url("admin/index/uploader")}',
+
+        swf: '/static/plugins/webuploader/Uploader.swf',
+
+        pick: '#filePicker',
+        // 只允许选择图片文件。
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/jpg,image/png,image/gif'
+        },
+        formData:{path:"category"},
+        fileNumLimit: 1
+    });
+
+    uploader.on( 'fileQueued', function( file ) {
+        var $li = $(
+            '<div id="' + file.id + '" class="file-item thumbnail">' +
+            '<img>' +
+            '<div class="info">' + file.name + '</div>' +
+            '</div>'
+            ),
+            $img = $li.find('img');
+
+        $('#fileList').append( $li );
+
+        // 创建缩略图
+        uploader.makeThumb( file, function( error, src ) {
+            if ( error ) {
+                $img.replaceWith('<span>不能预览</span>');
+                return;
+            }
+
+            $img.attr( 'src', src );
+        }, 100, 100 );
+    });
+
+    uploader.on( 'uploadProgress', function( file, percentage ) {
+        var $li = $( '#'+file.id ),
+            $percent = $li.find('.progress span');
+
+        // 避免重复创建
+        if ( !$percent.length ) {
+            $percent = $('<p class="progress"><span></span></p>')
+                .appendTo( $li )
+                .find('span');
+        }
+
+        $percent.css( 'width', percentage * 100 + '%' );
+    });
+
+    // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+    uploader.on( 'uploadSuccess', function( file ,response) {
+        $( '#'+file.id ).addClass('upload-state-done');
+        if (response.succ!=0)
+            toastr.warning(response.msg);
+        else
+            vm.list.image=response.data;
+    });
+
+    // 文件上传失败，显示上传出错。
+    uploader.on( 'uploadError', function( file ) {
+        var $li = $( '#'+file.id ),
+            $error = $li.find('div.error');
+
+        // 避免重复创建
+        if ( !$error.length ) {
+            $error = $('<div class="error"></div>').appendTo( $li );
+        }
+
+        $error.text('上传失败');
+    });
+
+    // 完成上传完了，成功或者失败，先删除进度条。
+    uploader.on( 'uploadComplete', function( file ) {
+        $( '#'+file.id ).find('.progress').remove();
+    });
+
+</script>
+
+{include file="public/footer" /}

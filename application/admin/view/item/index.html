@@ -1,0 +1,120 @@
+{include file="public/header" /}
+{include file="public/breadcrumb" /}
+<link href="/static/plugins/iCheck/custom.css" rel="stylesheet">
+
+<div class="wrapper wrapper-content animated fadeInRight tooltip-demo">
+    <div class="ibox-title">
+        <h5 class="">后台管理员列表</h5>
+        <div class="ibox-tools">
+            <span class="btn btn-success btn-xs pull-left m-l" type="button" onclick="$('#admin-user-modal').modal('show');" data-target="#admin-user-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加服务项目"><i class="fa fa-plus"></i>&nbsp;添加</span>
+            <span class="btn btn-danger btn-xs pull-left m-l" type="button" onclick="delProduct()" data-target="#admin-user-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="删除项目"><i class="fa fa-minus"></i>&nbsp;删除</span>
+        </div>
+    </div>
+    <div class="row">
+        {volist name="list" id="vo"}
+        <div class="col-md-3">
+            <div class="ibox">
+                <div class="ibox-content product-box">
+                    <div class="product-imitation">
+                        <img src="{$vo.origin_image}" alt="">
+                    </div>
+                    <div class="product-desc">
+                        <span class="product-price">
+                            ￥{$vo.price}
+                        </span>
+                        <small class="text-muted">{$vo.cate_name}</small>
+                        <a href="{:url('addEditItem',['item_id'=>$vo['item_id']])}" class="product-name"> {$vo.title}</a>
+                        <div class="small m-t-xs">{$vo.description,$vo.item_id}</div>
+                        <div class="m-t text-righ">
+
+                            <a onclick="changeOnSale('{$vo.item_id}',0,this)" class="btn btn-xs btn-outline btn-warning toggle-down {if $vo.on_sale==0}hidden{/if}">下架 <i class="fa fa-long-arrow-down"></i> </a>
+                            <a onclick="changeOnSale('{$vo.item_id}',1,this)" class="btn btn-xs btn-outline btn-success toggle-up {if $vo.on_sale==1}hidden{/if}">上架 <i class="fa fa-long-arrow-up"></i> </a>
+
+                            <a href="{:url('addEditItem',['item_id'=>$vo['item_id']])}" class="btn btn-xs btn-outline btn-primary m-l-lg">编辑修改 <i class="fa fa-long-arrow-right"></i> </a>
+                            <span class="i-checks pull-right"><label> <input type="checkbox" value="{$vo['item_id']}" class="del"> <i></i></label></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/volist}
+    </div>
+    {$page}
+</div>
+
+<script src="/static/plugins/iCheck/icheck.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green',
+            radioClass: 'iradio_square-green'
+        });
+    });
+
+    function delProduct() {
+        ids = '';
+        $.each($('input:checkbox:checked'), function () {
+            if (ids=='')
+                ids = $(this).val();
+            else
+                ids += ',' + $(this).val();
+        });
+
+        if (!ids){
+            toastr.warning('请勾选需要删除的项目..');
+            return false;
+        }
+
+        swal({
+            title: "确定要删除吗?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            closeOnConfirm: false
+        }, function () {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/item/deleteItem.html',
+                data: {ids: ids},
+                success: function (data) {
+                    if (data.succ == 0) {
+                        location.reload();
+                    } else {
+                        toastr.error(data.msg);
+                    }
+                },
+                error: function (xhr, type) {
+                    err();
+                }
+            });
+        });
+    }
+
+    function changeOnSale(id,val,obj){
+        classname=val==1?'.toggle-down':'.toggle-up';
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/changeTableVal.html',
+            data: {
+                "table": 'item',
+                "id_name": 'item_id',
+                "id_value": id,
+                "field": 'on_sale',
+                "value": val
+            },
+            success: function (data) {
+                if (data){
+                    $(obj).addClass('hidden').siblings(classname).removeClass('hidden');
+                }else{
+                    toastr.warning('操作失败');
+                }
+            },
+            error: function (e) {
+                toastr.err('网络错误，请稍后再试');
+            }
+        });
+    }
+</script>
+{include file="public/footer" /}

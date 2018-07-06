@@ -1,0 +1,193 @@
+{include file="public/header" /}
+{include file="public/breadcrumb" /}
+    <div class="wrapper wrapper-content animated fadeInRight tooltip-demo" v-cloak>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>后台管理员列表</h5>
+                        <div class="ibox-tools">
+                            <span class="btn btn-success btn-xs pull-left" type="button" onclick="$('#admin-user-modal').modal('show');" data-target="#admin-user-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加后台账号"><i class="fa fa-plus"></i>&nbsp;添加</span>
+                            <a class="collapse-link" data-tip="tooltip" data-placement="left" title="" data-original-title="折叠/展开列表">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover dataTables-example" >
+                                <thead>
+                                    <tr>
+                                        <th>账号</th>
+                                        <th>昵称</th>
+                                        <th>权限级别</th>
+                                        <th>创建时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="gradeX text-center" v-for="(vo,index) in init_data.list">
+                                        <td><input type="hidden" name="id" v-model="vo.id">{{vo.name}}</td>
+                                        <td>{{vo.nickname}}</td>
+                                        <td>{{vo.title}}</td>
+                                        <td>{{vo.create_time}}</td>
+                                        <td>
+                                            <span v-if="vo.status==1" class="yes" @click="changeTableVal('admin','id',vo.id,'status',$event,'禁用')" data-current="1" data-val="0"><i class="fa fa-check-circle"></i>正常</span>
+                                            <span v-else class="no" @click="changeTableVal('admin','id',vo.id,'status',$event,'正常')" data-current="0" data-val="1"><i class="fa fa-ban"></i>禁用</span>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-white btn-sm" @click="getDataForModal('/admin/index/adminAddEdit/id/'+vo.id)" data-toggle="modal" data-target="#admin-user-modal"><i class="fa fa-pencil"></i>修改</a>
+                                            <a class="btn btn-white btn-sm" @click="delItem('/admin/index/adminDel',vo.id,'',index)"><i class="fa fa-trash-o"></i>删除</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal inmodal" id="admin-user-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content animated fadeIn">
+                    <div class="modal-header">
+                        <button type="button" class="close" onclick="closeModal()"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                        <h5 class="modal-title">添加/修改 后台账号</h5>
+                    </div>
+                    <form id="addEditAdminForm">
+                        <div class="modal-body" v-if="list.hasOwnProperty('user')">
+                            <div class="form-group"><label>登录账号<span class="text-danger">*</span></label>
+                                <input type="text" name="name" v-model="list.user.name" placeholder="账号" class="form-control">
+                            </div>
+                            <div class="form-group"><label>用户昵称<span class="text-danger">*</span></label>
+                                <input type="text" name="nickname" v-model="list.user.nickname" placeholder="账号" class="form-control">
+                            </div>
+                            <div class="form-group"><label>密 码</label>
+                                <input type="password" name="password" placeholder="长度6位,默认123456" class="form-control">
+                            </div>
+                            <div class="form-group"><label>所属权限<span class="text-danger">*</span></label>
+                                <select name="group_id" class="form-control" v-model="list.user.group_id">
+                                    <option value="0">请选择</option>
+                                    <option v-for="(group,group_id) in init_data.group" :value="group_id">{{group}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>手机</label>
+                                <input type="text" name="phone" v-model="list.user.phone" placeholder="手机号码" class="form-control">
+                            </div>
+                            <div class="form-group"><label>邮箱</label>
+                                <input type="text" name="email" v-model="list.user.email" placeholder="手机号码" class="form-control">
+                            </div>
+                            <input type="hidden" name="id" v-model="list.user.id">
+                        </div>
+
+                        <div class="modal-body" v-else>
+                            <div class="form-group"><label>登录账号<span class="text-danger">*</span></label>
+                                <input type="text" name="name" placeholder="账号" class="form-control">
+                            </div>
+                            <div class="form-group"><label>用户昵称<span class="text-danger">*</span></label>
+                                <input type="text" name="nickname" placeholder="账号" class="form-control">
+                            </div>
+                            <div class="form-group"><label>密 码</label>
+                                <input type="password" name="password" placeholder="长度6位,默认123456" class="form-control">
+                            </div>
+                            <div class="form-group"><label>所属权限<span class="text-danger">*</span></label>
+                                <select name="group_id" class="form-control">
+                                    <option value="0">请选择</option>
+                                    <option v-for="(vg, key) in init_data.group" :value="key">{{vg}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>手机</label>
+                                <input type="text" name="phone" placeholder="手机号码" class="form-control">
+                            </div>
+                            <div class="form-group"><label>邮箱</label>
+                                <input type="text" name="email" placeholder="手机号码" class="form-control">
+                            </div>
+                            <input type="hidden" name="id">
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-white" onclick="closeModal()">关 闭</button>
+                            <button type="submit" class="btn btn-primary">保 存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="/static/js/vue.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#addEditAdminForm").validate({
+            rules: {
+                name: "required",
+                nickname: "required",
+                group_id: {
+                    min: 1
+                }
+            },
+            messages: {
+                name: "账号一定要填哦",
+                nickname: "取个昵称吧",
+                group_id: {
+                    min: "请选择 所属权限"
+                }
+            },
+            submitHandler: function (form) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/index/adminAddEdit',
+                    data: $(form).serialize(),
+                    success: function (data) {
+                        if (data.succ == 0){
+                            toastr.success(data.msg);
+                            vm.list={};
+                            init();
+                            $('#admin-user-modal').modal('hide');
+                        }
+                        else
+                            toastr.warning(data.msg);
+                    },
+                    error: function (e) {
+                        err();
+                    }
+                });
+            }
+        });
+    });
+
+    function closeModal() {
+        vm.list = {};
+        $("#admin-user-modal").modal('hide');
+    }
+    function init(){
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/adminList.html',
+            success: function (res) {
+                if (res.succ==0)
+                    vm.init_data=res.data;
+                else
+                    toastr.warning(res.msg);
+            },
+            error: function (e) {
+                err();
+            }
+        });
+    }
+    var vm=new Vue({
+        el:"#wrapper",
+        data:{
+            init_data:{},
+            list:{},
+            total:1,
+            p:1
+        },
+        created:function(){
+            init();
+        }
+    });
+</script>
+
+{include file="public/footer" /}
