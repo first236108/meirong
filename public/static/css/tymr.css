@@ -1,0 +1,27 @@
+.img-filter-invert{filter: invert(50);}
+.page-heading{padding:10px;}
+.yes{color:#1ab394;cursor: pointer;}
+.no{color: #BEC3C7;cursor: pointer;}
+.table tbody tr td{
+    vertical-align: middle;/*覆盖bootstrap表格内容居上对齐问题*/
+}
+th{text-align:center}/*覆盖bootstrap表格th 左对齐问题*/
+.ibox-content{padding-top:5px}
+textarea.form-control{max-width: 100%!important;}
+.p-t-20{padding-top:20px;}
+.p-h-1{padding:1px 10px;}
+.float-e-margins .btn{    margin-left: 20px;line-height: 14px;}
+.dd-handle:hover{cursor:auto!important;font-weight: normal!important;}
+.dd-handle .chat-avatar{margin-top:-5px}
+#filePicker div:nth-child(2){width:100%!important;height:100%!important;}
+#cate_img{    width: 100px;
+    border: 1px solid #ddd;
+    padding: 4px;
+    margin-top: 19px;
+    height: 100px;
+    overflow: hidden;}
+.product-imitation .i-checks{
+    position: relative;
+    top:-7rem;
+    left:-6.5rem;
+}
