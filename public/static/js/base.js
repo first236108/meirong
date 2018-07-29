@@ -128,3 +128,7 @@ function delItem(url, val, callback = '', index) {
         });
     });
 }
+
+function closeModalComm(obj){
+    $(obj).parents('.modal').modal('hide');
+}
