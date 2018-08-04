@@ -25,3 +25,37 @@ textarea.form-control{max-width: 100%!important;}
     top:-7rem;
     left:-6.5rem;
 }
+#item-list-modal table tbody img{
+    max-width: 8rem;
+}
+
+.file{
+    border-radius:4px;
+    position: relative;
+    display: inline-block;
+    background: url('/static/image/xiangji.png') no-repeat center center;
+    border: 1px solid #ddd;
+    padding: 0;
+    overflow: hidden;
+    color: #1E88C7;
+    text-decoration: none;
+    text-indent: 0;
+    line-height: 20px;
+    background-size: auto 50px;
+    width:8rem;
+    height:8rem;
+}
+.fileList{
+    width:8rem ;
+    height:8rem ;
+}
+.fileList img{
+    width: 8rem;
+}
+.file input{
+    position: absolute;
+    font-size: 100px;
+    right: 0;
+    top: 0;
+    opacity: 0;
+}

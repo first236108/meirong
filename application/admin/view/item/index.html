@@ -1,6 +1,8 @@
 {include file="public/header" /}
 {include file="public/breadcrumb" /}
 <link href="/static/plugins/iCheck/custom.css" rel="stylesheet">
+<!--<link href="/static/plugins/dropzone/basic.css" rel="stylesheet">-->
+<!--<link href="/static/plugins/dropzone/dropzone.css" rel="stylesheet">-->
 
 <div class="wrapper wrapper-content animated fadeInRight tooltip-demo">
     <div class="ibox-title">
@@ -41,6 +43,7 @@
     </div>
     {$page}
 </div>
+
 <div class="modal inmodal" id="item-list-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
 
     <div class="modal-dialog">
@@ -127,70 +130,85 @@
                                             <thead>
                                             <tr>
                                                 <th>
-                                                    Image preview
+                                                    预览
                                                 </th>
                                                 <th>
-                                                    Sort order
+                                                    排序
                                                 </th>
                                                 <th>
-                                                    Actions
+                                                    删除
                                                 </th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
+                                                <td>
+                                                    <a href="javascript:;" class="file">
+                                                        <div class="fileList" id="fileList1"><img src=""></div>
+                                                        <input name="image1" onchange="handleFiles(this,1)" type="file" accept="image/*" />
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control" value="1">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-white" type="button" onclick="delimage(1)"><i class="fa fa-trash"></i> </button>
+                                                </td>
+                                            </tr>
+                                                <tr>
                                                     <td>
-                                                        <img src="img/gallery/2s.jpg">
+                                                        <a href="javascript:;" class="file">
+                                                            <div class="fileList" id="fileList2"><img src=""></div>
+                                                            <input name="image2" onchange="handleFiles(this,2)" type="file" accept="image/*" />
+                                                        </a>
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control" value="1">
                                                     </td>
                                                     <td>
-                                                        <button class="btn btn-white"><i class="fa fa-trash"></i> </button>
+                                                        <button class="btn btn-white" type="button" onclick="delimage(2)"><i class="fa fa-trash"></i> </button>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>
-                                                        <img src="img/gallery/2s.jpg">
+                                                        <a href="javascript:;" class="file">
+                                                            <div class="fileList" id="fileList3"><img src=""></div>
+                                                            <input name="image3" onchange="handleFiles(this,3)" type="file" accept="image/*" />
+                                                        </a>
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control" value="1">
                                                     </td>
                                                     <td>
-                                                        <button class="btn btn-white"><i class="fa fa-trash"></i> </button>
+                                                        <button class="btn btn-white" type="button" onclick="delimage(3)"><i class="fa fa-trash"></i> </button>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>
-                                                        <img src="img/gallery/2s.jpg">
+                                                        <a href="javascript:;" class="file">
+                                                            <div class="fileList" id="fileList4"><img src=""></div>
+                                                            <input name="image4" onchange="handleFiles(this,4)" type="file" accept="image/*" />
+                                                        </a>
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="1">
+                                                        <input type="text" name="srot" class="form-control" value="4">
                                                     </td>
                                                     <td>
-                                                        <button class="btn btn-white"><i class="fa fa-trash"></i> </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <img src="img/gallery/2s.jpg">
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" class="form-control" value="1">
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-white"><i class="fa fa-trash"></i> </button>
+                                                        <button class="btn btn-white" type="button" onclick="delimage(4)"><i class="fa fa-trash"></i> </button>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>
-                                                        <img src="img/gallery/2s.jpg">
+                                                        <a href="javascript:;" class="file">
+                                                            <div class="fileList" id="fileList5"><img src=""></div>
+                                                            <input name="image5" onchange="handleFiles(this,5)" type="file" accept="image/*" />
+                                                        </a>
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="1">
+                                                        <input type="text" name="sort" class="form-control" value="1">
                                                     </td>
                                                     <td>
-                                                        <button class="btn btn-white"><i class="fa fa-trash"></i> </button>
+                                                        <button class="btn btn-white" type="button" onclick="delimage(5)"><i class="fa fa-trash"></i> </button>
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -217,6 +235,8 @@
 <script src="/static/plugins/ueditor/ueditor.config.js"></script>
 <script src="/static/plugins/ueditor/ueditor.all.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/lrz/lrz.all.bundle.js"></script>
+<!--<script src="/static/plugins/dropzone/dropzone.js"></script>-->
 <script>
     $(document).ready(function () {
         $('.i-checks').iCheck({
@@ -407,5 +427,91 @@
             init();
         }
     });
+    // var myDropzone = new Dropzone(".aaa", {
+    //     url: "/admin/index/uploader",
+    //     dictDefaultMessage:"点击上传",
+    //     previewsContainer:".aaa",
+    //     clickable:true,
+    //     thumbnailWidth:50,
+    //     thumbnailHeight:50,
+    //     init: function () {
+    //         //res为服务器响应回来的数据
+    //         this.on("success", function (file, res) {
+    //             if (res.succ == 0) {
+    //                 //将服务器得到的数据生成一个隐藏域。做商品添加的时候就可以获取到了
+    //                 this.clickableElements[0].nextElementSibling.value = res.data;
+    //             } else {
+    //                 toastr.error(res.msg);
+    //             }
+    //         });
+    //
+    //         this.on("removedfile", function (file) {
+    //             $.ajax({
+    //                 url: "/admin/index/delimage",
+    //                 type: "post",
+    //                 //file.path可以获取到点击删除按钮的那张图片
+    //                 data: {'path': file.path},
+    //                 success:function(res){
+    //                     console.log(res);
+    //                 }
+    //             });
+    //         });
+    //     }
+    // });
+
+    function handleFiles(obj,id) {
+        fileList = document.getElementById("fileList"+id);
+        var files = obj.files;
+        img = new Image();
+        if(window.URL){
+
+            img.src = window.URL.createObjectURL(files[0]); //创建一个object URL，并不是你的本地路径
+            img.width = 80;
+            img.height = 80;
+            img.onload = function(e) {
+                window.URL.revokeObjectURL(this.src); //图片加载后，释放object URL
+            }
+            if(fileList.firstElementChild){
+                fileList.removeChild(fileList.firstElementChild);
+            }
+            fileList.appendChild(img);
+        }else {
+            toastr.error('图片预览错误！');
+        }
+    }
+
+    function delimage(id){
+        fileList = document.getElementById("fileList"+id);
+        if(fileList.firstElementChild){
+            fileList.removeChild(fileList.firstElementChild);
+        }
+        document.getElementsByName('image'+id)[0].value='';
+    }
+    //兼容浏览器图片预览
+    // if(window.FileReader){
+    //     //opera不支持createObjectURL/revokeObjectURL方法。我们用FileReader对象来处理
+    //     var reader = new FileReader();
+    //     reader.readAsDataURL(files[0]);
+    //     reader.onload = function(e){
+    //         img.src = this.result;
+    //         img.width = 80;
+    //         img.height = 80;
+    //         fileList.appendChild(img);
+    //     }
+    // }else {
+    //     //ie
+    //     obj.select();
+    //     obj.blur();
+    //     var nfile = document.selection.createRange().text;
+    //     document.selection.empty();
+    //     img.src = nfile;
+    //     img.width = 80;
+    //     img.height = 80;
+    //     img.onload=function(){
+    //
+    //     }
+    //     fileList.appendChild(img);
+    // }
+
 </script>
 {include file="public/footer" /}

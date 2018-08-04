@@ -270,4 +270,9 @@ class Index extends Base
             return json(['succ' => 2, 'msg' => $file->getError()]);
         }
     }
+
+    public function delimage()
+    {
+        dump(input('param.'));
+    }
 }
