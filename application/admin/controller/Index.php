@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use think\Db;
 use think\File;
+use Qiniu\Auth;
 
 class Index extends Base
 {
@@ -274,5 +275,12 @@ class Index extends Base
     public function delimage()
     {
         dump(input('param.'));
+    }
+
+    public function uploadToken()
+    {
+        $auth  = new Auth(config('qiniu_access'), config('qiniu_secret'));
+        $token = $auth->uploadToken(config('qiniu_bucket'));
+        return json(['token'=>$token,'cdn'=>config('qiniu_cdn')], 200);
     }
 }

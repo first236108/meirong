@@ -26,13 +26,13 @@
                         </span>
                         <small class="text-muted">{$vo.cate_name}</small>
                         <a href="{:url('addEditItem',['item_id'=>$vo['item_id']])}" class="product-name"> {$vo.title}</a>
-                        <div class="small m-t-xs">{$vo.description,$vo.item_id}</div>
+                        <div class="small m-t-xs break-line">{$vo.description,$vo.item_id}</div>
                         <div class="m-t text-righ">
 
                             <a onclick="changeOnSale('{$vo.item_id}',0,this)" class="btn btn-xs btn-outline btn-warning toggle-down {if $vo.on_sale==0}hidden{/if}">下架 <i class="fa fa-long-arrow-down"></i> </a>
                             <a onclick="changeOnSale('{$vo.item_id}',1,this)" class="btn btn-xs btn-outline btn-success toggle-up {if $vo.on_sale==1}hidden{/if}">上架 <i class="fa fa-long-arrow-up"></i> </a>
 
-                            <a onclick="getDataForModal('/admin/item/addEditItem/id/{$vo.item_id}')" data-toggle="modal" data-target="#item-list-modal" class="btn btn-xs btn-outline btn-primary m-l-lg">编辑修改 <i class="fa fa-long-arrow-right"></i> </a>
+                            <a onclick="getEditData('/admin/item/addEditItem/item_id/{$vo.item_id}')" data-toggle="modal" data-target="#item-list-modal" class="btn btn-xs btn-outline btn-primary m-l-lg">编辑修改 <i class="fa fa-long-arrow-right"></i> </a>
                             <span class="i-checks pull-right"><label> <input type="checkbox" value="{$vo['item_id']}" class="del"> <i></i></label></span>
                         </div>
                     </div>
@@ -53,11 +53,251 @@
                 <h5 class="modal-title">添加/修改 服务项目</h5>
             </div>
             <form id="addEditItemForm">
-                <div class="modal-body" v-if="list.hasOwnProperty('user')">
+                <div class="modal-body" v-if="edit_item.hasOwnProperty('item_id')">
 
-                    <input type="hidden" name="id" v-model="list.user.id">
+                    <input type="hidden" name="item_id" v-model="edit_item.item_id">
                 </div>
+                <div class="tabs-container">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a data-toggle="tab" href="#tab-3"> 项目详情</a></li>
+                        <li class=""><a data-toggle="tab" href="#tab-4"> 轮播图片</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="tab-3" class="tab-pane active">
+                            <div class="panel-body">
 
+                                <fieldset class="form-horizontal">
+                                    <div class="form-group"><label class="col-sm-2 control-label">项目名称:</label>
+                                        <div class="col-sm-10"><input type="text" class="form-control" placeholder="Product name" name="title" v-model="edit_item.title"></div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">价格:</label>
+                                        <div class="col-sm-10">
+                                            <div class="input-group">
+                                                <span class="input-group-addon">￥</span>
+                                                <input type="text" class="form-control" placeholder="160.00" name="price" v-model="edit_item.price">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">原价:</label>
+                                        <div class="col-sm-10">
+                                            <div class="input-group">
+                                                <span class="input-group-addon">￥</span>
+                                                <input type="text" class="form-control" placeholder="200.00" name="market_price" v-model="edit_item.market_price">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">赠送积分:</label>
+                                        <div class="col-sm-10"><input type="text" class="form-control" name="give_integral" placeholder="0" v-model="edit_item.give_integral"></div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">一级分类:</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" name="cate_id" v-model="edit_item.cate_id">
+                                                <option value="0">请选择</option>
+                                                <option v-for="(vo1,index) in cate1" :value="index">{{vo1}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">二级分类:</label>
+                                        <div class="col-sm-10">
+                                            <select class="form-control" name="cate_id2" v-model="edit_item.cate_id2">
+                                                <option value="0">请选择</option>
+                                                <option v-for="(vo2,keys) in cate2" :value="keys">{{vo2}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">简介描述:</label>
+                                        <div class="col-sm-10">
+                                            <textarea name="description" rows="3" class="form-control" v-text="edit_item.description"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group"><label class="col-sm-2 control-label">项目详情:</label>
+                                        <div class="col-sm-10">
+                                            <script id="container" name="content" type="text/plain"></script>
+                                        </div>
+                                    </div>
+
+                                </fieldset>
+
+                            </div>
+                        </div>
+                        <div id="tab-4" class="tab-pane">
+                            <div class="panel-body">
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-stripped">
+                                        <thead>
+                                        <tr>
+                                            <th>
+                                                预览
+                                            </th>
+                                            <th>
+                                                排序
+                                            </th>
+                                            <th>
+                                                删除
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-if="edit_item.hasOwnProperty('img') && (edit_item.img.length >= 1)">
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList1"><img :src="edit_item.origin_image"></div>
+                                                    <input onchange="handleFiles(this,1)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]" v-model="edit_item.img[0].image"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="sort[]" placeholder="1" v-model="edit_item.img[0].sort">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(1)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList1"><img src=""></div>
+                                                    <input onchange="handleFiles(this,1)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="sort[]" value="1">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(1)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="edit_item.hasOwnProperty('img') && (edit_item.img.length >= 2)">
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList2"><img :src="edit_item.img[1].image"></div>
+                                                    <input onchange="handleFiles(this,2)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]" v-model="edit_item.img[1].image"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="sort[]" placeholder="2" v-model="edit_item.img[1].sort">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(2)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList2"><img src=""></div>
+                                                    <input onchange="handleFiles(this,2)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="sort[]" value="2">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(2)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="edit_item.hasOwnProperty('img') && (edit_item.img.length >= 3)">
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList3"><img :src="edit_item.img[2].image"></div>
+                                                    <input onchange="handleFiles(this,3)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]" v-model="edit_item.img[2].image"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="sort[]" class="form-control" placeholder="3" v-model="edit_item.img[2].sort">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(3)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList3"><img src=""></div>
+                                                    <input onchange="handleFiles(this,3)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="sort[]" class="form-control" value="3">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(3)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="edit_item.hasOwnProperty('img') && (edit_item.img.length >= 4)">
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList4"><img ：src="edit_item.img[3].image"></div>
+                                                    <input onchange="handleFiles(this,4)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]" v-model="edit_item.img[3].image"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="sort[]" class="form-control" placeholder="4" v-model="edit_item.img[3].sort">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(4)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList4"><img src=""></div>
+                                                    <input onchange="handleFiles(this,4)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="sort[]" class="form-control" value="4">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(4)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="edit_item.hasOwnProperty('img') && (edit_item.img.length >= 5)">
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList5"><img :src="edit_item.img[4].image"></div>
+                                                    <input onchange="handleFiles(this,5)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]" v-model="edit_item.img[4].image"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="sort[]" class="form-control" placeholder="5" v-model="edit_item.img[4].sort">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(5)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr v-else>
+                                            <td>
+                                                <a href="javascript:;" class="file">
+                                                    <div class="fileList" id="fileList5"><img src=""></div>
+                                                    <input onchange="handleFiles(this,5)" type="file" accept="image/*"/>
+                                                    <input type="hidden" name="image[]"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <input type="text" name="sort[]" class="form-control" value="5">
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-white" type="button" onclick="delimage(5)"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <input type="hidden" name="origin_image" id="origin_image" v-model="edit_item.origin_image">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="modal-body" v-else>
                     <div class="tabs-container">
                         <ul class="nav nav-tabs">
@@ -89,11 +329,11 @@
                                             </div>
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">赠送积分:</label>
-                                            <div class="col-sm-10"><input type="text" class="form-control" name="give_integral" placeholder="0"></div>
+                                            <div class="col-sm-10"><input type="text" class="form-control" name="give_integral" placeholder="0" value="0"></div>
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">一级分类:</label>
                                             <div class="col-sm-10">
-                                                <select class="form-control" name="cate_id" v-model="cur1">
+                                                <select class="form-control" name="cate_id">
                                                     <option value="0">请选择</option>
                                                     <option v-for="(vo1,index) in cate1" :value="index">{{vo1}}</option>
                                                 </select>
@@ -101,7 +341,7 @@
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">二级分类:</label>
                                             <div class="col-sm-10">
-                                                <select class="form-control" name="cate_id2" v-model="cur2">
+                                                <select class="form-control" name="cate_id2">
                                                     <option value="0">请选择</option>
                                                     <option v-for="(vo2,keys) in cate2" :value="keys">{{vo2}}</option>
                                                 </select>
@@ -141,79 +381,84 @@
                                             </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
+                                            <tr>
                                                 <td>
                                                     <a href="javascript:;" class="file">
                                                         <div class="fileList" id="fileList1"><img src=""></div>
-                                                        <input name="image1" onchange="handleFiles(this,1)" type="file" accept="image/*" />
+                                                        <input onchange="handleFiles(this,1)" type="file" accept="image/*"/>
+                                                        <input type="hidden" name="image[]"/>
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <input type="text" class="form-control" value="1">
+                                                    <input type="text" class="form-control" name="sort[]" value="1">
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-white" type="button" onclick="delimage(1)"><i class="fa fa-trash"></i> </button>
+                                                    <button class="btn btn-white" type="button" onclick="delimage(1)"><i class="fa fa-trash"></i></button>
                                                 </td>
                                             </tr>
-                                                <tr>
-                                                    <td>
-                                                        <a href="javascript:;" class="file">
-                                                            <div class="fileList" id="fileList2"><img src=""></div>
-                                                            <input name="image2" onchange="handleFiles(this,2)" type="file" accept="image/*" />
-                                                        </a>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" class="form-control" value="1">
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-white" type="button" onclick="delimage(2)"><i class="fa fa-trash"></i> </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <a href="javascript:;" class="file">
-                                                            <div class="fileList" id="fileList3"><img src=""></div>
-                                                            <input name="image3" onchange="handleFiles(this,3)" type="file" accept="image/*" />
-                                                        </a>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" class="form-control" value="1">
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-white" type="button" onclick="delimage(3)"><i class="fa fa-trash"></i> </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <a href="javascript:;" class="file">
-                                                            <div class="fileList" id="fileList4"><img src=""></div>
-                                                            <input name="image4" onchange="handleFiles(this,4)" type="file" accept="image/*" />
-                                                        </a>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" name="srot" class="form-control" value="4">
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-white" type="button" onclick="delimage(4)"><i class="fa fa-trash"></i> </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <a href="javascript:;" class="file">
-                                                            <div class="fileList" id="fileList5"><img src=""></div>
-                                                            <input name="image5" onchange="handleFiles(this,5)" type="file" accept="image/*" />
-                                                        </a>
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" name="sort" class="form-control" value="1">
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-white" type="button" onclick="delimage(5)"><i class="fa fa-trash"></i> </button>
-                                                    </td>
-                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <a href="javascript:;" class="file">
+                                                        <div class="fileList" id="fileList2"><img src=""></div>
+                                                        <input onchange="handleFiles(this,2)" type="file" accept="image/*"/>
+                                                        <input type="hidden" name="image[]"/>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control" name="sort[]" value="2">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-white" type="button" onclick="delimage(2)"><i class="fa fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <a href="javascript:;" class="file">
+                                                        <div class="fileList" id="fileList3"><img src=""></div>
+                                                        <input onchange="handleFiles(this,3)" type="file" accept="image/*"/>
+                                                        <input type="hidden" name="image[]"/>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="sort[]" class="form-control" value="3">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-white" type="button" onclick="delimage(3)"><i class="fa fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <a href="javascript:;" class="file">
+                                                        <div class="fileList" id="fileList4"><img src=""></div>
+                                                        <input onchange="handleFiles(this,4)" type="file" accept="image/*"/>
+                                                        <input type="hidden" name="image[]"/>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="sort[]" class="form-control" value="4">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-white" type="button" onclick="delimage(4)"><i class="fa fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <a href="javascript:;" class="file">
+                                                        <div class="fileList" id="fileList5"><img src=""></div>
+                                                        <input onchange="handleFiles(this,5)" type="file" accept="image/*"/>
+                                                        <input type="hidden" name="image[]"/>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="sort[]" class="form-control" value="5">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-white" type="button" onclick="delimage(5)"><i class="fa fa-trash"></i></button>
+                                                </td>
+                                            </tr>
                                             </tbody>
                                         </table>
-                                        <input type="hidden" name="origin_image" id="origin_image">
+                                        <input type="hidden" name="origin_image" id="origin_image" v-model="origin_image">
                                     </div>
 
                                 </div>
@@ -235,16 +480,15 @@
 <script src="/static/plugins/ueditor/ueditor.config.js"></script>
 <script src="/static/plugins/ueditor/ueditor.all.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
-<script src="/static/plugins/lrz/lrz.all.bundle.js"></script>
-<!--<script src="/static/plugins/dropzone/dropzone.js"></script>-->
 <script>
+    var ue;
     $(document).ready(function () {
         $('.i-checks').iCheck({
             checkboxClass: 'icheckbox_square-green',
             radioClass: 'iradio_square-green'
         });
         $(".footer").hide();
-        var ue = UE.getEditor('container',{
+        ue = UE.getEditor('container', {
             toolbars: [[
                 'fullscreen', 'source', '|', 'undo', 'redo', '|',
                 'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
@@ -257,36 +501,32 @@
                 'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
                 'searchreplace', 'drafts'
             ]],
-            autoFloatEnable:true
-        });
-
-        ue.ready(function() {
-            //设置编辑器的内容
-            ue.setContent(vm.content);
+            autoFloatEnable: true
         });
 
         $("#addEditItemForm").validate({
             rules: {
                 title: "required",
                 price: {
-                    required:true,
-                    min:0,
-                    number:true
+                    required: true,
+                    min: 0,
+                    number: true
                 },
                 market_price: {
-                    required:true,
-                    min:0,
-                    number:true
+                    required: true,
+                    min: 0,
+                    number: true
                 },
                 give_integral: {
-                    min:0,
-                    digits:true
+                    min: 0,
+                    digits: true
                 },
-                cate_id: {required:true,min:1},
-                cate_id2: {required:true,min:1},
+                cate_id: {required: true, min: 1},
+                cate_id2: {required: true, min: 1},
                 description: "required",
                 origin_image: "required"
             },
+            ignore: [],
             messages: {
                 title: "服务项目的名称一定要填写哦",
                 price: "服务价格必须填大于0的数字",
@@ -298,19 +538,19 @@
                 origin_image: "至少上传一张主图"
             },
             submitHandler: function (form) {
-                var index=layer.open({type:2,shadeClose: false});
+                var index = layer.open({type: 2, shadeClose: false});
                 $.ajax({
                     type: 'POST',
                     url: '/admin/item/addEditItem',
                     data: $(form).serialize(),
                     success: function (data) {
-                        if (data.succ == 0){
-                            layer.close(index);
+                        layer.close(index);
+                        if (data.succ == 0) {
                             layer.open({
-                                content:'保存成功',
-                                skin:'msg',
-                                time:1.5,
-                                end: function(elem){
+                                content: '保存成功',
+                                skin: 'msg',
+                                time: 1.5,
+                                end: function (elem) {
                                     location.reload();
                                 }
                             });
@@ -322,20 +562,36 @@
                         err();
                     }
                 });
+
             }
         });
     });
 
+    function getEditData(url) {
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function (data) {
+                vm.edit_item = data;
+                if (vm.edit_item.detail)
+                    ue.setContent(vm.edit_item.detail);
+            },
+            error: function (e) {
+                err();
+            }
+        });
+    }
+
     function delProduct() {
         ids = '';
         $.each($('input:checkbox:checked'), function () {
-            if (ids=='')
+            if (ids == '')
                 ids = $(this).val();
             else
                 ids += ',' + $(this).val();
         });
 
-        if (!ids){
+        if (!ids) {
             toastr.warning('请勾选需要删除的项目..');
             return false;
         }
@@ -367,8 +623,8 @@
         });
     }
 
-    function changeOnSale(id,val,obj){
-        classname=val==1?'.toggle-down':'.toggle-up';
+    function changeOnSale(id, val, obj) {
+        classname = val == 1 ? '.toggle-down' : '.toggle-up';
         $.ajax({
             type: 'POST',
             url: '/admin/index/changeTableVal.html',
@@ -380,9 +636,9 @@
                 "value": val
             },
             success: function (data) {
-                if (data){
+                if (data) {
                     $(obj).addClass('hidden').siblings(classname).removeClass('hidden');
-                }else{
+                } else {
                     toastr.warning('操作失败');
                 }
             },
@@ -392,15 +648,15 @@
         });
     }
 
-    function init(){
+    function init() {
         $.ajax({
             type: 'POST',
             url: '/admin/item/getCate.html',
             success: function (data) {
-                if (data.succ==0){
-                    vm.cate1=data.data.cate1;
-                    vm.cate2=data.data.cate2;
-                }else{
+                if (data.succ == 0) {
+                    vm.cate1 = data.data.cate1;
+                    vm.cate2 = data.data.cate2;
+                } else {
                     toastr.warning(data.msg);
                 }
             },
@@ -410,108 +666,93 @@
         });
     }
 
-    var vm=new Vue({
-        el:"#wrapper",
-        data:{
-            init_data:{},
-            list:{},
-            total:1,
-            p:1,
-            cate1:{},
-            cate2:{},
-            cur1:0,
-            cur2:0,
-            content:''
+    var vm = new Vue({
+        el: "#wrapper",
+        data: {
+            init_data: {},
+            edit_item: {},
+            total: 1,
+            p: 1,
+            cate1: {},
+            cate2: {},
+            token: '',
+            cdn: '',
+            temp: '',
+            origin_image: ''
         },
-        created:function(){
+        created: function () {
             init();
+            getUpToken();
         }
     });
-    // var myDropzone = new Dropzone(".aaa", {
-    //     url: "/admin/index/uploader",
-    //     dictDefaultMessage:"点击上传",
-    //     previewsContainer:".aaa",
-    //     clickable:true,
-    //     thumbnailWidth:50,
-    //     thumbnailHeight:50,
-    //     init: function () {
-    //         //res为服务器响应回来的数据
-    //         this.on("success", function (file, res) {
-    //             if (res.succ == 0) {
-    //                 //将服务器得到的数据生成一个隐藏域。做商品添加的时候就可以获取到了
-    //                 this.clickableElements[0].nextElementSibling.value = res.data;
-    //             } else {
-    //                 toastr.error(res.msg);
-    //             }
-    //         });
-    //
-    //         this.on("removedfile", function (file) {
-    //             $.ajax({
-    //                 url: "/admin/index/delimage",
-    //                 type: "post",
-    //                 //file.path可以获取到点击删除按钮的那张图片
-    //                 data: {'path': file.path},
-    //                 success:function(res){
-    //                     console.log(res);
-    //                 }
-    //             });
-    //         });
-    //     }
-    // });
 
-    function handleFiles(obj,id) {
-        fileList = document.getElementById("fileList"+id);
+    function getUpToken() {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/uploadToken',
+            data: {name: 'Zepto.js'},
+            success: function (data) {
+                vm.token = data.token;
+                vm.cdn = data.cdn;
+            },
+            error: function (e) {
+                toastr.error('获取图片上传token失败');
+            }
+        });
+    }
+
+    function handleFiles(obj, id) {
+        if (!vm.token)
+            getUpToken();
+        var fileList = document.getElementById("fileList" + id);
         var files = obj.files;
-        img = new Image();
-        if(window.URL){
 
-            img.src = window.URL.createObjectURL(files[0]); //创建一个object URL，并不是你的本地路径
-            img.width = 80;
-            img.height = 80;
-            img.onload = function(e) {
-                window.URL.revokeObjectURL(this.src); //图片加载后，释放object URL
-            }
-            if(fileList.firstElementChild){
-                fileList.removeChild(fileList.firstElementChild);
-            }
-            fileList.appendChild(img);
-        }else {
+        if (window.FileReader) {
+            var reader = new FileReader();
+            reader.readAsDataURL(files[0]);
+            reader.onload = function (e) {
+                putb64(reader.result);
+                fileList.firstElementChild.src = vm.temp;
+                fileList.firstElementChild.height = '96';
+                if (id == 1 || !vm.origin_image) {
+                    document.getElementById('origin_image').value = vm.temp;
+                    vm.origin_image = vm.temp;
+                }
+                obj.nextElementSibling.value = vm.temp;
+            };
+        } else {
             toastr.error('图片预览错误！');
         }
     }
 
-    function delimage(id){
-        fileList = document.getElementById("fileList"+id);
-        if(fileList.firstElementChild){
-            fileList.removeChild(fileList.firstElementChild);
+    function delimage(id) {
+        var fileList = document.getElementById("fileList" + id);
+        fileList.firstElementChild.src = '';
+        fileList.nextElementSibling.nextElementSibling.value = '';
+
+        for (var i = 0; i < 5; i++) {
+            var data = document.getElementsByName('image[]')[i].value;
+            if (data)
+                break;
         }
-        document.getElementsByName('image'+id)[0].value='';
+
+        document.getElementById('origin_image').value = data;
     }
-    //兼容浏览器图片预览
-    // if(window.FileReader){
-    //     //opera不支持createObjectURL/revokeObjectURL方法。我们用FileReader对象来处理
-    //     var reader = new FileReader();
-    //     reader.readAsDataURL(files[0]);
-    //     reader.onload = function(e){
-    //         img.src = this.result;
-    //         img.width = 80;
-    //         img.height = 80;
-    //         fileList.appendChild(img);
-    //     }
-    // }else {
-    //     //ie
-    //     obj.select();
-    //     obj.blur();
-    //     var nfile = document.selection.createRange().text;
-    //     document.selection.empty();
-    //     img.src = nfile;
-    //     img.width = 80;
-    //     img.height = 80;
-    //     img.onload=function(){
-    //
-    //     }
-    //     fileList.appendChild(img);
-    // }
+
+    function putb64(base64_data) {
+        pic = base64_data.replace(/^.*?,/, '');
+        var url = "http://upload-z2.qiniup.com/putb64/-1/";
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                vm.temp = vm.cdn + JSON.parse(xhr.responseText).key;
+            }
+        };
+        xhr.open("POST", url, false);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        xhr.setRequestHeader("Authorization", "UpToken " + vm.token);
+        xhr.send(pic);
+    }
 
 </script>
 {include file="public/footer" /}

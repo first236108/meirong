@@ -8,9 +8,9 @@
 namespace app\admin\controller;
 use think\Db;
 
-class Member extends Base
+class Report extends Base
 {
-    public function Index()
+    public function sumary()
     {
 
         return view();

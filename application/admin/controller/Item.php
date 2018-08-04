@@ -18,7 +18,7 @@ class Item extends Base
         $map      = ['is_delete' => 0];
         $count    = Db::name('item')->where($map)->count();
         $list     = Db::name('item')
-            ->where($map)->field('detail',true)->paginate(16, $count)->each(function ($item, $key) use ($category) {
+            ->where($map)->field('detail', true)->paginate(16, $count)->each(function ($item, $key) use ($category) {
                 $item['cate_name'] = $category[$item['cate_id']] . ' ' . $category[$item['cate_id2']];
                 return $item;
             });
@@ -29,13 +29,63 @@ class Item extends Base
 
     public function addEditItem()
     {
-        $id = input('item_id');
+        $id = input('item_id', 0);
+        if (request()->isPost()) {
+            $images = input('image/a', []);
+            $sort   = input('sort/a', []);
+            $data   = input('param.');
+            unset($data['sort'], $data['image']);
+            $result = $this->validate($data, [
+                'title'         => 'require',
+                'price'         => 'require|gt:0',
+                'market_price'  => 'require|gt:price',
+                'give_integral' => 'number|integer',
+                'cate_id'       => 'require|number|integer',
+                'cate_id2'      => 'require|number|integer',
+                'description'   => 'require',
+                'origin_image'  => 'require',
+            ], [
+                'title'         => '服务项目名称必须填写',
+                'price'         => '价格必须是大于零的数字',
+                'market_price'  => '原价最好大于价格哦',
+                'give_integral' => '赠送积分必须是整数',
+                'cate_id'       => '一级分类错误',
+                'cate_id2'      => '二级分类错误',
+                'description'   => '请填写简介描述',
+                'origin_image'  => '主图格式错误',
+            ]);
+            if (true !== $result)
+                return json(['succ' => 1, 'msg' => $result]);
 
+            $item           = new \app\admin\model\Item();
+            $data['detail'] = $data['content'];
+            if ($id)
+                $flag = $item->allowField(true)->isUpdate(true)->save($data);
+            else {
+                $flag = $item->allowField(true)->save($data);
+                $id   = $item->item_id;
+            }
+
+            #插入/更新 项目轮播图
+            if (count($images)) {
+                foreach ($images as $index => $image) {
+                    if (!$image)
+                        continue;
+                    $img[$index]['item_id'] = $id;
+                    $img[$index]['image']   = $image;
+                    $img[$index]['sort']    = $sort[$index];
+                }
+                if (count($img)) {
+                    Db::name('item_img')->where('item_id', $id)->delete();
+                    Db::name('item_img')->insertAll($img);
+                }
+            }
+
+            return json(['succ' => !$flag]);
+        }
         $info = Db::name('item')->where('item_id', $id)->find();
-        $img  = Db::name('item_img')->where('item_id', $id)->select();
-        $this->assign('info', $info);
-        $this->assign('img', $img);
-        return view();
+        $info['img']  = Db::name('item_img')->where('item_id', $id)->select();
+        return json($info);
     }
 
     public function deleteItem()
@@ -89,8 +139,8 @@ class Item extends Base
                 $flag = Db::name('item_cate')->update($data);
             } else {
                 $filepath = input('image', '');
-//            if (!$filepath)
-//                return ['succ' => 1, 'msg' => '请上传分类图标...'];
+                //            if (!$filepath)
+                //                return ['succ' => 1, 'msg' => '请上传分类图标...'];
 
                 $data = [
                     'name'      => $name,
@@ -116,5 +166,10 @@ class Item extends Base
         $id   = input('post.id/d', 0);
         $flag = Db::name('item_cate')->where('cate_id', $id)->delete();
         return ['succ' => !$flag, 'msg' => $flag ? '已删除' : '删除失败'];
+    }
+
+    public function tag()
+    {
+        return view();
     }
 }

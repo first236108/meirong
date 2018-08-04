@@ -141,10 +141,12 @@ return [
     // 异常处理handle类 留空使用 \think\exception\Handle
     'exception_handle'       => '',
 
-    'auth' => [
+    'auth'         => [
         'AUTH_ON'   => false,
         'AUTH_USER' => 'ty_admin', // 用户信息表
     ],
-
-
+    'qiniu_access' => 'kc8sqBgYlO3B9QzuwVrePo5idpz7CKA3bJ60yh8z',
+    'qiniu_secret' => '_sTIspi21IA3Ha1PrnCB7RcHQakGLSDjAWhtJxDE',
+    'qiniu_bucket' => 'slayerhover',
+    'qiniu_cdn'    => 'http://oseihxzg8.bkt.clouddn.com/',
 ];
