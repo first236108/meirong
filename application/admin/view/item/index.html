@@ -6,10 +6,20 @@
 
 <div class="wrapper wrapper-content animated fadeInRight tooltip-demo">
     <div class="ibox-title">
-        <h5 class="">服务项目列表</h5>
+        {if condition="$type==1"}
+        <h5 class="title-h5 red-bg">历史项目</h5>
+        {else /}
+        <h5 class="title-h5">服务项目</h5>
+        {/if}
         <div class="ibox-tools">
-            <span class="btn btn-success btn-xs pull-left m-l" type="button" onclick="$('#item-list-modal').modal('show');" data-target="#admin-user-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加服务项目"><i class="fa fa-plus"></i>&nbsp;添加</span>
-            <span class="btn btn-danger btn-xs pull-left m-l" type="button" onclick="delProduct()" data-tip="tooltip" data-placement="top" title="" data-original-title="删除项目"><i class="fa fa-minus"></i>&nbsp;删除</span>
+            {if condition="$type==1"}
+            <span class="btn btn-success btn-xs pull-left self-m-l" type="button" onclick="delProduct(0,' 恢复 ')" data-tip="tooltip" data-placement="top" title="" data-original-title="删除项目"><i class="fa fa-plus"></i>&nbsp;找回</span>
+            {else /}
+            <span class="btn btn-success btn-xs pull-left self-m-l" type="button" onclick="$('#item-list-modal').modal('show');" data-target="#admin-user-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加服务项目"><i class="fa fa-plus"></i>&nbsp;添加</span>
+            <span class="btn btn-danger btn-xs pull-left self-m-l" type="button" onclick="delProduct(1,' 删除 ')" data-tip="tooltip" data-placement="top" title="" data-original-title="删除项目"><i class="fa fa-minus"></i>&nbsp;删除</span>
+            <span class="btn btn-primary btn-xs pull-left self-m-l" type="button" onclick="recomment()" data-tip="tooltip" data-placement="top" title="" data-original-title="推荐置顶"><i class="fa fa-edit"></i>&nbsp;推荐</span>
+            <span class="btn btn-default btn-xs pull-right self-m-l" type="button" onclick="location.href='/admin/item/index.html?type=1'" data-tip="tooltip" data-placement="top" title="" data-original-title="历史项目"><i class="fa fa-refresh"></i>&nbsp;历史</span>
+            {/if}
         </div>
     </div>
     <div class="row">
@@ -18,11 +28,20 @@
             <div class="ibox">
                 <div class="ibox-content product-box">
                     <div class="product-imitation">
+                        {if condition="$vo.is_recommend > 0"}
+                        <img class="pull-left recommend" src="/static/image/recommend2.png" alt="店长推荐">
+                        {/if}
                         <img src="{$vo.origin_image}" alt="">
                     </div>
                     <div class="product-desc">
                         <span class="product-price">
                             ￥{$vo.price}
+                        </span>
+                        <span class="product-sort form-inline">
+                            <div class="form-group">
+                                <label for="sort">排序:</label>
+                                <input type="text" class="sort-input form-control" id="sort" value="{$vo.sort}" data-id="{$vo['item_id']}" placeholder="0">
+                            </div>
                         </span>
                         <small class="text-muted">{$vo.cate_name}</small>
                         <a href="{:url('addEditItem',['item_id'=>$vo['item_id']])}" class="product-name"> {$vo.title}</a>
@@ -33,7 +52,7 @@
                             <a onclick="changeOnSale('{$vo.item_id}',1,this)" class="btn btn-xs btn-outline btn-success toggle-up {if $vo.on_sale==1}hidden{/if}">上架 <i class="fa fa-long-arrow-up"></i> </a>
 
                             <a onclick="getEditData('/admin/item/addEditItem/item_id/{$vo.item_id}')" data-toggle="modal" data-target="#item-list-modal" class="btn btn-xs btn-outline btn-primary m-l-lg">编辑修改 <i class="fa fa-long-arrow-right"></i> </a>
-                            <span class="i-checks pull-right"><label> <input type="checkbox" value="{$vo['item_id']}" class="del"> <i></i></label></span>
+                            <span class="i-checks pull-right"><label> <input type="checkbox" value="{$vo['item_id']}" data-recommend="{$vo['is_recommend']}" class="del"> <i></i></label></span>
                         </div>
                     </div>
                 </div>
@@ -70,7 +89,7 @@
                                     <div class="form-group"><label class="col-sm-2 control-label">项目名称:</label>
                                         <div class="col-sm-10"><input type="text" class="form-control" placeholder="Product name" name="title" v-model="edit_item.title"></div>
                                     </div>
-                                    <div class="form-group"><label class="col-sm-2 control-label">价格:</label>
+                                    <div class="form-group"><label class="col-sm-2 control-label">售价:</label>
                                         <div class="col-sm-10">
                                             <div class="input-group">
                                                 <span class="input-group-addon">￥</span>
@@ -312,7 +331,7 @@
                                         <div class="form-group"><label class="col-sm-2 control-label">项目名称:</label>
                                             <div class="col-sm-10"><input type="text" class="form-control" placeholder="Product name" name="title" value=""></div>
                                         </div>
-                                        <div class="form-group"><label class="col-sm-2 control-label">价格:</label>
+                                        <div class="form-group"><label class="col-sm-2 control-label">售价:</label>
                                             <div class="col-sm-10">
                                                 <div class="input-group">
                                                     <span class="input-group-addon">￥</span>
@@ -582,8 +601,48 @@
         });
     }
 
-    function delProduct() {
-        ids = '';
+    function recomment() {
+        var ids = '';
+        var val = 1;
+        $.each($('input:checkbox:checked'), function () {
+            if (ids == '') {
+                ids = $(this).val();
+                val = $(this).data('recommend') ? 0 : 1;
+            }
+            else
+                ids += ',' + $(this).val();
+        });
+
+        if (!ids) {
+            toastr.warning('请勾选需要推荐的项目..');
+            return false;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/changeTableVal.html',
+            data: {
+                table: 'item',
+                id_name: 'item_id',
+                id_value: ids,
+                field: 'is_recommend',
+                value: val
+            },
+            success: function (data) {
+                if (data) {
+                    location.reload();
+                } else {
+                    toastr.error('操作失败');
+                }
+            },
+            error: function (xhr, type) {
+                err();
+            }
+        });
+
+    }
+
+    function delProduct(val, msg) {
+        var ids = '';
         $.each($('input:checkbox:checked'), function () {
             if (ids == '')
                 ids = $(this).val();
@@ -597,7 +656,7 @@
         }
 
         swal({
-            title: "确定要删除吗?",
+            title: "确定要" + msg + "吗?",
             type: "warning",
             showCancelButton: true,
             confirmButtonColor: "#DD6B55",
@@ -607,10 +666,16 @@
         }, function () {
             $.ajax({
                 type: 'POST',
-                url: '/admin/item/deleteItem.html',
-                data: {ids: ids},
+                url: '/admin/index/changeTableVal.html',
+                data: {
+                    "table": 'item',
+                    "id_name": 'item_id',
+                    "id_value": ids,
+                    "field": 'is_delete',
+                    "value": val
+                },
                 success: function (data) {
-                    if (data.succ == 0) {
+                    if (data) {
                         location.reload();
                     } else {
                         toastr.error(data.msg);
@@ -754,5 +819,37 @@
         xhr.send(pic);
     }
 
+    var searltime;
+    $(".sort-input").keyup(function (e) {
+        clearTimeout(searltime);
+        searltime = setTimeout("editsort(" + e.target.value + "," + e.target.getAttribute('data-id') + ")", 300);
+    });
+
+    function editsort(value, id) {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/changeTableVal.html',
+            data: {
+                "table": 'item',
+                "id_name": 'item_id',
+                "id_value": id,
+                "field": 'sort',
+                "value": value
+            },
+            success: function (data) {
+                if (data)
+                    layer.open({
+                        content: '保存成功',
+                        skin: 'msg',
+                        time: 1
+                    });
+                else
+                    err('排序值保存失败');
+            },
+            error: function (e) {
+                err();
+            }
+        });
+    }
 </script>
 {include file="public/footer" /}

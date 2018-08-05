@@ -254,7 +254,7 @@ class Index extends Base
         $value    = input('value', 0);
         if (!$table || !$id_name || !$id_value || !$field)
             return null;
-        $flag = Db::name($table)->where($id_name, $id_value)->setField($field, $value);
+        $flag = Db::name($table)->where($id_name,'in', $id_value)->setField($field, $value);
         return $flag ? $flag : null;
     }
 

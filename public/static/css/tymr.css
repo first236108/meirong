@@ -1,36 +1,86 @@
-.img-filter-invert{filter: invert(50);}
-.page-heading{padding:10px;}
-.yes{color:#1ab394;cursor: pointer;}
-.no{color: #BEC3C7;cursor: pointer;}
-.table tbody tr td{
-    vertical-align: middle;/*覆盖bootstrap表格内容居上对齐问题*/
+.img-filter-invert {
+    filter: invert(50);
 }
-th{text-align:center}/*覆盖bootstrap表格th 左对齐问题*/
-.ibox-content{padding-top:5px}
-textarea.form-control{max-width: 100%!important;}
-.p-t-20{padding-top:20px;}
-.p-h-1{padding:1px 10px;}
-.float-e-margins .btn{    margin-left: 20px;line-height: 14px;}
-.dd-handle:hover{cursor:auto!important;font-weight: normal!important;}
-.dd-handle .chat-avatar{margin-top:-5px}
-#filePicker div:nth-child(2){width:100%!important;height:100%!important;}
-#cate_img{    width: 100px;
+
+.page-heading {
+    padding: 10px;
+}
+
+.yes {
+    color: #1ab394;
+    cursor: pointer;
+}
+
+.no {
+    color: #BEC3C7;
+    cursor: pointer;
+}
+
+.table tbody tr td {
+    vertical-align: middle; /*覆盖bootstrap表格内容居上对齐问题*/
+}
+
+th {
+    text-align: center
+}
+
+/*覆盖bootstrap表格th 左对齐问题*/
+.ibox-content {
+    padding-top: 5px
+}
+
+textarea.form-control {
+    max-width: 100% !important;
+}
+
+.p-t-20 {
+    padding-top: 20px;
+}
+
+.p-h-1 {
+    padding: 1px 10px;
+}
+
+.float-e-margins .btn {
+    margin-left: 20px;
+    line-height: 14px;
+}
+
+.dd-handle:hover {
+    cursor: auto !important;
+    font-weight: normal !important;
+}
+
+.dd-handle .chat-avatar {
+    margin-top: -5px
+}
+
+#filePicker div:nth-child(2) {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#cate_img {
+    width: 100px;
     border: 1px solid #ddd;
     padding: 4px;
     margin-top: 19px;
     height: 100px;
-    overflow: hidden;}
-.product-imitation .i-checks{
-    position: relative;
-    top:-7rem;
-    left:-6.5rem;
+    overflow: hidden;
 }
-#item-list-modal table tbody img{
+
+.product-imitation .i-checks {
+    position: relative;
+    top: -7rem;
+    left: -6.5rem;
+}
+
+#item-list-modal table tbody img {
     max-width: 8rem;
 }
 
-#addEditItemForm .file{
-    border-radius:4px;
+#addEditItemForm .file {
+    border-radius: 4px;
     position: relative;
     display: inline-block;
     background: url('/static/image/xiangji.png') no-repeat center center;
@@ -42,28 +92,84 @@ textarea.form-control{max-width: 100%!important;}
     text-indent: 0;
     line-height: 20px;
     background-size: auto 5rem;
-    margin:0;
+    margin: 0;
     /*width:6rem;*/
     /*height:6rem;*/
 }
-.fileList{
-    width:8rem ;
-    height:8rem ;
+
+.fileList {
+    width: 8rem;
+    height: 8rem;
 }
-.fileList img{
+
+.fileList img {
     width: 8rem;
 }
-#addEditItemForm .file input{
+
+#addEditItemForm .file input {
     position: absolute;
     font-size: 15rem;
     right: 0;
     top: 0;
     opacity: 0;
 }
-.break-line{
+
+.break-line {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
     height: 2.7rem;
+}
+
+.product-imitation .recommend {
+    width: 8rem;
+}
+
+.product-sort {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #1ab394;
+    position: absolute;
+    left: 0;
+    top: -32px;
+    padding: .3333rem .5rem;
+}
+
+.product-sort label {
+    margin-bottom: 0;
+}
+
+.product-sort input {
+    height: 2rem;
+    display: inline-block;
+    padding: 3px 6px;
+    background: #1ab394;
+    max-width: 4rem !important;
+}
+
+.product-desc .form-group {
+    margin-bottom: 0;
+}
+
+.self-m-l {
+    margin-left: .5rem;
+}
+
+.title-h5 {
+    line-height: 14px;
+    margin-bottom: 0 !important;
+}
+
+.p-m-10 {
+    padding-bottom: 10px;
+}
+
+.footable th, .footable td {
+    text-align: center;
+    vertical-align: middle !important;
+}
+.first-td{
+    text-align: left!important;
 }

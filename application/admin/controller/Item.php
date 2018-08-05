@@ -14,8 +14,9 @@ class Item extends Base
 {
     public function Index()
     {
+        $type=input('type',0);
         $category = Db::name('item_cate')->column('name', 'cate_id');
-        $map      = ['is_delete' => 0];
+        $map      = ['is_delete' => $type];
         $count    = Db::name('item')->where($map)->count();
         $list     = Db::name('item')
             ->where($map)->field('detail', true)->paginate(16, $count)->each(function ($item, $key) use ($category) {
@@ -24,6 +25,7 @@ class Item extends Base
             });
         $this->assign('page', $list->render());
         $this->assign('list', $list);
+        $this->assign('type', $type);
         return view();
     }
 
@@ -166,10 +168,5 @@ class Item extends Base
         $id   = input('post.id/d', 0);
         $flag = Db::name('item_cate')->where('cate_id', $id)->delete();
         return ['succ' => !$flag, 'msg' => $flag ? '已删除' : '删除失败'];
-    }
-
-    public function tag()
-    {
-        return view();
     }
 }
