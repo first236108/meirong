@@ -9,6 +9,7 @@
 namespace app\admin\controller;
 
 use think\Db;
+use app\admin\model\Users;
 
 class Member extends Base
 {
@@ -37,10 +38,42 @@ class Member extends Base
         }
 
         try {
-            $list = Db::name('users')->where($map)->select();
+            $list  = Users::where($map)->field('password', true)->order('last_come desc')->select();
+            $level = Db::name('user_level')->column('level_name', 'level_id');
         } catch (\Exception $e) {
-            return json([], 403);
+            return json($e->getMessage(), 403);
         }
-        return json($list);
+        return json([$list, $level]);
+    }
+
+    public function addEditMember()
+    {
+        $data   = input('post.');
+        $result = $this->validate($data, [
+            'phone'    => 'require|mobile|unique:users',
+            'password' => 'min:6',
+        ], [
+            'phone.require' => '手机号码必填',
+            'phone.mobile'  => '手机号码错误',
+            'phone.unique'  => '手机号码已注册',
+            'password'      => '密码长度至少6位'
+        ]);
+        if (true !== $result) {
+            return json($result, 401);
+        }
+
+        $user = new Users;
+        if (!isset($data['password']) && strlen($data['password'])) {
+            $data['password'] = '123456';
+        }
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        if (!isset($data['user_id'])) {
+            $user->create_time = time();
+            $user->save($data);
+        } else {
+            $user->isUpdate(true)->save($data);
+        }
+
+        return json($user->user_id);
     }
 }

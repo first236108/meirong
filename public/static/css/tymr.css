@@ -170,6 +170,17 @@ textarea.form-control {
     text-align: center;
     vertical-align: middle !important;
 }
-.first-td{
-    text-align: left!important;
+
+.first-td {
+    text-align: left !important;
+}
+
+.footable tbody .img-circle {
+    width: 4rem;
+    height: 4rem;
+}
+
+#member-add {
+    height: 2.3335rem;
+    line-height: 2rem;
 }
