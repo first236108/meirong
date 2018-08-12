@@ -10,28 +10,28 @@
             <form id="top-search">
                 <div class="col-sm-2">
                     <div class="form-group">
-                        <label class="control-label" for="is_valid">会员状态</label>
-                        <select name="is_valid" id="is_valid" v-model="valid" class="form-control">
-                            <option value="1">正常</option>
-                            <option value="0">黑名单</option>
+                        <label class="control-label" for="type">订单类型</label>
+                        <select name="type" id="type" v-model="type" class="form-control">
+                            <option value="0">正常</option>
+                            <option value="1">赠送</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-sm-3">
                     <div class="form-group">
-                        <label for="create_time">注册时间</label>
+                        <label for="start_time">开始时间</label>
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="create_time" name="create_time" class="form-control">
+                            <input type="text" id="start_time" name="start_time" class="form-control">
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-3">
                     <div class="form-group">
-                        <label for="last_come">到店时间</label>
+                        <label for="end_time">结束时间</label>
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="last_come" name="last_come" class="form-control">
+                            <input type="text" id="end_time" name="end_time" class="form-control">
                         </div>
                     </div>
                 </div>
@@ -59,69 +59,49 @@
                     <table class="footable table table-stripped" data-page-size="15">
                         <thead>
                         <tr>
-                            <th data-toggle="true" class="first-td">ID</th>
-                            <th>昵称</th>
-                            <th data-hide="phone">电话</th>
-                            <th data-hide="phone,tablet">昵称</th>
+                            <th data-toggle="true" class="first-td">订单编号</th>
+                            <th data-hide="phone">充值金额</th>
+                            <th>付款金额</th>
+                            <th data-hide="phone,tablet">会员姓名</th>
                             <th data-hide="phone,tablet">头像</th>
                             <th data-hide="phone,tablet">会员等级</th>
                             <th data-hide="phone,tablet">累计充值</th>
-                            <th data-hide="phone,tablet">注册时间</th>
-                            <th data-hide="phone,tablet">最近登陆时间</th>
-                            <th data-hide="phone">上次到店时间</th>
-                            <th data-hide="phone">Status</th>
-                            <th class="text-right" data-hide="phone" data-sort-ignore="true">修改</th>
-                            <th class="text-right" data-sort-ignore="true">查看记录</th>
-
+                            <th>支付时间</th>
+                            <th data-hide="phone,tablet">下单时间</th>
+                            <th>状态</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(user,index) in list">
+                        <tr v-for="(order,index) in list">
                             <td class="first-td">
-                                {{user.user_id}}
+                                {{order.order_sn}}
                             </td>
                             <td>
-                                {{user.name}}
+                                {{order.order_amount}}
                             </td>
                             <td>
-                                {{user.phone}}
+                                {{order.pay_amount}}
                             </td>
                             <td>
-                                {{user.nickname}}
+                                {{order.name|order.nickname}}
                             </td>
                             <td>
-                                <img :src="user.avatar" :alt="user.name" class="img-circle">
+                                <img :src="order.avatar" :alt="order.name" class="img-circle">
                             </td>
                             <td>
-                                {{level[user.level]}}
+                                {{level[order.level]}}
                             </td>
                             <td>
-                                <span class="text-danger"><i class="fa fa-yen"></i>&nbsp;{{user.total_recharge}}</span>
+                                {{order.total_recharge}}
                             </td>
                             <td>
-                                {{user.create_time}}
+                                {{order.pay_time}}
                             </td>
                             <td>
-                                {{user.last_login_time}}
+                                {{order.add_time}}
                             </td>
                             <td>
-                                {{user.last_come}}
-                            </td>
-                            <td>
-                                <span class="label label-primary" v-if="user.is_valid==1" @click="toggleStatus(user.user_id,0,index)">正常</span>
-                                <span class="label label-danger" v-else @click="toggleStatus(user.user_id,1,index)">黑名单</span>
-                            </td>
-                            <td v-if="user.is_valid==1">
-                                <button class="btn btn-default btn-outline btn-xs" @click="editUser(index)"><i class="fa fa-edit">修改</i></button>
-                            </td>
-                            <td v-else>
-                                <button class="btn btn-danger btn-outline btn-xs" @click="delUser(user.user_id,index)"><i class="fa fa-times">删除会员</i></button>
-                            </td>
-                            <td class="text-right">
-                                <div class="btn-group">
-                                    <button class="btn-info btn btn-outline btn-xs"><i class="fa fa-yen"></i>充值</button>
-                                    <button class="btn-success btn btn-outline btn-xs"><i class="fa fa-vimeo-square"></i>消费</button>
-                                </div>
+                                {{order.status}}
                             </td>
                         </tr>
                         </tbody>
@@ -129,7 +109,7 @@
                         <tr>
                             <td colspan="6">
                                 <div class="pull-left" id="member-add">
-                                    <button class="btn btn-outline btn-success btn-xs btn-xs" type="button" onclick="$('#user-add-modal').modal('show');" data-target="#user-add-modal" data-tip="tooltip" data-placement="right" data-original-title="新增会员"><i class="fa fa-plus"></i></button>
+                                    <button class="btn btn-outline btn-primary btn-xs btn-xs" type="button" onclick="$('#order-add-modal').modal('show');" data-target="#order-add-modal" data-tip="tooltip" data-placement="right" data-original-title="新增订单"><i class="fa fa-plus"></i></button>
                                 </div>
                                 <span style="clear:both"></span>
                                 <ul class="pagination pull-right"></ul>
@@ -143,14 +123,14 @@
         </div>
     </div>
 
-    <div class="modal inmodal" id="user-add-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal inmodal" id="order-add-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content animated fadeIn">
                 <div class="modal-header">
                     <button type="button" class="close" onclick="closeModalComm(this);vm.edit={};"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                     <h5 class="modal-title">添加/修改 会员资料</h5>
                 </div>
-                <form id="user-add-form" class="form-horizontal">
+                <form id="order-add-form" class="form-horizontal">
                     <div class="modal-body" v-if="edit.hasOwnProperty('user_id')">
                         <input type="hidden" v-model="edit.user_id" name="user_id">
                         <div class="form-group"><label class="col-sm-2 control-label">姓名</label>
@@ -290,7 +270,7 @@
             submitHandler: function (form) {
                 $.ajax({
                     type: 'POST',
-                    url: '/admin/member/index',
+                    url: '/admin/member/recharge',
                     data: $(form).serialize(),
                     success: function (data) {
                         layer.open({
@@ -307,7 +287,7 @@
             }
         });
 
-        $("#user-add-form").validate({
+        $("#order-add-form").validate({
             rules: {
                 phone: {
                     required: true,
@@ -353,7 +333,7 @@
     var vm = new Vue({
         el: '#wrapper',
         data: {
-            valid:1,
+            type:0,
             list: [],
             level: [],
             edit:{}
@@ -382,7 +362,7 @@
             },
             editUser:function(index){
                 vm.edit=vm.list[index];
-                $('#user-add-modal').modal('show');
+                $('#order-add-modal').modal('show');
             },
             delUser:function(user_id,index){
                 axios.post('/admin/index/changeTableVal', {
@@ -404,7 +384,7 @@
         },
         updated: function () {
             if (vm.list.length)
-                $('.footable').trigger('footable_initialize')
+                $('.footable').trigger('footable_initialize');
 
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
@@ -416,7 +396,7 @@
     function init() {
         $.ajax({
             type: 'POST',
-            url: '/admin/member/index',
+            url: '/admin/member/recharge',
             success: function (data) {
                 vm.list = data[0];
                 vm.level = data[1];
@@ -426,5 +406,6 @@
             }
         });
     }
+
 </script>
 {include file="public/footer" /}

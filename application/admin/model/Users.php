@@ -20,6 +20,11 @@ class Users extends Model
     //    return $level[$value];
     //}
 
+    public function orders()
+    {
+        return $this->hasOne('Order');
+    }
+
     public function getNameAttr($value, $data)
     {
         return $value ?$value: $data['nickname'];
