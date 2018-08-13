@@ -22,12 +22,14 @@ class Users extends Model
 
     public function orders()
     {
-        return $this->hasOne('Order');
+        return $this->hasMany('Order','user_id')->bind([
+            'name', 'nickname', 'total_recharge', 'avatar'
+        ]);
     }
 
     public function getNameAttr($value, $data)
     {
-        return $value ?$value: $data['nickname'];
+        return $value ? $value : $data['nickname'];
     }
 
     public function getAvatarAttr($value, $data)

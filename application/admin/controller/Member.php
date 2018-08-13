@@ -10,6 +10,7 @@ namespace app\admin\controller;
 
 use think\Db;
 use app\admin\model\Users;
+use app\admin\model\Orders;
 
 class Member extends Base
 {
@@ -92,27 +93,42 @@ class Member extends Base
         ];
 
         if ($start_time) {
-            $map[] = ['a.add_time', '>', strtotime($start_time)];
+            $map[] = ['a.pay_time', '>', strtotime($start_time)];
         }
         if ($end_time) {
-            $map[] = ['a.add_time', '<', strtotime($end_time)];
+            $map[] = ['a.pay_time', '<', strtotime($end_time)];
         }
         if ($nameorphone) {
-            $map[] = ['b.name|b.nickname|b.phone|c.title', 'like', '%' . $nameorphone . '%'];
+            $map[] = ['b.name|b.nickname|b.phone|c.level_name', 'like', '%' . $nameorphone . '%'];
         }
 
         try {
-            $list  = Db::name('order a')
-                ->join('__USERS__ b','a.user_id=b.user_id')
+            $sum_amount   = 0;
+            $total_amount = 0;
+            $list         = Orders::alias('a')
+                ->join('__USERS__ b', 'a.user_id=b.user_id')
+                ->join('__USER_LEVEL__ c', 'b.level=c.level_id')
                 ->where($map)
-                ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar')
+                ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
                 ->order('a.add_time desc')
-                ->select();
+                ->paginate(20);
 
-            $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
+            $page = $list->render();
+            if ($list) {
+                $list         = $list->items();
+                $sum_amount   = array_sum(array_column($list, 'pay_amount'));
+                $total_amount = Orders::where('order_id', 'in', array_column($list, 'order_id'))->sum('pay_amount');
+            }
+            $admin = Db::name('admin')->cache(true)->column('name', 'id');
         } catch (\Exception $e) {
             return json($e->getMessage(), 403);
         }
-        return json([$list, $level]);
+        return json([$list, $admin, $page, $sum_amount, $total_amount]);
+    }
+
+    public function addOrder()
+    {
+        $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
+        return view();
     }
 }

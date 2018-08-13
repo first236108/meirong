@@ -13,8 +13,20 @@ class Orders extends Model
         'pay_time' => 'timestamp',
     ];
 
-    public function user()
+    public function users()
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo('Users', 'user_id');
+    }
+
+    public function getStatusAttr($value)
+    {
+        $text = [
+            '0' => '待支付',
+            '1' => '已付款',
+            '2' => '已退款',
+            '3' => '已作废',
+            '4' => '已过期'
+        ];
+        return $text[$value];
     }
 }

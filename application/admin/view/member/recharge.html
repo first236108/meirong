@@ -62,13 +62,14 @@
                             <th data-toggle="true" class="first-td">订单编号</th>
                             <th data-hide="phone">充值金额</th>
                             <th>付款金额</th>
+                            <th data-hide="phone">跟单</th>
                             <th data-hide="phone,tablet">会员姓名</th>
                             <th data-hide="phone,tablet">头像</th>
                             <th data-hide="phone,tablet">会员等级</th>
                             <th data-hide="phone,tablet">累计充值</th>
                             <th>支付时间</th>
                             <th data-hide="phone,tablet">下单时间</th>
-                            <th>状态</th>
+                            <th data-hide="phone">状态</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -83,16 +84,19 @@
                                 {{order.pay_amount}}
                             </td>
                             <td>
+                                <span class="text-danger">{{admin[order.confirm_id]}}</span>
+                            </td>
+                            <td>
                                 {{order.name|order.nickname}}
                             </td>
                             <td>
-                                <img :src="order.avatar" :alt="order.name" class="img-circle">
+                                <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle">
                             </td>
                             <td>
-                                {{level[order.level]}}
+                                {{order.level_name}}
                             </td>
                             <td>
-                                {{order.total_recharge}}
+                                <span class="text-success">{{order.total_recharge}}</span>
                             </td>
                             <td>
                                 {{order.pay_time}}
@@ -106,13 +110,40 @@
                         </tr>
                         </tbody>
                         <tfoot>
+                        <tr class="text-success">
+                            <td></td>
+                            <td>小计:</td>
+                            <td>{{sum_amount}}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="text-danger">
+                            <td></td>
+                            <td>总计:</td>
+                            <td>{{total_amount}}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                         <tr>
                             <td colspan="6">
                                 <div class="pull-left" id="member-add">
                                     <button class="btn btn-outline btn-primary btn-xs btn-xs" type="button" onclick="$('#order-add-modal').modal('show');" data-target="#order-add-modal" data-tip="tooltip" data-placement="right" data-original-title="新增订单"><i class="fa fa-plus"></i></button>
                                 </div>
                                 <span style="clear:both"></span>
-                                <ul class="pagination pull-right"></ul>
+                                {{page_str}}
+                                <!--<ul class="pagination pull-right"></ul>-->
                             </td>
                         </tr>
                         </tfoot>
@@ -127,93 +158,34 @@
         <div class="modal-dialog">
             <div class="modal-content animated fadeIn">
                 <div class="modal-header">
-                    <button type="button" class="close" onclick="closeModalComm(this);vm.edit={};"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                    <h5 class="modal-title">添加/修改 会员资料</h5>
+                    <button type="button" class="close" onclick="closeModalComm(this);vm.user={};"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">会员充值</h5>
                 </div>
                 <form id="order-add-form" class="form-horizontal">
-                    <div class="modal-body" v-if="edit.hasOwnProperty('user_id')">
-                        <input type="hidden" v-model="edit.user_id" name="user_id">
-                        <div class="form-group"><label class="col-sm-2 control-label">姓名</label>
-                            <div class="col-sm-10"><input v-model="edit.name" type="text" class="form-control" name="name" id="name"></div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">昵称</label>
-                            <div class="col-sm-10"><input v-model="edit.nickname" type="text" class="form-control" name="nickname" id="nickname"></div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
+                    <div class="modal-body">
+                        <input type="hidden" v-model="user.user_id" name="user_id">
                         <div class="form-group"><label class="col-sm-2 control-label">手机号码</label>
-                            <div class="col-sm-10"><input v-model="edit.phone" type="text" class="form-control" name="phone" id="phone" autocomplete="off"></div>
+                            <div class="col-sm-10"><input v-model="user.phone" type="text" name="phone" class="form-control" v-on:keyup="getUser($event)"></div>
                         </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">登陆密码</label>
-                            <input type="password" class="hidden"/>
-                            <div class="col-sm-10"><input type="password" class="form-control" name="password" autocomplete="off"></div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label" for="level">会员等级</label>
-                            <div class="col-sm-10">
-                                <select class="form-control m-b" name="level" id="level" v-model="edit.level">
-                                    <option v-for="(lv,key) in level" :value="key">{{lv}}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">性别</label>
-
-                            <div class="col-sm-10">
-                                <label class="i-checks m-r-lg"> <input type="radio" v-model="edit.sex" value="0" name="sex"> <i></i> 美女 </label>
-                                <label class="i-checks"> <input type="radio" v-model="edit.sex" value="1" name="sex"> <i></i> 鲜森 </label>
-                            </div>
-                        </div>
-
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">住址</label>
-                            <div class="col-sm-10"><input type="text" v-model="edit.address" class="form-control" name="address" autocomplete="off"></div>
-                        </div>
-
-                    </div>
-                    <div class="modal-body" v-else>
                         <div class="form-group"><label class="col-sm-2 control-label">姓名</label>
-                            <div class="col-sm-10"><input type="text" class="form-control" name="name" id="name"></div>
+                            <div class="col-sm-10"><input v-model="user.name" type="text" class="form-control" v-on:keyup="getUser($event)"></div>
                         </div>
-                        <div class="hr-line-dashed"></div>
                         <div class="form-group"><label class="col-sm-2 control-label">昵称</label>
-                            <div class="col-sm-10"><input type="text" class="form-control" name="nickname" id="nickname"></div>
+                            <div class="col-sm-10"><input v-model="user.nickname" type="text" class="form-control" readonly></div>
                         </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">手机号码</label>
-                            <div class="col-sm-10"><input type="text" class="form-control" name="phone" id="phone" autocomplete="off"></div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">登陆密码</label>
-                            <input type="password" class="hidden"/>
-                            <div class="col-sm-10"><input type="password" class="form-control" name="password" autocomplete="off"></div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label" for="level">会员等级</label>
-                            <div class="col-sm-10">
-                                <select class="form-control m-b" name="level" id="level">
-                                    <option v-for="(lv,key) in level" :value="key">{{lv}}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="hr-line-dashed"></div>
-                        <div class="form-group"><label class="col-sm-2 control-label">性别</label>
-
-                            <div class="col-sm-10">
-                                <label class="i-checks m-r-lg"> <input type="radio" checked="" value="0" name="sex"> <i></i> 美女 </label>
-                                <label class="i-checks"> <input type="radio" value="1" name="sex"> <i></i> 鲜森 </label>
-                            </div>
-                        </div>
-
-                        <div class="hr-line-dashed"></div>
                         <div class="form-group"><label class="col-sm-2 control-label">住址</label>
-                            <div class="col-sm-10"><input type="text" class="form-control" name="address" autocomplete="off"></div>
+                            <div class="col-sm-10"><input type="text" v-model="user.address" class="form-control" readonly></div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+
+
+                        <div class="form-group"><label class="col-sm-2 control-label">充值金额</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="order_amount"></div>
                         </div>
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-white" onclick="closeModalComm(this);vm.edit={};">关 闭</button>
+                        <button type="button" class="btn btn-white" onclick="closeModalComm(this);vm.user={};">关 闭</button>
                         <button type="submit" class="btn btn-primary">保 存</button>
                     </div>
                 </form>
@@ -230,17 +202,7 @@
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('.footable').footable({
-            "empty": "There are no rows",
-            "on":{
-                "expand.ft.row":function(e,ft,row){
-                    console.log(row);
-                },
-                "init.ft.table":function(e,ft){
-                    console.log(111);
-                }
-            }
-        });
+        $('.footable').footable();
 
         $('#search-bar .input-group.date').datepicker({
             todayBtn: "linked",
@@ -330,56 +292,29 @@
         });
     });
 
+    var timer;
+
     var vm = new Vue({
         el: '#wrapper',
         data: {
-            type:0,
+            type: 0,
             list: [],
-            level: [],
-            edit:{}
+            admin: [],
+            sum_amount: 0,
+            total_amount: 0,
+            page_str: '',
+            user: {}
         },
         created: function () {
             init();
         },
         methods: {
-            toggleStatus: function (user_id, status, index) {
-                axios.post('/admin/index/changeTableVal', {
-                    'table': 'users',
-                    'id_name': 'user_id',
-                    'id_value': user_id,
-                    'field': 'is_valid',
-                    'value': status,
-                }).then(function (response) {
-                    if (response){
-                        vm.list[index].is_valid = status;
-                        // vm.list.splice(index,1);
-                    }
-                    else
-                        err('操作失败');
-                }).catch(function (error) {
-                    console.log(error);
-                });
+            getUser: function (event) {
+                clearTimeout(timer);
+                timer = setTimeout("ajax_get_user()", 1000);
             },
-            editUser:function(index){
-                vm.edit=vm.list[index];
-                $('#order-add-modal').modal('show');
-            },
-            delUser:function(user_id,index){
-                axios.post('/admin/index/changeTableVal', {
-                    'table': 'users',
-                    'id_name': 'user_id',
-                    'id_value': user_id,
-                    'field': 'is_delete',
-                    'value': 1,
-                }).then(function (response) {
-                    if (response){
-                        vm.list.splice(index,1);
-                    }
-                    else
-                        err('操作失败');
-                }).catch(function (error) {
-                    console.log(error);
-                });
+            defaultImg: function (index) {
+                vm.list[index].avatar = 'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg';
             }
         },
         updated: function () {
@@ -399,11 +334,28 @@
             url: '/admin/member/recharge',
             success: function (data) {
                 vm.list = data[0];
-                vm.level = data[1];
+                vm.admin = data[1];
+                vm.page_str = data[2];
+                vm.sum_amount = data[3];
+                vm.total_amount = data[4];
             },
             error: function (xhr, type) {
                 err(xhr.responseText);
             }
+        });
+    }
+
+    function ajax_get_user() {
+        axios.post('/admin/member/index', {
+            'nameorphone': vm.user.phone || vm.user.name
+        }).then(function (response) {
+            if (response.data[0][0]) {
+                vm.user = response.data[0][0];
+            } else {
+                layer.open({content: '无会员资料', skin: 'msg', time: 1.5,end:function(){vm.user = {};}});
+            }
+        }).catch(function (error) {
+            layer.open({content: error, skin: 'msg'});
         });
     }
 
