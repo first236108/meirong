@@ -5,6 +5,6 @@ class Index
 {
     public function index()
     {
-        dump(config('database.prefix'));
+        phpinfo();
     }
 }

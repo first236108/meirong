@@ -64,7 +64,7 @@
                                 <input type="text" name="nickname" v-model="list.user.nickname" placeholder="账号" class="form-control">
                             </div>
                             <div class="form-group"><label>密 码</label>
-                                <input type="password" name="password" placeholder="长度6位,默认123456" class="form-control">
+                                <input type="password" name="password" placeholder="长度6位,默认123456" class="form-control" autocomplete="off">
                             </div>
                             <div class="form-group"><label>所属权限<span class="text-danger">*</span></label>
                                 <select name="group_id" class="form-control" v-model="list.user.group_id">
@@ -76,7 +76,7 @@
                                 <input type="text" name="phone" v-model="list.user.phone" placeholder="手机号码" class="form-control">
                             </div>
                             <div class="form-group"><label>邮箱</label>
-                                <input type="text" name="email" v-model="list.user.email" placeholder="手机号码" class="form-control">
+                                <input type="text" name="email" v-model="list.user.email" placeholder="手机号码" class="form-control" autocomplete="off">
                             </div>
                             <input type="hidden" name="id" v-model="list.user.id">
                         </div>
@@ -89,7 +89,7 @@
                                 <input type="text" name="nickname" placeholder="账号" class="form-control">
                             </div>
                             <div class="form-group"><label>密 码</label>
-                                <input type="password" name="password" placeholder="长度6位,默认123456" class="form-control">
+                                <input type="password" name="password" placeholder="长度6位,默认123456" class="form-control" autocomplete="off">
                             </div>
                             <div class="form-group"><label>所属权限<span class="text-danger">*</span></label>
                                 <select name="group_id" class="form-control">
@@ -101,7 +101,7 @@
                                 <input type="text" name="phone" placeholder="手机号码" class="form-control">
                             </div>
                             <div class="form-group"><label>邮箱</label>
-                                <input type="text" name="email" placeholder="手机号码" class="form-control">
+                                <input type="text" name="email" placeholder="手机号码" class="form-control" autocomplete="off">
                             </div>
                             <input type="hidden" name="id">
                         </div>
