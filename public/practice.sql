@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.11, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.12, for Linux (x86_64)
 --
 -- Host: localhost    Database: practice
 -- ------------------------------------------------------
--- Server version	8.0.11
+-- Server version	8.0.12
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -14,6 +14,14 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Current Database: `practice`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `practice` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */;
+
+USE `practice`;
 
 --
 -- Table structure for table `ty_admin`
@@ -147,6 +155,7 @@ CREATE TABLE `ty_config` (
   `value` varchar(128) DEFAULT NULL,
   `type` varchar(32) DEFAULT NULL,
   `sort` int(4) DEFAULT '0',
+  `description` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -157,7 +166,7 @@ CREATE TABLE `ty_config` (
 
 LOCK TABLES `ty_config` WRITE;
 /*!40000 ALTER TABLE `ty_config` DISABLE KEYS */;
-INSERT INTO `ty_config` VALUES ('site_title','天源美容','site_info',0);
+INSERT INTO `ty_config` VALUES ('points_ratio','100','pints',0,'积分比率'),('site_title','天源美容','site_info',0,'网站名称');
 /*!40000 ALTER TABLE `ty_config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,6 +224,8 @@ CREATE TABLE `ty_item` (
   `is_package` tinyint(3) unsigned DEFAULT '0',
   `sort` int(10) unsigned DEFAULT '0',
   `service_count` int(4) DEFAULT '0',
+  `first_letter` char(1) DEFAULT NULL,
+  `unit` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`item_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -225,7 +236,7 @@ CREATE TABLE `ty_item` (
 
 LOCK TABLES `ty_item` WRITE;
 /*!40000 ALTER TABLE `ty_item` DISABLE KEYS */;
-INSERT INTO `ty_item` VALUES (1,1,5,'纹眉','好吧，写描述',NULL,0,0,100.00,180.00,0.00,'\\upload\\category\\20180613\\eba9e6656747be02f0b4b03cb2a42675.png',0,0,0,1,0,0,0,12,0),(2,2,5,'减肥','减肥的描述还有什么好说的呢',NULL,0,1,80.00,160.00,0.00,'\\upload\\category\\20180613\\eba9e6656747be02f0b4b03cb2a42675.png',0,0,0,1,0,0,0,6,0),(3,1,14,'隆鼻','隆鼻是使用硅胶假体增加鼻子形体美感的最好方式',NULL,0,1,350.00,480.00,0.00,'http://oseihxzg8.bkt.clouddn.com/Fm0L1d-qf7A8GzDn3YUajOT4zdok',0,0,0,1,0,0,0,0,0),(4,1,5,'双眼皮','丹凤眼、双眼皮，流波利转顾盼生辉自不必说，天源专业美容医师采用韩国纯进口无痛微创双眼皮医疗美容设备，配合顶级恢复神水为您塑造独一无二的美丽。。','',0,0,800.00,1180.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FpZIazS6fnUkxe_CqP8eZOdo0ktS',0,0,0,0,0,0,0,0,0),(5,1,3,'七牛云存储 | 上传凭证','阿斯顿法斯蒂芬','',0,0,234.00,800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FpZIazS6fnUkxe_CqP8eZOdo0ktS',0,0,0,1,0,0,0,0,0),(6,1,3,'七牛云存储 | 上传凭证','asdfasdf','',0,0,234.00,800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FgcZ2oQS2yOazsqPrjxZjdkyNwq7',0,0,0,0,0,0,0,9,0),(7,1,5,'七牛云存储','sdfasdf','',0,0,350.00,899.00,0.00,'http://oseihxzg8.bkt.clouddn.com/For_fBnP13rPagQDIVZ7Bnyw8LS8',0,0,0,1,0,0,0,12,0),(8,1,3,'七牛云存储 | 上传凭证','asdf','',0,0,350.00,800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FgcZ2oQS2yOazsqPrjxZjdkyNwq7',0,0,0,1,0,0,0,5,0),(9,2,3,'产品详情','阿斯蒂芬asdf','<p>阿斯顿法斯蒂芬44444444444凤飞飞ffffffffffffffffffffffffffffff</p>',0,0,100.00,300.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FlQwL3OhvwRcsCvv7iVTuSctgmAK',0,0,0,1,0,0,0,0,0),(10,1,3,'beer','asasgggg','<p>gadgdafd</p>',0,1,15.00,35.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FpNkeMzRzCCd3-pAWRQieUQjfJk6',0,0,0,1,0,0,0,0,0),(11,2,13,'细嫩肌肤','好吧，写点简介。','<p>asdf</p>',0,0,3600.00,4800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FkwADAwhd9qylfgLZyU0SdceS3gC',0,0,0,1,0,0,0,0,10);
+INSERT INTO `ty_item` VALUES (1,1,5,'纹眉','好吧，写描述',NULL,0,0,100.00,180.20,0.00,'\\upload\\category\\20180613\\eba9e6656747be02f0b4b03cb2a42675.png',0,0,0,1,0,0,0,15,10,'W','次'),(2,2,5,'减肥','减肥的描述还有什么好说的呢',NULL,0,1,80.00,160.05,0.00,'\\upload\\category\\20180613\\eba9e6656747be02f0b4b03cb2a42675.png',0,0,0,1,0,0,0,6,10,'J','次'),(3,1,14,'隆鼻','隆鼻是使用硅胶假体增加鼻子形体美感的最好方式',NULL,0,1,350.00,480.00,0.00,'http://oseihxzg8.bkt.clouddn.com/Fm0L1d-qf7A8GzDn3YUajOT4zdok',0,0,0,1,0,0,0,0,10,'L','次'),(4,1,5,'双眼皮','丹凤眼、双眼皮，流波利转顾盼生辉自不必说，天源专业美容医师采用韩国纯进口无痛微创双眼皮医疗美容设备，配合顶级恢复神水为您塑造独一无二的美丽。。','',0,0,800.00,1180.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FpZIazS6fnUkxe_CqP8eZOdo0ktS',0,0,0,0,0,0,0,0,10,'S','次'),(5,1,3,'阿斯顿法','阿斯顿法斯蒂芬','',0,0,234.00,800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FpZIazS6fnUkxe_CqP8eZOdo0ktS',0,0,0,1,0,0,0,0,10,'Q','次'),(6,1,3,'单眼皮','asdfasdf','',0,0,234.00,800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FgcZ2oQS2yOazsqPrjxZjdkyNwq7',0,0,0,0,0,0,0,9,10,'Q','次'),(7,1,5,'七牛云','sdfasdf','',0,0,350.00,899.00,0.00,'http://oseihxzg8.bkt.clouddn.com/For_fBnP13rPagQDIVZ7Bnyw8LS8',0,0,0,1,0,0,0,12,10,'Q','疗程'),(8,1,3,'勲香','asdf','',0,0,350.00,800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FgcZ2oQS2yOazsqPrjxZjdkyNwq7',0,0,0,1,0,0,0,5,10,'Q','次'),(9,2,3,'产品详情','阿斯蒂芬asdf','<p>阿斯顿法斯蒂芬44444444444凤飞飞ffffffffffffffffffffffffffffff</p>',0,0,100.00,300.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FlQwL3OhvwRcsCvv7iVTuSctgmAK',0,0,0,1,0,0,0,0,10,'C','次'),(10,1,3,'beer','asasgggg','<p>gadgdafd</p>',0,1,15.00,35.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FpNkeMzRzCCd3-pAWRQieUQjfJk6',0,0,0,1,0,0,0,0,10,'B','次'),(11,2,13,'细嫩肌肤','好吧，写点简介。','<p>asdf</p>',0,0,3600.00,4800.00,0.00,'http://oseihxzg8.bkt.clouddn.com/FkwADAwhd9qylfgLZyU0SdceS3gC',0,0,0,1,0,0,0,0,10,'X','次');
 /*!40000 ALTER TABLE `ty_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -308,6 +319,7 @@ CREATE TABLE `ty_order` (
   `order_prom_amount` decimal(10,2) DEFAULT '0.00',
   `points_amount` decimal(10,2) DEFAULT '0.00',
   `coupon_amount` decimal(10,2) DEFAULT '0.00',
+  `manager_reduce` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -318,8 +330,34 @@ CREATE TABLE `ty_order` (
 
 LOCK TABLES `ty_order` WRITE;
 /*!40000 ALTER TABLE `ty_order` DISABLE KEYS */;
-INSERT INTO `ty_order` VALUES (1,2,1,0,7,1500.00,'o201808123301',NULL,NULL,1534073249,1,0,NULL,1500.00,0.00,0.00,0.00);
+INSERT INTO `ty_order` VALUES (1,2,1,0,7,1500.00,'o201808123301',NULL,NULL,1534073249,1,0,NULL,1500.00,0.00,0.00,0.00,0.00);
 /*!40000 ALTER TABLE `ty_order` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ty_order_action`
+--
+
+DROP TABLE IF EXISTS `ty_order_action`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `ty_order_action` (
+  `action_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `order_id` varchar(32) NOT NULL,
+  `operater` varchar(32) NOT NULL,
+  `msg` varchar(64) NOT NULL,
+  `log_time` int(10) DEFAULT NULL,
+  PRIMARY KEY (`action_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ty_order_action`
+--
+
+LOCK TABLES `ty_order_action` WRITE;
+/*!40000 ALTER TABLE `ty_order_action` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ty_order_action` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -416,6 +454,7 @@ CREATE TABLE `ty_users` (
   `last_come` int(10) unsigned DEFAULT NULL,
   `total_recharge` decimal(10,2) DEFAULT '0.00',
   `points` int(10) DEFAULT '0',
+  `money` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -426,7 +465,7 @@ CREATE TABLE `ty_users` (
 
 LOCK TABLES `ty_users` WRITE;
 /*!40000 ALTER TABLE `ty_users` DISABLE KEYS */;
-INSERT INTO `ty_users` VALUES (1,'13007686112','小志',NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,1533491023,1533491023,NULL,NULL,NULL,NULL,1,'金水区景峰国际中心8楼',NULL,0,1,1533491023,0.00,0),(2,'13007686113','柏宇娜','旮旯村QQ',NULL,1,NULL,NULL,NULL,NULL,'',1533591023,1533591023,NULL,NULL,NULL,NULL,1,'杨金路新庄',NULL,0,1,1533591023,1500.00,0),(3,'13007686114','美美','','$2y$10$yGEwd37.J2.kK/yGHHQOK.WjSWBocwGPihOz0wAHW1ggCi4vFKWbu',0,NULL,NULL,NULL,NULL,NULL,1534057530,NULL,NULL,NULL,NULL,NULL,1,'',NULL,0,1,NULL,0.00,0),(4,'13007686115','','宝宝','$2y$10$pRaaJgkL6kclMn9IeqVEpOcDelSdoGy1S0Ha9U/1Ah4HnlYhYq/ea',0,NULL,NULL,NULL,NULL,NULL,1534058613,NULL,NULL,NULL,NULL,NULL,1,'',NULL,0,1,NULL,0.00,0),(5,'13007686116','丁1','丁丁','$2y$10$Yer3x64BEMPixUilWdyLGeWY00x71pMxsbVO4h/gCzJZ2sq75lP0i',1,NULL,NULL,NULL,NULL,NULL,1534059406,NULL,NULL,NULL,NULL,NULL,1,'',NULL,0,0,NULL,0.00,0);
+INSERT INTO `ty_users` VALUES (1,'13007686112','小志',NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,1533491023,1533491023,NULL,NULL,NULL,NULL,1,'金水区景峰国际中心8楼',NULL,0,1,1533491023,0.00,0,0.00),(2,'13007686113','柏宇娜','旮旯村QQ',NULL,1,NULL,NULL,NULL,NULL,'',1533591023,1533591023,NULL,NULL,NULL,NULL,1,'杨金路新庄',NULL,0,1,1533591023,1500.00,0,0.00),(3,'13007686114','美美','','$2y$10$yGEwd37.J2.kK/yGHHQOK.WjSWBocwGPihOz0wAHW1ggCi4vFKWbu',0,NULL,NULL,NULL,NULL,NULL,1534057530,NULL,NULL,NULL,NULL,NULL,1,'',NULL,0,1,NULL,0.00,0,0.00),(4,'13007686115','','宝宝','$2y$10$pRaaJgkL6kclMn9IeqVEpOcDelSdoGy1S0Ha9U/1Ah4HnlYhYq/ea',0,NULL,NULL,NULL,NULL,NULL,1534058613,NULL,NULL,NULL,NULL,NULL,1,'',NULL,0,1,NULL,0.00,0,0.00),(5,'13007686116','丁1','丁丁','$2y$10$Yer3x64BEMPixUilWdyLGeWY00x71pMxsbVO4h/gCzJZ2sq75lP0i',1,NULL,NULL,NULL,NULL,NULL,1534059406,NULL,NULL,NULL,NULL,NULL,1,'',NULL,0,0,NULL,0.00,0,0.00);
 /*!40000 ALTER TABLE `ty_users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -439,4 +478,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-08-13 23:44:12
+-- Dump completed on 2018-09-02  0:01:54

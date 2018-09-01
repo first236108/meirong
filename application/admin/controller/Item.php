@@ -14,7 +14,7 @@ class Item extends Base
 {
     public function Index()
     {
-        $type=input('type',0);
+        $type     = input('type', 0);
         $category = Db::name('item_cate')->column('name', 'cate_id');
         $map      = ['is_delete' => $type];
         $count    = Db::name('item')->where($map)->count();
@@ -59,8 +59,9 @@ class Item extends Base
             if (true !== $result)
                 return json(['succ' => 1, 'msg' => $result]);
 
-            $item           = new \app\admin\model\Item();
-            $data['detail'] = $data['content'];
+            $item                 = new \app\admin\model\Item();
+            $data['detail']       = $data['content'];
+            $data['first_letter'] = getFirstCharter($data['title']);
             if ($id)
                 $flag = $item->allowField(true)->isUpdate(true)->save($data);
             else {
@@ -85,8 +86,8 @@ class Item extends Base
 
             return json(['succ' => !$flag]);
         }
-        $info = Db::name('item')->where('item_id', $id)->find();
-        $info['img']  = Db::name('item_img')->where('item_id', $id)->select();
+        $info        = Db::name('item')->where('item_id', $id)->find();
+        $info['img'] = Db::name('item_img')->where('item_id', $id)->select();
         return json($info);
     }
 
@@ -168,5 +169,12 @@ class Item extends Base
         $id   = input('post.id/d', 0);
         $flag = Db::name('item_cate')->where('cate_id', $id)->delete();
         return ['succ' => !$flag, 'msg' => $flag ? '已删除' : '删除失败'];
+    }
+
+    public function itemListForSeletor()
+    {
+        $map  = ['is_delete' => 0];
+        $list = Db::name('item')->where($map)->column('title,price,market_price,origin_image,first_letter,service_count,unit', 'item_id');
+        return json($list);
     }
 }

@@ -145,8 +145,8 @@ return [
         'AUTH_ON'   => false,
         'AUTH_USER' => 'ty_admin', // 用户信息表
     ],
-    'qiniu_access' => 'kc8sqBgYlO3B9QzuwVrePo5idpz7CKA3bJ60yh8z',
-    'qiniu_secret' => '_sTIspi21IA3Ha1PrnCB7RcHQakGLSDjAWhtJxDE',
-    'qiniu_bucket' => 'slayerhover',
-    'qiniu_cdn'    => 'http://oseihxzg8.bkt.clouddn.com/',
+    'qiniu_access' => 'WqovXMSXJLcnBSYiycDX4LiY3HJ8CsJ-tzF4RmAu',
+    'qiniu_secret' => 'AfBET_M_ujStFrTzXmB7U2dUQBHootAWmdPkGwBp',
+    'qiniu_bucket' => 'tymr',
+    'qiniu_cdn'    => 'http://image.igccc.com/',
 ];

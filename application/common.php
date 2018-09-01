@@ -55,9 +55,10 @@ function checkVerify($value, $code = 'login')
 /**
  * 生成随机字符串
  * @param int $length 长度
+ * @param string $prefix 前缀
  * @return string 随机字符串
  */
-function get_rand_str($length = 8)
+function get_rand_str($length = 8, $prefix = '')
 {
     $str    = null;
     $strPol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
@@ -65,6 +66,7 @@ function get_rand_str($length = 8)
     for ($i = 0; $i < $length; $i++) {
         $str .= $strPol[rand(0, $max)];
     }
+    $prefix && $str = $prefix . substr($str, 1);
     return $str;
 }
 
@@ -145,4 +147,78 @@ function enPwd($pwd, $salt)
         return md5(substr($salt, 0, 4) . $pwd . substr($salt, -4));
     else
         return false;
+}
+
+/**
+ * 获取中文汉字拼音首字母
+ * @param $str
+ * @return null|string
+ */
+function getFirstCharter($str)
+{
+    if (empty($str)) {
+        return '';
+    }
+    $fchar = ord($str{0});
+    if ($fchar >= ord('A') && $fchar <= ord('z')) return strtoupper($str{0});
+    $s1  = iconv('UTF-8', 'gb2312', $str);
+    $s2  = iconv('gb2312', 'UTF-8', $s1);
+    $s   = $s2 == $str ? $s1 : $str;
+    $asc = ord($s{0}) * 256 + ord($s{1}) - 65536;
+    if ($asc >= -20319 && $asc <= -20284) return 'A';
+    if ($asc >= -20283 && $asc <= -19776) return 'B';
+    if ($asc >= -19775 && $asc <= -19219) return 'C';
+    if ($asc >= -19218 && $asc <= -18711) return 'D';
+    if ($asc >= -18710 && $asc <= -18527) return 'E';
+    if ($asc >= -18526 && $asc <= -18240) return 'F';
+    if ($asc >= -18239 && $asc <= -17923) return 'G';
+    if ($asc >= -17922 && $asc <= -17418) return 'H';
+    if ($asc >= -17417 && $asc <= -16475) return 'J';
+    if ($asc >= -16474 && $asc <= -16213) return 'K';
+    if ($asc >= -16212 && $asc <= -15641) return 'L';
+    if ($asc >= -15640 && $asc <= -15166) return 'M';
+    if ($asc >= -15165 && $asc <= -14923) return 'N';
+    if ($asc >= -14922 && $asc <= -14915) return 'O';
+    if ($asc >= -14914 && $asc <= -14631) return 'P';
+    if ($asc >= -14630 && $asc <= -14150) return 'Q';
+    if ($asc >= -14149 && $asc <= -14091) return 'R';
+    if ($asc >= -14090 && $asc <= -13319) return 'S';
+    if ($asc >= -13318 && $asc <= -12839) return 'T';
+    if ($asc >= -12838 && $asc <= -12557) return 'W';
+    if ($asc >= -12556 && $asc <= -11848) return 'X';
+    if ($asc >= -11847 && $asc <= -11056) return 'Y';
+    if ($asc >= -11055 && $asc <= -10247) return 'Z';
+    return null;
+}
+
+/**
+ * 生成唯一订单号
+ * @return string
+ */
+function getNewOrderSn()
+{
+    while (true) {
+        $sn = get_rand_str(16, 'A');
+        if (Db::name('order')->where('order_sn', $sn)->count())
+            continue;
+        break;
+    }
+    return $sn;
+}
+
+/**
+ * 记录订单日志
+ * @param $order_id
+ * @param $operater
+ * @param $msg
+ */
+function write_order_log($order_id, $operater, $msg)
+{
+    $data = [
+        'order_id' => $order_id,
+        'operater' => $operater,
+        'msg'      => $msg,
+        'log_time' => time()
+    ];
+    Db::name('order_action')->insert($data);
 }

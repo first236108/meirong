@@ -24,7 +24,8 @@ class Index extends Base
                 $data['name']  = $key;
                 $data['value'] = $value;
             }
-            Db::name('config')->update($data);
+            Db::name('config')->cache('config')->update($data);
+
         }
         $config = Db::name('config')->column('value', 'name');
         $this->assign('config', $config);

@@ -11,6 +11,7 @@ namespace app\admin\controller;
 use think\Db;
 use app\admin\model\Users;
 use app\admin\model\Orders;
+use think\Exception;
 
 class Member extends Base
 {
@@ -39,7 +40,7 @@ class Member extends Base
         }
 
         try {
-            $list  = Users::where($map)->field('password', true)->order('last_come desc')->select();
+            $list  = Users::where($map)->field('password', true)->order('last_come desc')->find();
             $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
         } catch (\Exception $e) {
             return json($e->getMessage(), 403);
@@ -128,7 +129,86 @@ class Member extends Base
 
     public function addOrder()
     {
-        $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
-        return view();
+        $data     = input('post.');
+        $validate = new \app\admin\validate\Item;
+        if (!$validate->check($data)) {
+            return json($validate->getError(), 401);
+        }
+
+        $items        = input('post.item/a', []);
+        $serice_count = input('post.serice_count/a', []);
+        $give         = input('post.give/a', []);
+        $give_count   = input('post.give_count/a', []);
+
+        if (count($items) == 0 || count($items) != count($serice_count)) {
+            return json('请选择充值项目', 401);
+        }
+        if (count($give) != count($give_count)) {
+            return json('赠送服务项目错误', 401);
+        }
+
+        unset($data['item'], $data['serice_count'], $data['give'], $data['give_count'], $data['phone']);
+        $result = $data['pay_amount'];
+
+        isset($data['use_money']) && $result += floatval($data['use_money']);
+        isset($data['manager_reduce']) && $result += floatval($data['manager_reduce']);
+        if (isset($data['use_points'])) {
+            $ratio                 = Db::name('config')->cache('config')->where('name=points_ratio')->value('value');
+            $data['points_amount'] = intval($data['use_points']) * intval($ratio);
+            $result                += $data['points_amount'];
+        }
+        if ($data['total_amount'] > $result) {
+            return json('订单金额不符', 401);
+        }
+
+        $data['order_sn'] = getNewOrderSn();
+        Db::startTrans();
+        try {
+            $order_id = Db::name('order')->insertGetId($data);
+
+            #充值项目
+            $items_info = Db::name('item')->where('item_id', 'in', $items)->column('item_id,cate_id,cate_id2,title,num,price,market_price,cost,give_integral', 'item_id');
+            $item_data  = [];
+            foreach ($items as $index => $item) {
+                $item_data[] = [
+                    'order_id'      => $order_id,
+                    'item_id'       => $item,
+                    'cate_id'       => $items_info[$item]['cate_id'],
+                    'cate_id2'      => $items_info[$item]['cate_id2'],
+                    'title'         => $items_info[$item]['title'],
+                    'num'           => $serice_count[$item],
+                    'price'         => $items_info[$item]['price'],
+                    'market_price'  => $items_info[$item]['market_price'],
+                    'cost'          => $items_info[$item]['cost'],
+                    'give_integral' => $items_info[$item]['give_integral'],
+                ];
+            }
+
+            #赠送项目
+            if (count($give)) {
+                $items_info = Db::name('item')->where('item_id', 'in', $give)->column('item_id,cate_id,cate_id2,title,num,price,market_price,cost,give_integral', 'item_id');
+                foreach ($give as $idx => $give_item) {
+                    $item_data[] = [
+                        'order_id'      => $order_id,
+                        'item_id'       => $give_item,
+                        'cate_id'       => $items_info[$give_item]['cate_id'],
+                        'cate_id2'      => $items_info[$give_item]['cate_id2'],
+                        'title'         => $items_info[$give_item]['title'],
+                        'num'           => $serice_count[$give_item],
+                        'price'         => $items_info[$give_item]['price'],
+                        'market_price'  => $items_info[$give_item]['market_price'],
+                        'cost'          => $items_info[$give_item]['cost'],
+                        'give_integral' => $items_info[$give_item]['give_integral']
+                    ];
+                }
+            }
+
+            Db::name('order_item')->insertAll($item_data);
+            write_order_log($order_id, session('admin.name') . '-' . session('admin.nickname'), '新增充值订单');
+            return json('ok');
+        } catch (Exception $e) {
+            Db::rollback();
+            return json($e->getMessage(), 404);
+        }
     }
 }
