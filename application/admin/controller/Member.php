@@ -40,7 +40,7 @@ class Member extends Base
         }
 
         try {
-            $list  = Users::where($map)->field('password', true)->order('last_come desc')->find();
+            $list  = Users::where($map)->field('password', true)->order('last_come desc')->select();
             $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
         } catch (\Exception $e) {
             return json($e->getMessage(), 403);
@@ -83,15 +83,17 @@ class Member extends Base
     {
         if (request()->isGet())
             return view();
-        $type        = input('type', 0);
+        $type        = input('type', true);
         $is_valid    = input('status', 1);
         $start_time  = input('start_time', 0);
         $end_time    = input('end_time', 0);
         $nameorphone = input('nameorphone', 0);
         $map         = [
-            ['a.type', '=', $type],
             ['a.status', '=', $is_valid]
         ];
+
+        if ($type !== true)
+            $map[] = ['a.type', '=', $type];
 
         if ($start_time) {
             $map[] = ['a.pay_time', '>', strtotime($start_time)];
@@ -120,7 +122,7 @@ class Member extends Base
                 $sum_amount   = array_sum(array_column($list, 'pay_amount'));
                 $total_amount = Orders::where('order_id', 'in', array_column($list, 'order_id'))->sum('pay_amount');
             }
-            $admin = Db::name('admin')->cache(true)->column('name', 'id');
+            $admin = Db::name('admin')->cache(true)->column('name,nickname', 'id');
         } catch (\Exception $e) {
             return json($e->getMessage(), 403);
         }
@@ -148,12 +150,24 @@ class Member extends Base
         }
 
         unset($data['item'], $data['serice_count'], $data['give'], $data['give_count'], $data['phone']);
-        $result = $data['pay_amount'];
 
-        isset($data['use_money']) && $result += floatval($data['use_money']);
+        $result = $data['pay_amount'];
         isset($data['manager_reduce']) && $result += floatval($data['manager_reduce']);
+
+        #检查余额
+        if (isset($data['use_money'])) {
+            $money = Db::name('users')->where('user_id', $data['user_id'])->value('money');
+            if ($data['use_money'] > $money)
+                return json('会员余额不足', 401);
+            $result += floatval($data['use_money']);
+        }
+
+        #检查积分
         if (isset($data['use_points'])) {
-            $ratio                 = Db::name('config')->cache('config')->where('name=points_ratio')->value('value');
+            $points = Db::name('users')->where('user_id', $data['user_id'])->value('points');
+            if ($data['use_points'] > $points)
+                return json('会员积分不足', 401);
+            $ratio                 = Db::name('config')->cache('config')->where("`name`='points_ratio'")->value('value');
             $data['points_amount'] = intval($data['use_points']) * intval($ratio);
             $result                += $data['points_amount'];
         }
@@ -161,13 +175,35 @@ class Member extends Base
             return json('订单金额不符', 401);
         }
 
-        $data['order_sn'] = getNewOrderSn();
+        #是否包含赠送项目
+        if (count($give))
+            $data['type'] = 1;
+        $data['order_sn']   = getNewOrderSn();
+        $data['confirm_id'] = session('admin.id');
+        $data['status']     = 1;
+        $data['pay_status'] = 1;
+        $data['add_time']   = time();
+        $data['pay_time']   = time();
         Db::startTrans();
         try {
+            #插入订单
             $order_id = Db::name('order')->insertGetId($data);
 
+            #扣除余额
+            if (isset($data['use_money'])) {
+                Db::name('users')->where('user_id', $data['user_id'])->setDec('points', $data['use_money']);
+            }
+            #扣除积分
+            if (isset($data['use_points'])) {
+                Db::name('users')->where('user_id', $data['user_id'])->setDec('points', $data['use_points']);
+            }
+            #如果付款金额大于充值项目，写入用户余额
+            if ($data['total_amount'] < $result) {
+                Db::name('users')->where('user_id', $data['user_id'])->setInc('money', $result - $data['total_amount']);
+            }
+
             #充值项目
-            $items_info = Db::name('item')->where('item_id', 'in', $items)->column('item_id,cate_id,cate_id2,title,num,price,market_price,cost,give_integral', 'item_id');
+            $items_info = Db::name('item')->where('item_id', 'in', $items)->column('item_id,cate_id,cate_id2,title,price,market_price,cost,give_integral', 'item_id');
             $item_data  = [];
             foreach ($items as $index => $item) {
                 $item_data[] = [
@@ -181,12 +217,13 @@ class Member extends Base
                     'market_price'  => $items_info[$item]['market_price'],
                     'cost'          => $items_info[$item]['cost'],
                     'give_integral' => $items_info[$item]['give_integral'],
+                    'is_give'       => 0
                 ];
             }
 
             #赠送项目
             if (count($give)) {
-                $items_info = Db::name('item')->where('item_id', 'in', $give)->column('item_id,cate_id,cate_id2,title,num,price,market_price,cost,give_integral', 'item_id');
+                $items_info = Db::name('item')->where('item_id', 'in', $give)->column('item_id,cate_id,cate_id2,title,price,market_price,cost,give_integral', 'item_id');
                 foreach ($give as $idx => $give_item) {
                     $item_data[] = [
                         'order_id'      => $order_id,
@@ -194,17 +231,20 @@ class Member extends Base
                         'cate_id'       => $items_info[$give_item]['cate_id'],
                         'cate_id2'      => $items_info[$give_item]['cate_id2'],
                         'title'         => $items_info[$give_item]['title'],
-                        'num'           => $serice_count[$give_item],
+                        'num'           => $give_count[$give_item],
                         'price'         => $items_info[$give_item]['price'],
                         'market_price'  => $items_info[$give_item]['market_price'],
                         'cost'          => $items_info[$give_item]['cost'],
-                        'give_integral' => $items_info[$give_item]['give_integral']
+                        'give_integral' => $items_info[$give_item]['give_integral'],
+                        'is_give'       => 1
                     ];
                 }
             }
 
             Db::name('order_item')->insertAll($item_data);
             write_order_log($order_id, session('admin.name') . '-' . session('admin.nickname'), '新增充值订单');
+            Db::name('users')->where('user_id', $data['user_id'])->update(['last_come' => time(), 'total_recharge' => $data['pay_amount']]);
+            Db::commit();
             return json('ok');
         } catch (Exception $e) {
             Db::rollback();
