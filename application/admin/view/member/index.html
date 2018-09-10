@@ -1,6 +1,6 @@
 {include file="public/header" /}
 {include file="public/breadcrumb" /}
-<link href="/static/plugins/footable/footable.core.css" rel="stylesheet">
+<link href="/static/plugins/footable/footable3.bootstrap.min.css" rel="stylesheet">
 <link href="/static/plugins/datapicker/datepicker3.css" rel="stylesheet">
 <link href="/static/plugins/iCheck/custom.css" rel="stylesheet">
 <div class="wrapper wrapper-content animated fadeInRight ecommerce tooltip-demo" style="padding-top:10px">
@@ -56,21 +56,21 @@
             <div class="ibox">
                 <div class="ibox-content">
 
-                    <table class="footable table table-stripped" data-page-size="15">
+                    <table class="footable table table-stripped" data-page-size="15" data-sorting="true">
                         <thead>
                         <tr>
                             <th data-toggle="true" class="first-td">昵称</th>
-                            <th data-hide="phone">电话</th>
+                            <th data-breakpoints="xs">电话</th>
                             <th>累计充值</th>
-                            <th data-hide="phone,tablet">昵称</th>
-                            <th data-hide="phone,tablet">头像</th>
-                            <th data-hide="phone,tablet">会员等级</th>
-                            <th data-hide="phone,tablet">累计充值</th>
-                            <th data-hide="phone,tablet">注册时间</th>
-                            <th data-hide="phone,tablet">最近登陆时间</th>
-                            <th data-hide="phone">上次到店时间</th>
-                            <th data-hide="phone">Status</th>
-                            <th class="text-right" data-hide="phone" data-sort-ignore="true">修改</th>
+                            <th data-breakpoints="all">昵称</th>
+                            <th data-breakpoints="all">头像</th>
+                            <th data-breakpoints="all">会员等级</th>
+                            <th data-breakpoints="all" data-type="number">累计充值</th>
+                            <th data-breakpoints="all">注册时间</th>
+                            <th data-breakpoints="all">最近登陆时间</th>
+                            <th data-breakpoints="xs">上次到店时间</th>
+                            <th data-breakpoints="xs">Status</th>
+                            <th class="text-right" data-breakpoints="xs" data-sort-ignore="true">修改</th>
                             <th class="text-right" data-sort-ignore="true">查看记录</th>
 
                         </tr>
@@ -226,23 +226,13 @@
 
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
-<script src="/static/plugins/footable/footable.all.min.js"></script>
+<script src="/static/plugins/footable/footable.min.js"></script>
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('.footable').footable({
-            "empty": "There are no rows",
-            "on":{
-                "expand.ft.row":function(e,ft,row){
-                    console.log(row);
-                },
-                "init.ft.table":function(e,ft){
-                    console.log(111);
-                }
-            }
-        });
+        $('.footable').footable();
 
         $('#search-bar .input-group.date').datepicker({
             todayBtn: "linked",

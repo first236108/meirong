@@ -115,7 +115,6 @@ class Member extends Base
                 ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
                 ->order('a.add_time desc')
                 ->paginate(20);
-
             $page = $list->render();
             if ($list) {
                 $list         = $list->items();
