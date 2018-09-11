@@ -81,9 +81,13 @@ class Member extends Base
 
     public function recharge()
     {
-        if (request()->isGet())
+        if (request()->isGet()) {
+            $this->assign('user_id', input('user_id', 0));
             return view();
+        }
+
         $type        = input('type', true);
+        $user_id     = input('user_id', 0);
         $is_valid    = input('status', 1);
         $start_time  = input('start_time', 0);
         $end_time    = input('end_time', 0);
@@ -95,6 +99,8 @@ class Member extends Base
         if ($type !== true)
             $map[] = ['a.type', '=', $type];
 
+        if ($user_id)
+            $map['user_id'] = $user_id;
         if ($start_time) {
             $map[] = ['a.pay_time', '>', strtotime($start_time)];
         }
@@ -115,7 +121,7 @@ class Member extends Base
                 ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
                 ->order('a.add_time desc')
                 ->paginate(20);
-            $page = $list->render();
+            $page         = $list->render();
             if ($list) {
                 $list         = $list->items();
                 $sum_amount   = array_sum(array_column($list, 'pay_amount'));
@@ -249,5 +255,10 @@ class Member extends Base
             Db::rollback();
             return json($e->getMessage(), 404);
         }
+    }
+
+    public function consumption()
+    {
+
     }
 }

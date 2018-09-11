@@ -250,7 +250,7 @@
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
 <script src="/static/plugins/moment/moment.min.js"></script>
-<script src="/static/plugins/footable/footable3.js"></script>
+<script src="/static/plugins/footable/footable.min.js"></script>
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
@@ -524,6 +524,7 @@
         $.ajax({
             type: 'POST',
             url: '/admin/member/recharge',
+            data:{user_id:'{$user_id}'},
             success: function (data) {
                 vm.list = data[0];
                 vm.admin = data[1];
