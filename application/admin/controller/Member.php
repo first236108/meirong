@@ -17,8 +17,11 @@ class Member extends Base
 {
     public function Index()
     {
-        if (request()->isGet())
-            return view();
+        return view();
+    }
+
+    public function ajaxIndex()
+    {
         $type        = input('type', 0);
         $is_valid    = input('is_valid', 1);
         $create_time = input('create_time', 0);
@@ -40,12 +43,13 @@ class Member extends Base
         }
 
         try {
-            $list  = Users::where($map)->field('password', true)->order('last_come desc')->select();
+            $list  = Users::where($map)->field('password', true)->order('last_come desc')->paginate(2);
             $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
+            $page  = $list->render();
         } catch (\Exception $e) {
             return json($e->getMessage(), 403);
         }
-        return json([$list, $level]);
+        return json([$list->items(), $level, $page]);
     }
 
     public function addEditMember()
@@ -257,6 +261,9 @@ class Member extends Base
         }
     }
 
+    /**
+     * 消费
+     */
     public function consumption()
     {
 
