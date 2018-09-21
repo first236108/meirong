@@ -17,6 +17,35 @@ class Member extends Base
 {
     public function Index()
     {
+        $type        = input('type', 0);
+        $is_valid    = input('is_valid', 1);
+        $create_time = input('create_time', 0);
+        $last_come   = input('last_come', 0);
+        $nameorphone = input('nameorphone', 0);
+        $map         = [
+            ['is_delete', '=', $type],
+            ['is_valid', '=', $is_valid]
+        ];
+
+        if ($create_time) {
+            $map[] = ['create_time', '>', strtotime($create_time)];
+        }
+        if ($last_come) {
+            $map[] = ['last_come', '>', strtotime($last_come)];
+        }
+        if ($nameorphone) {
+            $map[] = ['name|nickname|phone', 'like', '%' . $nameorphone . '%'];
+        }
+
+        $list  = Users::where($map)->field('password', true)->order('last_come desc')->paginate(20);
+        if ($nameorphone)
+            return json($list->items());
+
+        $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
+        $page  = $list->render();
+        $this->assign('list', $list->items());
+        $this->assign('level', $level);
+        $this->assign('page', $page);
         return view();
     }
 
@@ -84,6 +113,62 @@ class Member extends Base
     }
 
     public function recharge()
+    {
+
+        $this->assign('user_id', input('user_id', 0));
+
+        $type        = input('type', true);
+        $user_id     = input('user_id', 0);
+        $is_valid    = input('status', 1);
+        $start_time  = input('start_time', 0);
+        $end_time    = input('end_time', 0);
+        $nameorphone = input('nameorphone', 0);
+        $map         = [
+            ['a.status', '=', $is_valid]
+        ];
+
+        if ($type !== true)
+            $map[] = ['a.type', '=', $type];
+
+        if ($user_id)
+            $map['user_id'] = $user_id;
+        if ($start_time) {
+            $map[] = ['a.pay_time', '>', strtotime($start_time)];
+        }
+        if ($end_time) {
+            $map[] = ['a.pay_time', '<', strtotime($end_time)];
+        }
+        if ($nameorphone) {
+            $map[] = ['b.name|b.nickname|b.phone|c.level_name', 'like', '%' . $nameorphone . '%'];
+        }
+
+        try {
+            $sum_amount   = 0;
+            $total_amount = 0;
+            $list         = Orders::alias('a')
+                ->join('__USERS__ b', 'a.user_id=b.user_id')
+                ->join('__USER_LEVEL__ c', 'b.level=c.level_id')
+                ->where($map)
+                ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
+                ->order('a.add_time desc')
+                ->select();
+            //$page         = $list->render();
+            dump(is_array($list));
+            dump(array_column($list, 'pay_amount'));exit;
+            if ($list) {
+                //$list         = $list->items();
+                $sum_amount   = array_sum(array_column($list, 'pay_amount'));
+                $total_amount = Orders::where('order_id', 'in', array_column($list, 'order_id'))->sum('pay_amount');
+            }
+            $admin = Db::name('admin')->cache(true)->column('name,nickname', 'id');
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+        }
+        $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'sum_amount' => $sum_amount, 'total_amount' => $total_amount]));
+        return view();
+    }
+
+    public function recharge2()
     {
         if (request()->isGet()) {
             $this->assign('user_id', input('user_id', 0));

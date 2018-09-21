@@ -8,7 +8,7 @@
 
     <div class="ibox-content m-b-sm border-bottom p-m-10">
         <div class="row" id="search-bar">
-            <form id="top-search">
+            <form id="top-search" action="/admin/member/index.html" method="post">
                 <div class="col-sm-2">
                     <div class="form-group">
                         <label class="control-label" for="is_valid">会员状态</label>
@@ -115,7 +115,7 @@
                                     <button class="btn btn-outline btn-success btn-xs btn-xs" type="button" onclick="$('#user-add-modal').modal('show');" data-target="#user-add-modal" data-tip="tooltip" data-placement="right" data-original-title="新增会员"><i class="fa fa-plus"></i></button>
                                 </div>
                                 <span style="clear:both"></span>
-                                <ul class="pagination pull-right" v-html="page"></ul>
+                                <div class="pagination pull-right">{$page|raw}</div>
                             </td>
                         </tr>
                         </tfoot>
@@ -261,24 +261,24 @@
                 last_time: "到店时间 错误",
                 nameorphone: "手机号/名字 长度错误"
             },
-            submitHandler: function (form) {
-                $.ajax({
-                    type: 'POST',
-                    url: '/admin/member/ajaxIndex',
-                    data: $(form).serialize(),
-                    success: function (data) {
-                        layer.open({
-                            content: '数据已更新',
-                            skin: 'msg',
-                            time: 1
-                        });
-                        vm.list = data[0];
-                    },
-                    error: function (xhr, type) {
-                        err(xhr.responseText);
-                    }
-                });
-            }
+//            submitHandler: function (form) {
+//                $.ajax({
+//                    type: 'POST',
+//                    url: '/admin/member/index',
+//                    data: $(form).serialize(),
+//                    success: function (data) {
+//                        layer.open({
+//                            content: '数据已更新',
+//                            skin: 'msg',
+//                            time: 1
+//                        });
+//                        vm.list = data[0];
+//                    },
+//                    error: function (xhr, type) {
+//                        err(xhr.responseText);
+//                    }
+//                });
+//            }
         });
 
         $("#user-add-form").validate({
@@ -328,13 +328,12 @@
         el: '#wrapper',
         data: {
             valid: 1,
-            list: [],
-            level: [],
-            edit: {},
-            page:''
+            list: JSON.parse('{:json_encode($list)}'),
+            level: JSON.parse('{:json_encode($level)}'),
+            edit: {}
         },
         created: function () {
-            init();
+//            init();
         },
         methods: {
             toggleStatus: function (user_id, status, index) {
@@ -391,19 +390,19 @@
         }
     });
 
-    function init() {
-        $.ajax({
-            type: 'get',
-            url: '/admin/member/ajaxIndex',
-            success: function (data) {
-                vm.list = data[0];
-                vm.level = data[1];
-                vm.page = data[2];
-            },
-            error: function (xhr, type) {
-                err(xhr.responseText);
-            }
-        });
-    }
+//    function init() {
+//        $.ajax({
+//            type: 'get',
+//            url: '/admin/member/ajaxIndex',
+//            success: function (data) {
+//                vm.list = data[0];
+//                vm.level = data[1];
+//                vm.page = data[2];
+//            },
+//            error: function (xhr, type) {
+//                err(xhr.responseText);
+//            }
+//        });
+//    }
 </script>
 {include file="public/footer" /}

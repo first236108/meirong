@@ -9,7 +9,7 @@
 
     <div class="ibox-content m-b-sm border-bottom p-m-10">
         <div class="row" id="search-bar">
-            <form id="top-search">
+            <form id="top-search" method="post" action="/admin/member/recharge.html">
                 <div class="col-sm-2">
                     <div class="form-group">
                         <label class="control-label" for="type">订单类型</label>
@@ -30,7 +30,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="form-group">
-                        <label for="end_time">结束时间</label>
+                        <label for="end_time">截止时间</label>
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                             <input type="text" id="end_time" name="end_time" class="form-control">
@@ -58,7 +58,7 @@
             <div class="ibox">
                 <div class="ibox-content">
 
-                    <table class="table footable table-striped footable-1 footable-filtering footable-filtering-right footable-paging footable-paging-right" data-page-size="2" data-sorting="true">
+                    <table class="table footable table-striped footable-1 footable-filtering footable-filtering-right footable-paging footable-paging-right" data-paging="true" data-sorting="true">
                         <thead>
                         <tr>
                             <th data-toggle="true" class="first-td">会员</th>
@@ -76,7 +76,7 @@
                         </thead>
                         <tbody>
                         <tr v-for="(order,index) in list">
-                            <td class="first-td">{{order.name|order.nickname}}</td>
+                            <td class="first-td">{{order.name||order.nickname}}</td>
                             <td>{{order.order_sn}}</td>
                             <td>{{order.order_amount}}</td>
                             <td>{{order.pay_amount}}</td>
@@ -133,14 +133,14 @@
                     <button type="button" class="close" onclick="closeModalComm(this);vm.user={};"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                     <h5 class="modal-title">会员充值</h5>
                 </div>
-                <form id="order-add-form" class="form-horizontal" @submit="onSubmit">
+                <form id="order-add-form" class="form-horizontal" @submit.native.prevent>
                     <div class="modal-body">
                         <input type="hidden" v-model="user.user_id" name="user_id">
                         <div class="form-group"><label class="col-sm-2 control-label">手机号码</label>
-                            <div class="col-sm-10"><input v-model="user.phone" id="phone" type="text" name="phone" class="form-control" v-on:keyup.enter="ajax_get_user()" placeholder="请输入手机号，按下enter键自动搜索"></div>
+                            <div class="col-sm-10"><input v-model="user.phone" id="phone" type="text" name="phone" class="form-control" v-on:keydown.enter.prevent="ajax_get_user()" placeholder="请输入手机号，按下enter键自动搜索"></div>
                         </div>
                         <div class="form-group"><label class="col-sm-2 control-label">姓名</label>
-                            <div class="col-sm-10"><input v-model="user.name" id="name" type="text" class="form-control" v-on:keyup.enter="ajax_get_user()" placeholder="输入姓名或昵称，按下enter键自动搜索"></div>
+                            <div class="col-sm-10"><input v-model="user.name" id="name" type="text" class="form-control" v-on:keydown.enter.prevent="ajax_get_user()" placeholder="输入姓名或昵称，按下enter键自动搜索"></div>
                         </div>
                         <div class="form-group"><label class="col-sm-2 control-label">昵称</label>
                             <div class="col-sm-10"><input v-model="user.nickname" id="nickname" type="text" class="form-control" readonly></div>
@@ -194,7 +194,7 @@
                                         <input type="checkbox" class="js-switch form-control" v-model="use_money"/>
                                     </div>
                                     <div class="col-sm-4 col-xs-6">
-                                        <input type="number" class="form-control " name="use_money" v-if="use_money" v-model="use_money_num">
+                                        <input type="number" class="form-control " name="use_money" v-if="use_money" v-model="use_money_num" min="0">
                                     </div>
                                 </div>
                             </div>
@@ -207,7 +207,7 @@
                                         <input type="checkbox" class="js-switch2 form-control" v-model="use_points"/>
                                     </div>
                                     <div class="col-sm-4 col-xs-6">
-                                        <input type="number" class="form-control " name="use_points" v-if="use_points" v-model="use_points_num">
+                                        <input type="number" class="form-control " name="use_points" v-if="use_points" v-model="use_points_num" min="0">
                                     </div>
                                 </div>
                             </div>
@@ -284,10 +284,10 @@
 
         $("#top-search").validate({
             rules: {
-                create_time: {
+                start_time: {
                     date: true
                 },
-                last_time: {
+                end_time: {
                     date: true
                 },
                 nameorphone: {
@@ -295,28 +295,30 @@
                 }
             },
             messages: {
-                create_time: "注册时间 错误",
-                last_time: "到店时间 错误",
+                create_time: "开始时间 错误",
+                last_time: "截止时间 错误",
                 nameorphone: "手机号/名字 长度错误"
             },
-            submitHandler: function (form) {
-                $.ajax({
-                    type: 'POST',
-                    url: '/admin/member/recharge',
-                    data: $(form).serialize(),
-                    success: function (data) {
-                        layer.open({
-                            content: '数据已更新',
-                            skin: 'msg',
-                            time: 1
-                        });
-                        vm.list = data[0];
-                    },
-                    error: function (xhr, type) {
-                        err(xhr.responseText);
-                    }
-                });
-            }
+//            submitHandler: function (form) {
+//                $.ajax({
+//                    type: 'POST',
+//                    url: '/admin/member/recharge',
+//                    data: $(form).serialize(),
+//                    success: function (data) {
+//                        layer.open({
+//                            content: '数据已更新',
+//                            skin: 'msg',
+//                            time: 1
+//                        });
+//                        vm.list = data[0];
+//                        vm.sum_amount = data[3];
+//                        vm.total_amount = data[4];
+//                    },
+//                    error: function (xhr, type) {
+//                        err(xhr.responseText);
+//                    }
+//                });
+//            }
         });
 
         $("#order-add-form").validate({
@@ -380,7 +382,7 @@
                             skin: 'msg',
                             time: 1,
                             end: function (elem) {
-                                // location.reload();
+                                 location.reload();
                             }
                         });
                     },
@@ -415,15 +417,16 @@
             '</div></div></div>'
     });
 
+    var data=JSON.parse({:json_encode($data)});
     var vm = new Vue({
         el: '#wrapper',
         data: {
             type: 0,
-            list: [],
-            admin: [],
-            sum_amount: 0,
-            total_amount: 0,
-            page_str: '',
+            list: data.list,
+            admin: data.admin,
+            sum_amount: data.sum_amount,
+            total_amount: data.total_amount,
+//            page_str: data.page,
             user: {},
             items: {},
             selected: [],
@@ -438,7 +441,7 @@
             pay_amount:null
         },
         created: function () {
-            init();
+//            init();
         },
         computed: {
             calc_price: function () {
@@ -472,7 +475,7 @@
                 timer = setTimeout("ajax_get_user()", 1000);
             },
             defaultImg: function (index) {
-                vm.list[index].avatar = 'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg';
+                this.list[index].avatar = 'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg';
             },
             afterSelectItem: function (e) {
                 if (e.target.value == 0)
@@ -520,23 +523,23 @@
         }
     });
 
-    function init() {
-        $.ajax({
-            type: 'POST',
-            url: '/admin/member/recharge',
-            data:{user_id:'{$user_id}'},
-            success: function (data) {
-                vm.list = data[0];
-                vm.admin = data[1];
-                vm.page_str = data[2];
-                vm.sum_amount = data[3];
-                vm.total_amount = data[4];
-            },
-            error: function (xhr, type) {
-                err(xhr.responseText);
-            }
-        });
-    }
+//    function init() {
+//        $.ajax({
+//            type: 'POST',
+//            url: '/admin/member/recharge',
+//            data:{user_id:'{$user_id}'},
+//            success: function (data) {
+//                vm.list = data[0];
+//                vm.admin = data[1];
+//                vm.page_str = data[2];
+//                vm.sum_amount = data[3];
+//                vm.total_amount = data[4];
+//            },
+//            error: function (xhr, type) {
+//                err(xhr.responseText);
+//            }
+//        });
+//    }
 
     function ajax_get_user() {
         if (!vm.user.phone && !vm.user.name)
