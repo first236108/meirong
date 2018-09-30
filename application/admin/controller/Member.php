@@ -152,13 +152,9 @@ class Member extends Base
                 ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
                 ->order('a.add_time desc')
                 ->select();
-            //$page         = $list->render();
-            dump(is_array($list));
-            dump(array_column($list, 'pay_amount'));exit;
             if ($list) {
-                //$list         = $list->items();
-                $sum_amount   = array_sum(array_column($list, 'pay_amount'));
-                $total_amount = Orders::where('order_id', 'in', array_column($list, 'order_id'))->sum('pay_amount');
+                $sum_amount   = array_sum(array_column($list->toArray(), 'pay_amount'));
+                $total_amount = Orders::where('order_id', 'in', array_column($list->toArray(), 'order_id'))->sum('pay_amount');
             }
             $admin = Db::name('admin')->cache(true)->column('name,nickname', 'id');
         } catch (\Exception $e) {
