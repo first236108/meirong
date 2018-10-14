@@ -67,8 +67,6 @@
                             <th data-type="number">订单金额</th>
                             <th data-breakpoints="xs">跟单</th>
                             <th data-breakpoints="all">头像</th>
-                            <th data-breakpoints="all">会员等级</th>
-                            <th data-breakpoints="all">累计充值</th>
                             <th data-type="date" data-format-string="YYYY-MM-DD HH:mm:ss" data-sorted="true" data-direction="DESC">支付时间</th>
                             <th data-breakpoints="all">下单时间</th>
                             <th data-breakpoints="xs" data-sortable="false">状态</th>
@@ -84,8 +82,6 @@
                             <td>
                                 <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle">
                             </td>
-                            <td>{{order.level_name}}</td>
-                            <td><span class="text-success">{{order.total_recharge}}</span></td>
                             <td>{{order.pay_time}}</td>
                             <td>{{order.add_time}}</td>
                             <td>{{order.status}}</td>
@@ -250,7 +246,7 @@
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
 <script src="/static/plugins/moment/moment.min.js"></script>
-<script src="/static/plugins/footable/footable3.js"></script>
+<script src="/static/plugins/footable/footable.min.js"></script>
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>

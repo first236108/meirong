@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script>
+    $.ajax({
+        type: 'POST',
+        url: '/',
+        success: function (data) {
+            console.log(data);
+        },
+        error: function (xhr, type) {
+            console.log(xhr.responseText);
+        }
+    });
+</script>
+</body>
+</html>
