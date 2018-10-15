@@ -37,15 +37,14 @@ class Member extends Base
             $map[] = ['name|nickname|phone', 'like', '%' . $nameorphone . '%'];
         }
 
-        $list  = Users::where($map)->field('password', true)->order('last_come desc')->paginate(20);
-        if ($nameorphone)
-            return json($list->items());
-
+        $list = Users::where($map)->field('password', true)->select();
+        if (input('json', 0)) {
+            return json($list);
+        }
         $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
-        $page  = $list->render();
-        $this->assign('list', $list->items());
+        $this->assign('list', $list);
+        $this->assign('is_valid', $is_valid);
         $this->assign('level', $level);
-        $this->assign('page', $page);
         return view();
     }
 
@@ -114,24 +113,26 @@ class Member extends Base
 
     public function recharge()
     {
-
-        $this->assign('user_id', input('user_id', 0));
-
-        $type        = input('type', true);
+        $type        = input('type', false);
         $user_id     = input('user_id', 0);
         $is_valid    = input('status', 1);
         $start_time  = input('start_time', 0);
         $end_time    = input('end_time', 0);
         $nameorphone = input('nameorphone', 0);
-        $map         = [
-            ['a.status', '=', $is_valid]
-        ];
 
-        if ($type !== true)
+        $this->assign('user_id', $user_id);
+
+        $map[] = ['a.status', '=', $is_valid];
+
+        if ($type === false || $type == 'false') {
+            $type  = 'false';
+            $map[] = ['a.type', 'IN', '(0,1)'];
+        } else {
             $map[] = ['a.type', '=', $type];
+        }
 
         if ($user_id)
-            $map['user_id'] = $user_id;
+            $map[] = ['b.user_id', '=', $user_id];
         if ($start_time) {
             $map[] = ['a.pay_time', '>', strtotime($start_time)];
         }
@@ -141,82 +142,26 @@ class Member extends Base
         if ($nameorphone) {
             $map[] = ['b.name|b.nickname|b.phone|c.level_name', 'like', '%' . $nameorphone . '%'];
         }
-
         try {
-            $sum_amount   = 0;
             $total_amount = 0;
             $list         = Orders::alias('a')
-                ->join('__USERS__ b', 'a.user_id=b.user_id')
-                ->join('__USER_LEVEL__ c', 'b.level=c.level_id')
+                ->join('users b', 'a.user_id=b.user_id')
+                ->join('user_level c', 'b.level=c.level_id')
                 ->where($map)
                 ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
                 ->order('a.add_time desc')
                 ->select();
             if ($list) {
-                $sum_amount   = array_sum(array_column($list->toArray(), 'pay_amount'));
                 $total_amount = Orders::where('order_id', 'in', array_column($list->toArray(), 'order_id'))->sum('pay_amount');
+                $order        = $this->order_detail($list[0]['order_id']);
             }
+
             $admin = Db::name('admin')->cache(true)->column('name,nickname', 'id');
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
-        $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'sum_amount' => $sum_amount, 'total_amount' => $total_amount]));
+        $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'confirm_id' => session('admin.id'), 'total_amount' => $total_amount, 'type' => $type, 'order' => $order->getData()]));
         return view();
-    }
-
-    public function recharge2()
-    {
-        if (request()->isGet()) {
-            $this->assign('user_id', input('user_id', 0));
-            return view();
-        }
-
-        $type        = input('type', true);
-        $user_id     = input('user_id', 0);
-        $is_valid    = input('status', 1);
-        $start_time  = input('start_time', 0);
-        $end_time    = input('end_time', 0);
-        $nameorphone = input('nameorphone', 0);
-        $map         = [
-            ['a.status', '=', $is_valid]
-        ];
-
-        if ($type !== true)
-            $map[] = ['a.type', '=', $type];
-
-        if ($user_id)
-            $map['user_id'] = $user_id;
-        if ($start_time) {
-            $map[] = ['a.pay_time', '>', strtotime($start_time)];
-        }
-        if ($end_time) {
-            $map[] = ['a.pay_time', '<', strtotime($end_time)];
-        }
-        if ($nameorphone) {
-            $map[] = ['b.name|b.nickname|b.phone|c.level_name', 'like', '%' . $nameorphone . '%'];
-        }
-
-        try {
-            $sum_amount   = 0;
-            $total_amount = 0;
-            $list         = Orders::alias('a')
-                ->join('__USERS__ b', 'a.user_id=b.user_id')
-                ->join('__USER_LEVEL__ c', 'b.level=c.level_id')
-                ->where($map)
-                ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
-                ->order('a.add_time desc')
-                ->paginate(20);
-            $page         = $list->render();
-            if ($list) {
-                $list         = $list->items();
-                $sum_amount   = array_sum(array_column($list, 'pay_amount'));
-                $total_amount = Orders::where('order_id', 'in', array_column($list, 'order_id'))->sum('pay_amount');
-            }
-            $admin = Db::name('admin')->cache(true)->column('name,nickname', 'id');
-        } catch (\Exception $e) {
-            return json($e->getMessage(), 403);
-        }
-        return json([$list, $admin, $page, $sum_amount, $total_amount]);
     }
 
     public function addOrder()
@@ -232,9 +177,10 @@ class Member extends Base
         $give         = input('post.give/a', []);
         $give_count   = input('post.give_count/a', []);
 
-        if (count($items) == 0 || count($items) != count($serice_count)) {
-            return json('请选择充值项目', 401);
-        }
+        //FIXME 注释掉，支持充值余额
+        //if (count($items) == 0 || count($items) != count($serice_count)) {
+        //    return json('请选择充值项目', 401);
+        //}
         if (count($give) != count($give_count)) {
             return json('赠送服务项目错误', 401);
         }
@@ -268,8 +214,8 @@ class Member extends Base
         #是否包含赠送项目
         if (count($give))
             $data['type'] = 1;
-        $data['order_sn']   = getNewOrderSn();
-        $data['confirm_id'] = session('admin.id');
+        $data['order_sn'] = getNewOrderSn();
+        //$data['confirm_id'] = session('admin.id');
         $data['status']     = 1;
         $data['pay_status'] = 1;
         $data['add_time']   = time();
@@ -303,6 +249,7 @@ class Member extends Base
                     'cate_id2'      => $items_info[$item]['cate_id2'],
                     'title'         => $items_info[$item]['title'],
                     'num'           => $serice_count[$item],
+                    'dec_num'       => $serice_count[$item],
                     'price'         => $items_info[$item]['price'],
                     'market_price'  => $items_info[$item]['market_price'],
                     'cost'          => $items_info[$item]['cost'],
@@ -322,6 +269,7 @@ class Member extends Base
                         'cate_id2'      => $items_info[$give_item]['cate_id2'],
                         'title'         => $items_info[$give_item]['title'],
                         'num'           => $give_count[$give_item],
+                        'dec_num'       => $give_count[$give_item],
                         'price'         => $items_info[$give_item]['price'],
                         'market_price'  => $items_info[$give_item]['market_price'],
                         'cost'          => $items_info[$give_item]['cost'],
@@ -330,8 +278,9 @@ class Member extends Base
                     ];
                 }
             }
+            if ($item_data)
+                Db::name('order_item')->insertAll($item_data);
 
-            Db::name('order_item')->insertAll($item_data);
             write_order_log($order_id, session('admin.name') . '-' . session('admin.nickname'), '新增充值订单');
             Db::name('users')->where('user_id', $data['user_id'])->update(['last_come' => time(), 'total_recharge' => $data['pay_amount']]);
             Db::commit();
@@ -340,6 +289,21 @@ class Member extends Base
             Db::rollback();
             return json($e->getMessage(), 404);
         }
+    }
+
+    public function order_detail($order_id = false)
+    {
+        if ($order_id === false)
+            $order_id = input('order_id', 0);
+        if ($order_id < 1)
+            return json('请求参数错误', 404);
+        $order      = Db::name('order')->where('order_id', $order_id)->withAttr('pay_time', function ($value, $data) {
+            return date('Y-m-d H:i:s', $value);
+        })->find();
+        $order_item = Db::name('order_item')->where('order_id', $order_id)->select();
+        if ($order_id === false)
+            return ['order' => $order, 'order_item' => $order_item];
+        return json(['order' => $order, 'order_item' => $order_item]);
     }
 
     /**

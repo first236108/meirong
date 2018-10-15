@@ -1,6 +1,6 @@
 {include file="public/header" /}
 {include file="public/breadcrumb" /}
-<link href="/static/plugins/footable/footable3.bootstrap.min.css" rel="stylesheet">
+<link href="/static/plugins/dataTables/datatables.min.css" rel="stylesheet">
 <link href="/static/plugins/datapicker/datepicker3.css" rel="stylesheet">
 <link href="/static/plugins/iCheck/custom.css" rel="stylesheet">
 <link href="/static/plugins/switchery/switchery.css" rel="stylesheet">
@@ -14,8 +14,9 @@
                     <div class="form-group">
                         <label class="control-label" for="type">订单类型</label>
                         <select name="type" id="type" v-model="type" class="form-control">
-                            <option value="0">正常</option>
-                            <option value="1">赠送</option>
+                            <option value="false">所有订单</option>
+                            <option value="1">包含赠送</option>
+                            <option value="0">不含赠送</option>
                         </select>
                     </div>
                 </div>
@@ -57,66 +58,54 @@
         <div class="col-lg-12">
             <div class="ibox">
                 <div class="ibox-content">
-
-                    <table class="table footable table-striped footable-1 footable-filtering footable-filtering-right footable-paging footable-paging-right" data-paging="true" data-sorting="true">
-                        <thead>
-                        <tr>
-                            <th data-toggle="true" class="first-td">会员</th>
-                            <th data-breakpoints="all">订单编号</th>
-                            <th data-breakpoints="xs" data-type="number">付款金额</th>
-                            <th data-type="number">订单金额</th>
-                            <th data-breakpoints="xs">跟单</th>
-                            <th data-breakpoints="all">头像</th>
-                            <th data-type="date" data-format-string="YYYY-MM-DD HH:mm:ss" data-sorted="true" data-direction="DESC">支付时间</th>
-                            <th data-breakpoints="all">下单时间</th>
-                            <th data-breakpoints="xs" data-sortable="false">状态</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="(order,index) in list">
-                            <td class="first-td">{{order.name||order.nickname}}</td>
-                            <td>{{order.order_sn}}</td>
-                            <td>{{order.order_amount}}</td>
-                            <td>{{order.pay_amount}}</td>
-                            <td><span class="text-danger">{{admin[order.confirm_id]['nickname'] || admin[order.confirm_id]['name']}}</span></td>
-                            <td>
-                                <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle">
-                            </td>
-                            <td>{{order.pay_time}}</td>
-                            <td>{{order.add_time}}</td>
-                            <td>{{order.status}}</td>
-                        </tr>
-                        </tbody>
-                        <tfoot>
-                        <tr class="text-success">
-                            <td></td>
-                            <td>小计:</td>
-                            <td>{{sum_amount}}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="text-danger">
-                            <td></td>
-                            <td>总计:</td>
-                            <td>{{total_amount}}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="6">
-                                <div class="pull-left" id="member-add">
-                                    <button class="btn btn-outline btn-primary btn-xs btn-xs" type="button" onclick="$('#order-add-modal').modal('show');getItems();" data-target="#order-add-modal" data-tip="tooltip" data-placement="right" data-original-title="新增订单"><i class="fa fa-plus"></i></button>
-                                </div>
-                                <span style="clear:both"></span>
-                                <!--<div v-html="page_str" class="pagination pull-right"></div>-->
-                                <ul class="pagination pull-right"></ul>
-                            </td>
-                        </tr>
-                        </tfoot>
-                    </table>
-
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover" id="rechargetable">
+                            <thead>
+                            <tr>
+                                <th>会员</th>
+                                <th>订单编号</th>
+                                <th>付款金额</th>
+                                <th>订单金额</th>
+                                <th>跟单</th>
+                                <th>头像</th>
+                                <th>支付时间</th>
+                                <th>下单时间</th>
+                                <th>状态</th>
+                                <th>订单详情</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(order,index) in list">
+                                <td class="first-td">{{order.name||order.nickname}}</td>
+                                <td>{{order.order_sn}}</td>
+                                <td>{{order.order_amount}}</td>
+                                <td>{{order.pay_amount}}</td>
+                                <td><span class="text-danger">{{admin[order.confirm_id]['nickname'] || admin[order.confirm_id]['name']}}</span></td>
+                                <td>
+                                    <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle chat-avatar">
+                                </td>
+                                <td>{{order.pay_time}}</td>
+                                <td>{{order.add_time}}</td>
+                                <td>{{order.status}}</td>
+                                <td class="text-center"><button class="btn btn-xs btn-outline btn-primary" @click="viewOrder(order.order_id)">查看</button></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr class="text-danger">
+                                <td></td>
+                                <td>总计:</td>
+                                <td>{{total_amount}}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -136,7 +125,7 @@
                             <div class="col-sm-10"><input v-model="user.phone" id="phone" type="text" name="phone" class="form-control" v-on:keydown.enter.prevent="ajax_get_user()" placeholder="请输入手机号，按下enter键自动搜索"></div>
                         </div>
                         <div class="form-group"><label class="col-sm-2 control-label">姓名</label>
-                            <div class="col-sm-10"><input v-model="user.name" id="name" type="text" class="form-control" v-on:keydown.enter.prevent="ajax_get_user()" placeholder="输入姓名或昵称，按下enter键自动搜索"></div>
+                            <div class="col-sm-10"><input v-model="user.name" id="name" type="text" class="form-control" v-on:keydown.enter.prevent="ajax_get_user(true)" placeholder="输入姓名或昵称，按下enter键自动搜索"></div>
                         </div>
                         <div class="form-group"><label class="col-sm-2 control-label">昵称</label>
                             <div class="col-sm-10"><input v-model="user.nickname" id="nickname" type="text" class="form-control" readonly></div>
@@ -151,7 +140,14 @@
                             <div class="col-sm-10"><input type="text" v-model="user.address" class="form-control" readonly></div>
                         </div>
                         <div class="hr-line-dashed"></div>
-
+                        <div class="form-group"><label class="col-sm-2 control-label">跟单</label>
+                            <div class="col-sm-10">
+                                <select class="form-control m-b" name="confirm_id" v-model="confirm_id" :arrt="confirm_id">
+                                    <option v-for="(item,key) in admin" :value="item.id">{{item.name || item.nickname}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
                         <div class="form-group"><label class="col-sm-2 control-label">选择服务</label>
                             <div class="col-sm-10">
                                 <select class="form-control m-b" @change="afterSelectItem($event)">
@@ -241,12 +237,62 @@
             </div>
         </div>
     </div>
+    <div class="modal inmodal fade" id="order-detail" tabindex="-2" role="dialog"  aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">订单详情</h4>
+                    <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>
+                </div>
+                <div class="modal-body">
+                    <div class="ibox-content">
+                        <div class="row">
+                            <dl class="dl-horizontal">
+                                <dt>订单编号</dt>
+                                <dd>{{order_detail.order.order_sn}}</dd>
+                                <dt>支付时间</dt>
+                                <dd>{{order_detail.order.pay_time}}</dd>
+                                <dt>服务项目合计金额</dt>
+                                <dd>￥ {{order_detail.order.order_amount}}</dd>
+                                <dt v-if="order_detail.order.order_prom_amount>0">订单活动减免</dt>
+                                <dt v-if="order_detail.order.order_prom_amount>0">￥ {{order_detail.order.order_prom_amount}}</dt>
+                                <dt v-if="order_detail.order.manger_reduce>0">商家优惠金额</dt>
+                                <dt v-if="order_detail.order.manger_reduce>0">￥ {{order_detail.order.manger_reduce}}</dt>
+                                <dt v-if="order_detail.order.coupou_amount>0">优惠券抵扣</dt>
+                                <dt v-if="order_detail.order.coupon_amount>0">￥ {{order_detail.order.coupon_amount}}</dt>
+                                <dt v-if="order_detail.order.points_amount>0">积分抵扣</dt>
+                                <dt v-if="order_detail.order.points_amount>0">￥ {{order_detail.order.points_amount}}</dt>
+                                <dt>实付金额</dt>
+                                <dd class="text-danger">￥ {{order_detail.order.pay_amount}}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <ul class="sortable-list connectList agile-list" id="completed">
+                            <li :class="[item.dec_num>0?'info-element':'success-element']" v-for="(item,index) in order_detail.order_item">
+                                {{item.title}}
+                                <div class="agile-detail">
+                                    <a onclick="javascript:;" class="pull-right btn btn-xs btn-white" v-if="item.dec_num==0">已全部消费</a>
+                                    <i class="fa fa-battery"></i>&nbsp;<span class="text-success">服务次数：{{item.num}}</span><br />
+                                    <i :class="['fa','fa-battery-'+Math.round(item.dec_num/item.num*4)]"></i>&nbsp;<span class="text-danger">剩余次数：{{item.dec_num}}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/js/axios.min.js"></script>
-<script src="/static/plugins/moment/moment.min.js"></script>
-<script src="/static/plugins/footable/footable.min.js"></script>
+<script src="/static/plugins/dataTables/datatables.min.js"></script>
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
@@ -257,7 +303,44 @@
 <script>
     var l;
     $(document).ready(function () {
-        $('.footable').footable();
+        $('#rechargetable').DataTable({
+            pageLength: 10,
+            responsive: true,
+            order:[[6,'desc']],
+            bInfo:true,//不显示分页信息
+            aoColumnDefs: [
+                {"orderable":false,"aTargets":[1,8]}// 制定列不参与排序
+            ],
+            language: {
+                "info": "当前显示第 _START_ 至 _END_ 条, 共 _TOTAL_ 条记录",
+                "lengthMenu":"每页显示 _MENU_ 条",
+                "search":"搜索订单"
+            },
+            dom: '<"html5buttons"B>lTfgtip',
+            buttons: [
+                {extend: 'copy'},
+                {extend: 'excel', title: 'ExampleFile'},
+                {
+                    extend: 'print',
+                    customize: function (win) {
+                        $(win.document.body).addClass('white-bg');
+                        $(win.document.body).css('font-size', '10px');
+
+                        $(win.document.body).find('table')
+                            .addClass('compact')
+                            .css('font-size', 'inherit');
+                    }
+                },
+                {
+                    sExtends: 'add',
+                    text:'充值',
+                    action: function ( e, dt, node, config ){
+                        $('#order-add-modal').modal('show');
+                        getItems();
+                    }
+                }
+            ]
+        });
 
         l=$('.ladda-button').ladda();
 
@@ -361,7 +444,7 @@
                     layer.open({content: '手机号码格式错误', skin: 'msg', time: 1.5});
                     return false;
                 }
-                
+
                 if (vm.pay_amount < vm.order_amount){
                     layer.open({content: '付款金额不足，请确认', skin: 'msg', time: 1.5});
                     return false;
@@ -417,12 +500,11 @@
     var vm = new Vue({
         el: '#wrapper',
         data: {
-            type: 0,
+            type: data.type,
             list: data.list,
             admin: data.admin,
-            sum_amount: data.sum_amount,
             total_amount: data.total_amount,
-//            page_str: data.page,
+            confirm_id:data.confirm_id,
             user: {},
             items: {},
             selected: [],
@@ -434,10 +516,8 @@
             manager_reduce: false,
             manager_reduce_num: 0,
             points_ratio: 1,
-            pay_amount:null
-        },
-        created: function () {
-//            init();
+            pay_amount:null,
+            order_detail:data.order
         },
         computed: {
             calc_price: function () {
@@ -509,8 +589,6 @@
             }
         },
         updated: function () {
-            if (vm.list.length)
-                $('.footable').trigger('footable_initialize');
 
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
@@ -519,29 +597,15 @@
         }
     });
 
-//    function init() {
-//        $.ajax({
-//            type: 'POST',
-//            url: '/admin/member/recharge',
-//            data:{user_id:'{$user_id}'},
-//            success: function (data) {
-//                vm.list = data[0];
-//                vm.admin = data[1];
-//                vm.page_str = data[2];
-//                vm.sum_amount = data[3];
-//                vm.total_amount = data[4];
-//            },
-//            error: function (xhr, type) {
-//                err(xhr.responseText);
-//            }
-//        });
-//    }
-
-    function ajax_get_user() {
+    function ajax_get_user(name) {
+        var words=vm.user.phone;
+        if (name)
+            words=vm.user.name
         if (!vm.user.phone && !vm.user.name)
             return;
         axios.post('/admin/member/index', {
-            'nameorphone': vm.user.phone || vm.user.name
+            'nameorphone': words,
+            'json':true
         }).then(function (response) {
             if (response.data[0]) {
                 vm.user = response.data[0];
@@ -564,6 +628,15 @@
         axios.post('/admin/item/itemListForSeletor').then(function (res) {
             vm.items = res.data;
         }).catch(function (error) {
+            err(error.response.data);
+        });
+    }
+
+    function viewOrder(id,init){
+        axios.post('/admin/member/order_detail',{order_id:id}).then(function(res){
+            vm.order_detail=res.data;
+            $("#order-detail").modal('show');
+        }).catch(function(error){
             err(error.response.data);
         });
     }

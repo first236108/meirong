@@ -198,7 +198,8 @@ function getFirstCharter($str)
 function getNewOrderSn()
 {
     while (true) {
-        $sn = get_rand_str(16, 'A');
+        list($usec, $sec) = explode(" ", microtime());
+        $sn = date('Ymd') . substr($sec, 5) . 1000 * $usec . mt_rand(1000, 9999);
         if (Db::name('order')->where('order_sn', $sn)->count())
             continue;
         break;

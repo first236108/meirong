@@ -191,3 +191,6 @@ textarea.form-control {
 .product-imitation{
     margin:0 auto;
 }
+.dt-buttons a:last-child{
+    color: #1ab394 !important;
+}
