@@ -311,6 +311,12 @@ class Member extends Base
      */
     public function consumption()
     {
+        $user_id     = input('user_id', 0);
 
+        //$map=[''];
+        if ($user_id)
+            $map[] = ['b.user_id', '=', $user_id];
+
+        return view();
     }
 }

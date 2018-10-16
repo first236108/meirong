@@ -5,3 +5,4 @@
 thinkphp
 .env
 /practice.sql
+config/database.php
