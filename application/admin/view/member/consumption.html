@@ -145,14 +145,15 @@
 <script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
 <script>
     var l;
+    var fields = [];
     $(document).ready(function () {
-        l=$('#table').DataTable({
-            serverSide:true,//服务器模式
+        l = $('#table').DataTable({
+            serverSide: true,//服务器模式
             pageLength: 10,
             responsive: true,
-            processing:true,
-            searchDelay:500,//自动搜索延迟
-            order: [[6, 'desc']],
+            processing: true,
+            searchDelay: 500,//自动搜索延迟
+            order: [[4, 'desc']],
             bInfo: true,//不显示分页信息
             aoColumnDefs: [
                 {"orderable": false, "aTargets": [1, 8]}// 制定列不参与排序
@@ -167,6 +168,12 @@
                 "oAria": {
                     "sSortAscending": ": 升序排列",
                     "sSortDescending": ": 降序排列"
+                },
+                "oPaginate": {
+                    "sFirst": "第一页",
+                    "sPrevious": "上一页",
+                    "sNext": "下一页",
+                    "sLast": "最后一页"
                 }
             },
             dom: '<"html5buttons"B>lTfgtip',
@@ -193,20 +200,27 @@
                     }
                 }
             ],
-            ajax:'/admin/member/consumption',
+            // ajax:'/admin/member/consumption',
             ajax: function (data, callback, settings) {
                 var param = {};
+                if (fields.length == 0) {
+                    data.columns.forEach(function (value, index) {
+                        fields[index] = value['data'];
+                    });
+                }
                 param.limit = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
                 param.start = data.start;//开始的记录序号
-                param.page = (data.start / data.length)+1;//当前页码
-                param.order = data.columns[data.order[0].column].data;//当前页码
-                param.sort = data.order[0].dir;//当前页码
+                param.page = (data.start / data.length) + 1;//当前页码
+                param.fields = fields;
+                param.order = data.order;
+                // param.order = data.columns[data.order[0].column].data;//当前页码
+                // param.sort = data.order[0].dir;//当前页码
                 param.search = data.search.value;//当前页码
 
                 console.log(param);
 
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: "/admin/member/consumption",
                     cache: false,  //禁用缓存
                     data: param,  //传入组装的参数
@@ -214,7 +228,7 @@
                     success: function (result) {
                         console.log(result);
                         //封装返回数据
-                        setTimeout(function(){
+                        setTimeout(function () {
                             var returnData = {};
                             returnData.draw = data.draw;//这里直接自行返回了draw计数器,应该由后台返回
                             returnData.recordsTotal = result.data.length;//返回数据全部记录
@@ -224,9 +238,9 @@
                             //调用DataTables提供的callback方法，代表数据已封装完成并传回DataTables进行渲染
                             //此时的数据需确保正确无误，异常判断应在执行此回调前自行处理完毕
                             callback(returnData);
-                        },500);
+                        }, 50);
                     },
-                    error:function(xhr,type){
+                    error: function (xhr, type) {
                         console.log(xhr);
                         console.log(type);
                     }
@@ -234,7 +248,12 @@
             },
             columns: [
                 {"data": "nickname"},
-                {"data": "avatar"},
+                {
+                    "data": "avatar",
+                    "render":function(data,type,row,meta){
+                        return data='<img class="img-circle chat-avatar" src="'+data+'">';
+                    }
+                },
                 {"data": "phone"},
                 {"data": "title"},
                 {"data": "add_time"},

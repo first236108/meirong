@@ -312,8 +312,17 @@ class Member extends Base
     public function consumption()
     {
         $user_id = input('user_id', 0);
-        $field   = input('add_time', 'a.add_time');
-        $sort    = input('sort', 'desc');
+        if ($this->request->isGet()) {
+            $this->assign('user_id', $user_id);
+            return view();
+        }
+
+        $field  = input('order/a', ['column' => 4, 'dir' => 'desc']);
+        $fields = input('fields/a', []);
+        $sort   = [];
+        foreach ($field as $index => $item) {
+            $sort[$fields[$item['column']]] = $item['dir'];
+        }
 
         $p     = input('page', 1);
         $limit = input('limit', 10);
@@ -321,43 +330,51 @@ class Member extends Base
         if ($user_id)
             $map[] = ['b.user_id', '=', $user_id];
 
-        $result = Db::name('consumption a')
+        $count      = Db::name('consumption a')
             ->join('users b', 'a.user_id=b.user_id')
             ->join('order_item c', 'a.item_id=c.id')
             ->where($map)
+            ->count();
+        $result     = Db::name('consumption a')
+            ->join('users b', 'a.user_id=b.user_id')
+            ->join('order_item c', 'a.item_id=c.id')
+            ->join('admin d', 'a.confirm_id=d.id', 'LEFT')
+            ->where($map)
+            ->field('IF(b.nickname <> "" AND b.nickname IS NOT null,b.nickname,b.name) as nickname,b.avatar,b.sex,b.phone,c.title,FROM_UNIXTIME(a.add_time) as add_time,d.nickname as confirm,a.scroe,a.msg,a.remark')
             ->page($p, $limit)
-            ->order($field, $sort)
+            ->order($sort)
             ->select();
-        //dump(input('param.'));die;
-        if (request()->isAjax()) {
-            //dump(input('param.'));die;
-            return json(['data' => [
-                [
-                    'nickname' => 1,
-                    'avatar'   => '小小小',
-                    'phone'    => '13007686112',
-                    'title'    => '减肥',
-                    'add_time' => '2018-10-17',
-                    'confirm'  => 'male',
-                    'scroe'    => '5',
-                    'msg'      => 'I\'m here..',
-                    'remark'   => 'male',
-
-                ], [
-                    'nickname' => 2,
-                    'avatar'   => '大大大',
-                    'phone'    => '13007686113',
-                    'title'    => '减肥',
-                    'add_time' => '2018-10-17',
-                    'confirm'  => 'male',
-                    'scroe'    => '5',
-                    'msg'      => 'I\'m here..',
-                    'remark'   => 'male',
-
-                ]
-            ], 'total'          => 82]);
+        $sex_avatar = ['http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg', 'http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg'];
+        foreach ($result as $index => $item) {
+            $result[$index]['avatar'] = $item['avatar'] ?? $sex_avatar[$item['sex']];
+            unset($result[$index]['sex']);
         }
-        $this->assign('data', []);
-        return view();
+        return json(['data' => $result, 'total' => $count]);
+        //[
+        //    [
+        //        'nickname' => 1,
+        //        'avatar'   => '小小小',
+        //        'phone'    => '13007686112',
+        //        'title'    => '减肥',
+        //        'add_time' => '2018-10-17',
+        //        'confirm'  => 'male',
+        //        'scroe'    => '5',
+        //        'msg'      => 'I\'m here..',
+        //        'remark'   => 'male',
+        //
+        //    ], [
+        //    'nickname' => 2,
+        //    'avatar'   => '大大大',
+        //    'phone'    => '13007686113',
+        //    'title'    => '减肥',
+        //    'add_time' => '2018-10-17',
+        //    'confirm'  => 'male',
+        //    'scroe'    => '5',
+        //    'msg'      => 'I\'m here..',
+        //    'remark'   => 'male',
+        //
+        //]
+        //]
     }
+
 }
