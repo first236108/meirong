@@ -311,12 +311,53 @@ class Member extends Base
      */
     public function consumption()
     {
-        $user_id     = input('user_id', 0);
+        $user_id = input('user_id', 0);
+        $field   = input('add_time', 'a.add_time');
+        $sort    = input('sort', 'desc');
 
-        //$map=[''];
+        $p     = input('page', 1);
+        $limit = input('limit', 10);
+        $map[] = ['a.cid', '>', 0];
         if ($user_id)
             $map[] = ['b.user_id', '=', $user_id];
 
+        $result = Db::name('consumption a')
+            ->join('users b', 'a.user_id=b.user_id')
+            ->join('order_item c', 'a.item_id=c.id')
+            ->where($map)
+            ->page($p, $limit)
+            ->order($field, $sort)
+            ->select();
+        //dump(input('param.'));die;
+        if (request()->isAjax()) {
+            //dump(input('param.'));die;
+            return json(['data' => [
+                [
+                    'nickname' => 1,
+                    'avatar'   => '小小小',
+                    'phone'    => '13007686112',
+                    'title'    => '减肥',
+                    'add_time' => '2018-10-17',
+                    'confirm'  => 'male',
+                    'scroe'    => '5',
+                    'msg'      => 'I\'m here..',
+                    'remark'   => 'male',
+
+                ], [
+                    'nickname' => 2,
+                    'avatar'   => '大大大',
+                    'phone'    => '13007686113',
+                    'title'    => '减肥',
+                    'add_time' => '2018-10-17',
+                    'confirm'  => 'male',
+                    'scroe'    => '5',
+                    'msg'      => 'I\'m here..',
+                    'remark'   => 'male',
+
+                ]
+            ], 'total'          => 82]);
+        }
+        $this->assign('data', []);
         return view();
     }
 }
