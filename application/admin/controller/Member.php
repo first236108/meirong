@@ -313,7 +313,10 @@ class Member extends Base
     {
         $user_id = input('user_id', 0);
         if ($this->request->isGet()) {
-            $this->assign('user_id', $user_id);
+            $phone = '';
+            if ($user_id)
+                $phone = Db::name('users')->cache(true, 864000)->where('user_id', $user_id)->value('phone');
+            $this->assign('phone', $phone);
             return view();
         }
 
@@ -324,12 +327,15 @@ class Member extends Base
             $sort[$fields[$item['column']]] = $item['dir'];
         }
 
-        $p     = input('page', 1);
-        $limit = input('limit', 10);
-        $map[] = ['a.cid', '>', 0];
+        $p      = input('page', 1);
+        $limit  = input('limit', 10);
+        $search = input('search', '');
+        $map[]  = ['a.cid', '>', 0];
         if ($user_id)
             $map[] = ['b.user_id', '=', $user_id];
 
+        if ($search)
+            $map[] = ['b.name|b.nickname|b.phone', 'like', '%' . $search . '%'];
         $count      = Db::name('consumption a')
             ->join('users b', 'a.user_id=b.user_id')
             ->join('order_item c', 'a.item_id=c.id')
@@ -340,7 +346,7 @@ class Member extends Base
             ->join('order_item c', 'a.item_id=c.id')
             ->join('admin d', 'a.confirm_id=d.id', 'LEFT')
             ->where($map)
-            ->field('IF(b.nickname <> "" AND b.nickname IS NOT null,b.nickname,b.name) as nickname,b.avatar,b.sex,b.phone,c.title,FROM_UNIXTIME(a.add_time) as add_time,d.nickname as confirm,a.scroe,a.msg,a.remark')
+            ->field('IF(b.nickname <> "" AND b.nickname IS NOT null,b.nickname,b.name) as nickname,b.avatar,b.sex,b.phone,c.title,FROM_UNIXTIME(a.add_time) as add_time,d.nickname as confirm,a.scroe,a.msg,a.remark,a.cid')
             ->page($p, $limit)
             ->order($sort)
             ->select();

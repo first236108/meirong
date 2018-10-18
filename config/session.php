@@ -23,7 +23,7 @@ return [
     //'type'           => '',
     // 是否自动开启 SESSION
     'auto_start'     => true,
-    'type'           => 'redis',
+    'type'           => '',
     'host'           => '127.0.0.1', // redis主机
     'port'           => 6379, // redis端口
     'password'       => '', // 密码
