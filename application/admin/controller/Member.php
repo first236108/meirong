@@ -307,7 +307,7 @@ class Member extends Base
     }
 
     /**
-     * 消费
+     * 消费列表
      */
     public function consumption()
     {
@@ -346,7 +346,7 @@ class Member extends Base
             ->join('order_item c', 'a.item_id=c.id')
             ->join('admin d', 'a.confirm_id=d.id', 'LEFT')
             ->where($map)
-            ->field('IF(b.nickname <> "" AND b.nickname IS NOT null,b.nickname,b.name) as nickname,b.avatar,b.sex,b.phone,c.title,FROM_UNIXTIME(a.add_time) as add_time,d.nickname as confirm,a.scroe,a.msg,a.remark,a.cid')
+            ->field('IF(b.nickname <> "" AND b.nickname IS NOT null,b.nickname,b.name) as nickname,b.avatar,b.sex,b.phone,c.title,FROM_UNIXTIME(a.confirm_time) as confirm_time,FROM_UNIXTIME(a.schedule) as schedule,d.nickname as confirm,a.scroe,a.msg,a.remark,a.cid')
             ->page($p, $limit)
             ->order($sort)
             ->select();
@@ -356,31 +356,13 @@ class Member extends Base
             unset($result[$index]['sex']);
         }
         return json(['data' => $result, 'total' => $count]);
-        //[
-        //    [
-        //        'nickname' => 1,
-        //        'avatar'   => '小小小',
-        //        'phone'    => '13007686112',
-        //        'title'    => '减肥',
-        //        'add_time' => '2018-10-17',
-        //        'confirm'  => 'male',
-        //        'scroe'    => '5',
-        //        'msg'      => 'I\'m here..',
-        //        'remark'   => 'male',
-        //
-        //    ], [
-        //    'nickname' => 2,
-        //    'avatar'   => '大大大',
-        //    'phone'    => '13007686113',
-        //    'title'    => '减肥',
-        //    'add_time' => '2018-10-17',
-        //    'confirm'  => 'male',
-        //    'scroe'    => '5',
-        //    'msg'      => 'I\'m here..',
-        //    'remark'   => 'male',
-        //
-        //]
-        //]
     }
 
+    public function consume()
+    {
+        $row = Db::name('consumption')->where('qrcode', input('post.qrcode'))->find();
+        if (!$row)
+            return json('预约码错误，请确认', 401);
+        return json($row);
+    }
 }

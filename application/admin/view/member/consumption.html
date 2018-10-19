@@ -13,10 +13,10 @@
                 <div class="col-sm-2">
                     <div class="form-group">
                         <label class="control-label" for="type">订单类型</label>
-                        <select name="type" id="type" v-model="type" class="form-control">
-                            <option value="false">所有订单</option>
-                            <option value="1">包含赠送</option>
-                            <option value="0">不含赠送</option>
+                        <select name="type" id="type" class="form-control">
+                            <option value="false">全部</option>
+                            <option value="1">历史消费</option>
+                            <option value="0">预约码</option>
                         </select>
                     </div>
                 </div>
@@ -136,13 +136,58 @@
                     <h5 class="modal-title text-success">添加备注</h5>
                 </div>
                 <div class="modal-body">
-                    <textarea id="remark-content" cols="30" rows="10"></textarea>
+                    <textarea id="remark-content" cols="10" rows="6" style="width: 100%;"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-white" data-dismiss="modal">取消</button>
                     <button type="button" class="ladda-button btn btn-primary" data-style="zoom-in" id="ladda-btn">
                         保 存
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal inmodal fade" id="consume-add-modal" tabindex="4" role="dialog" aria-hidden="true" data-backdrop="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">新增消费</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group m-b-md">
+                        <input type="text" class="form-control" id="qrcode" placeholder="请扫描消费码">
+                        <span class="input-group-btn">
+                            <button type="button" class="ladda-button btn btn-primary" data-style="expand-right" id="consume-btn">Go!</button>
+                        </span>
+                    </div>
+
+                    <div class="contact-box hidden animated fadeInUp" id="result">
+                        <a href="profile.html">
+                            <div class="col-sm-4">
+                                <div class="text-center">
+                                    <img alt="image" class="img-circle m-t-xs img-responsive" src="img/a2.jpg">
+                                    <div class="m-t-xs font-bold">Graphics designer</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-8">
+                                <h3><strong>John Smith</strong></h3>
+                                <p><i class="fa fa-map-marker"></i> Riviera State 32/106</p>
+                                <address>
+                                    <strong>Twitter, Inc.</strong><br>
+                                    795 Folsom Ave, Suite 600<br>
+                                    San Francisco, CA 94107<br>
+                                    <abbr title="Phone">P:</abbr> (123) 456-7890
+                                </address>
+                            </div>
+                            <div class="clearfix"></div>
+                        </a>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-white" data-dismiss="modal">关闭</button>
                 </div>
             </div>
         </div>
@@ -183,7 +228,7 @@
                 searchPlaceholder: '会员性名/昵称/手机号',
                 sZeroRecords: "没有匹配结果",
                 sLoadingRecords: "载入中...",
-                sProcessing: "处理中...",
+                sProcessing: "<img src='http://www.datatables.club/example//resources/user_share/row_details/select2-spinner.gif'>处理中...",
                 oAria: {
                     "sSortAscending": ": 升序排列",
                     "sSortDescending": ": 降序排列"
@@ -216,10 +261,9 @@
                 },
                 {
                     sExtends: 'add',
-                    text: '充值',
+                    text: '消费',
                     action: function (e, dt, node, config) {
-                        $('#order-add-modal').modal('show');
-                        getItems();
+                        $('#consume-add-modal').modal('show');
                     }
                 }
             ],
@@ -263,6 +307,12 @@
                 });
             },
             columns: [
+                {
+                    "class": "details-control",
+                    "orderable": false,
+                    "data": null,
+                    "defaultContent": "&nbsp;&nbsp;"
+                },
                 {data: "nickname", title: "会员昵称"},
                 {
                     data: "avatar",
@@ -273,8 +323,26 @@
                 },
                 {data: "phone", title: "联系方式"},
                 {data: "title", title: "服务项目"},
-                {data: "add_time", title: "消费时间"},
-                {data: "confirm", title: "跟单技师"},
+                {
+                    data: "confirm_time",
+                    title: "消费时间",
+                    render:function(data,type,row,meta){
+                        if (!data){
+                            data=row.schedule;
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "confirm",
+                    title: "跟单技师",
+                    render: function (data, type, row, meta) {
+                        if (!data) {
+                            data = '<span class="label label-primary">预约中</span>';
+                        }
+                        return data;
+                    }
+                },
                 {data: "scroe", title: "评分"},
                 {
                     data: "msg",
@@ -301,7 +369,7 @@
                         return '<button type="button" class="btn btn-white btn-xs" href="#" onclick="mark(' + row.cid + ')" >添加备注</button>';
                     }
                 }
-            ]
+            ],
         });
 
         //搜索延迟
@@ -361,6 +429,7 @@
         });
 
         var btn = $("#ladda-btn").ladda();
+
         btn.click(function () {
             btn.ladda('start');
             axios.post('/admin/index/changeTableVal', {
@@ -379,6 +448,7 @@
                 err(error.response.data);
             });
         });
+
     });
 
     //超长字符点击td显示模态框
@@ -395,9 +465,69 @@
         }
     });
 
+    //首行点击显示详情节
+    var detailRows = [];
+    $('#table').on('click', 'tr td.details-control', function () {
+        var tr = $(this).closest('tr');
+        var row = l.row(tr);
+        var idx = $.inArray(tr.attr('id'), detailRows);
+
+        if (row.child.isShown()) {
+            tr.removeClass('details');
+            row.child.hide();
+
+            // Remove from the 'open' array
+            detailRows.splice(idx, 1);
+        } else {
+            tr.addClass('details');
+            row.child(format(row.data())).show();
+
+            // Add to the 'open' array
+            if (idx === -1) {
+                detailRows.push(tr.attr('id'));
+            }
+        }
+    });
+
+    var consume = $("#consume-btn").ladda();
+    consume.click(function () {
+        ajax_consume();
+    });
+    $("#qrcode").on('keyup', function (e, s) {
+        if (e.keyCode == 13) {
+            ajax_consume();
+        }
+    });
+
+    $('#consume-add-modal').on('hidden.bs.modal', function () {
+        $("#result")
+    });
+
+    function format(data) {
+        return data.cid;
+    }
+
     function mark(id) {
         cid = id;
         $("#remark-modal").modal('show');
+    }
+
+    function ajax_consume() {
+        consume.ladda('start');
+        axios.post('/admin/member/consume', {
+            'qrcode': document.getElementById('qrcode').value
+        }).then(function (response) {
+            consume.ladda('stop');
+            console.log(response);
+            l.ajax.reload();
+            document.getElementById('qrcode').value = '';
+            
+            $('#result').removeClass('hidden');
+            // $("#consume-add-modal").modal('hide');
+        }).catch(function (error) {
+            consume.ladda('stop');
+            err(error.response.data);
+        });
     }
 </script>
 {include file="public/footer" /}

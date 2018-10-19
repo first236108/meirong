@@ -8579,3 +8579,23 @@ body.md-skin {
     margin: 0;
   }
 }
+
+element.style {
+}
+table.dataTable.row-border tbody tr:first-child th, table.dataTable.row-border tbody tr:first-child td, table.dataTable.display tbody tr:first-child th, table.dataTable.display tbody tr:first-child td {
+  border-top: none;
+}
+table.dataTable.row-border tbody th, table.dataTable.row-border tbody td, table.dataTable.display tbody th, table.dataTable.display tbody td {
+  border-top: 1px solid #ddd;
+}
+
+td.details-control {
+  background: url(../image/details_open.png) no-repeat center center;
+  cursor: pointer;
+}
+tr.details td.details-control {
+  background: url(../image/details_close.png) no-repeat center center;
+}
+.dataTable tbody tr td{
+  text-align:center;
+}
