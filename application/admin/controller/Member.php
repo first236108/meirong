@@ -111,9 +111,14 @@ class Member extends Base
         return json($user->user_id);
     }
 
+    /**
+     * 充值订单列表
+     * @return \think\response\View
+     */
     public function recharge()
     {
         $type        = input('type', false);
+        $order_id    = input('order_id', 0);
         $user_id     = input('user_id', 0);
         $is_valid    = input('status', 1);
         $start_time  = input('start_time', 0);
@@ -129,6 +134,10 @@ class Member extends Base
             $map[] = ['a.type', 'IN', '(0,1)'];
         } else {
             $map[] = ['a.type', '=', $type];
+        }
+
+        if ($order_id) {
+            $map[] = ['a.order_id', '=', $order_id];
         }
 
         if ($user_id)
@@ -281,7 +290,8 @@ class Member extends Base
             if ($item_data)
                 Db::name('order_item')->insertAll($item_data);
 
-            write_order_log($order_id, session('admin.name') . '-' . session('admin.nickname'), '新增充值订单');
+            write_order_log($order_id, session('admin.name') . '-' . session('admin.nickname'), '新增充值订单');//订单日志
+            user_log('order', $data['user_id'], $order_id);//记录用户行为
             Db::name('users')->where('user_id', $data['user_id'])->update(['last_come' => time(), 'total_recharge' => $data['pay_amount']]);
             Db::commit();
             return json('ok');
@@ -327,15 +337,46 @@ class Member extends Base
             $sort[$fields[$item['column']]] = $item['dir'];
         }
 
-        $p      = input('page', 1);
-        $limit  = input('limit', 10);
-        $search = input('search', '');
-        $map[]  = ['a.cid', '>', 0];
+        $p          = input('page', 1);
+        $limit      = input('limit', 10);
+        $search     = input('search', '');
+        $status     = input('status', 2);
+        $start_time = input('start_time', '');
+        $end_time   = input('end_time', '');
+        $map[]      = ['a.is_delete', '=', 0];
+        $map[]      = ['a.cid', '>', 0];
         if ($user_id)
             $map[] = ['b.user_id', '=', $user_id];
 
         if ($search)
             $map[] = ['b.name|b.nickname|b.phone', 'like', '%' . $search . '%'];
+
+        $time_field = $status ? 'a.confirm_time' : 'a.schedule';
+        #消费状态
+        switch ($status) {
+            case 0:
+                $map[] = ['a.confirm_id', '=', 0];//预约码
+                break;
+            case 1:
+                $map[] = ['a.confirm_id', '>', 0];//已消费
+                break;
+            case 2:
+                $time_field = 'a.confirm_time|a.schedule';//全部
+                break;
+            default:
+                array_shift($map);//无效码
+                $map[]      = ['a.is_delete', '>', 0];
+                $time_field = 'a.is_delete';
+        }
+
+        #时间搜索条件
+        if ($start_time) {
+            $end_time = $end_time ? strtotime($end_time) : time();
+            $map[]    = [$time_field, 'between', [strtotime($start_time), $end_time]];
+        } elseif ($end_time) {
+            $map[] = [$time_field, '<', strtotime($end_time)];
+        }
+
         $count      = Db::name('consumption a')
             ->join('users b', 'a.user_id=b.user_id')
             ->join('order_item c', 'a.item_id=c.id')
@@ -360,9 +401,66 @@ class Member extends Base
 
     public function consume()
     {
-        $row = Db::name('consumption')->where('qrcode', input('post.qrcode'))->find();
+        if (input('?post.cid')) {
+            $map = ['a.cid' => input('post.cid')];
+        } else {
+            $map = ['a.qrcode' => input('post.qrcode'), 'a.is_delete' => 0];
+        }
+        $row = Db::name('consumption a')
+            ->join('users b', 'a.user_id=b.user_id')
+            ->join('order c', 'a.order_id=c.order_id')
+            ->join('order_item d', 'a.item_id=d.id')
+            ->join('item e', 'd.item_id=e.item_id')
+            ->where($map)
+            ->field('a.cid,a.qrcode,a.order_id,a.item_id,a.user_id,FROM_UNIXTIME(a.add_time) AS add_time,FROM_UNIXTIME(a.schedule) AS schedule,FROM_UNIXTIME(a.confirm_time) AS confirm_time,a.confirm_id,a.is_delete,a.del_remark,b.name,b.nickname,b.phone,FROM_UNIXTIME(c.pay_time) AS pay_time,IF(d.is_give>0,"赠送","购买") as is_give,d.num,d.dec_num,e.title,e.origin_image,e.description')
+            ->find();
         if (!$row)
             return json('预约码错误，请确认', 401);
-        return json($row);
+
+        if (input('?post.cid'))
+            return json($row);
+        if ($row['dec_num'] == 0)
+            return json('预约码已超出消费次数', 401);
+        try {
+            Db::startTrans();
+            Db::name('order_item')->where('id', $row['item_id'])->setDec('dec_num');
+            #全部消费完成，修改订单状态
+            if ($row['num'] == $row['dec_num'] + 1) {
+                $flag = Db::name('order_item')->where("order_id={$row['order_id']} AND dec_num>0")->count();
+                if ($flag == 0)
+                    Db::name('order')->where('order_id')->update(['status' => 5]);
+            }
+            Db::name('consumption')->where('cid', $row['cid'])->update(['confirm_id' => session('admin.id'), 'confirm_time' => time()]);
+            user_log('consumption', $row['user_id'], $row['cid']);//记录用户行为
+            Db::commit();
+            return json($row);
+        } catch (Exception $e) {
+            Db::rollback();
+            return json($e->getMessage(), 404);
+        }
+    }
+
+    public function consume_del()
+    {
+        $cid    = input('post.cid', 0);
+        $remark = input('post.remark') ?? '管理员：' . session('admin.name') . '-' . session('admin.nickname') . ' 判定无效';
+        if (!$cid)
+            return json('参数错误');
+        Db::name('consumption')->where('cid', $cid)->update(['is_delete' => time(), 'del_remark' => $remark]);
+    }
+
+    public function behavior()
+    {
+        $user_id = input('user_id') ?? 0;
+        if ($user_id) {
+            $map = 'user_id=' . $user_id;
+        } else {
+            $subQuery = Db::name('user_behavior')->fetchSql(true)->order('bid desc')->limit(1)->value('user_id');
+            $map      = 'user_id=(' . $subQuery . ')';
+        }
+        $info = Db::name('user_behavior')->where($map)->order('')->select();
+        $this->assign('info', $info);
+        $this->assign('type', behaviorType(0, 0, true));
+        return view();
     }
 }

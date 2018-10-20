@@ -12,11 +12,12 @@
             <form id="top-search" method="post" action="/admin/member/recharge.html">
                 <div class="col-sm-2">
                     <div class="form-group">
-                        <label class="control-label" for="type">订单类型</label>
-                        <select name="type" id="type" class="form-control">
-                            <option value="false">全部</option>
+                        <label class="control-label" for="status">订单类型</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="2">全部</option>
                             <option value="1">历史消费</option>
                             <option value="0">预约码</option>
+                            <option value="-1">已失效</option>
                         </select>
                     </div>
                 </div>
@@ -41,7 +42,7 @@
                 <div class="col-sm-1">
                     <div class="form-group">
                         <label>&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-block" data-tip="tooltip" data-placement="top" data-original-title="搜索">Go</button>
+                        <button id="search_btn" type="button" class="ladda-button btn btn-primary btn-block" data-style="expand-right" data-tip="tooltip" data-placement="top" data-original-title="搜索">Search !</button>
                     </div>
                 </div>
             </form>
@@ -147,7 +148,7 @@
             </div>
         </div>
     </div>
-    <div class="modal inmodal fade" id="consume-add-modal" tabindex="4" role="dialog" aria-hidden="true" data-backdrop="false">
+    <div class="modal inmodal fade" id="consume-add-modal" tabindex="9999" role="dialog" aria-hidden="true" data-backdrop="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -156,35 +157,37 @@
                 </div>
                 <div class="modal-body">
                     <div class="input-group m-b-md">
-                        <input type="text" class="form-control" id="qrcode" placeholder="请扫描消费码">
+                        <input type="text" class="form-control" id="qrcode" placeholder="请扫描消费码" autofocus="autofocus">
                         <span class="input-group-btn">
-                            <button type="button" class="ladda-button btn btn-primary" data-style="expand-right" id="consume-btn">Go!</button>
+                            <button type="button" class="ladda-button btn btn-primary" data-style="slide-right" id="consume-btn">Go!</button>
                         </span>
                     </div>
-
                     <div class="contact-box hidden animated fadeInUp" id="result">
-                        <a href="profile.html">
+                        <div>
                             <div class="col-sm-4">
                                 <div class="text-center">
-                                    <img alt="image" class="img-circle m-t-xs img-responsive" src="img/a2.jpg">
-                                    <div class="m-t-xs font-bold">Graphics designer</div>
+                                    <img id="image" class="m-t-xs img-responsive" src="">
+                                    <div class="m-t-xs font-bold text-success m-t"><h3 id="title"></h3></div>
                                 </div>
                             </div>
                             <div class="col-sm-8">
-                                <h3><strong>John Smith</strong></h3>
-                                <p><i class="fa fa-map-marker"></i> Riviera State 32/106</p>
+                                <h3><strong id="member_name"></strong></h3>
+                                <hr>
+                                <p><i class="fa fa-clock-o"></i> <span id="order_time"></span> 支付
+                                    <button class="btn btn-xs btn-info m-l" type="button" data-order-id="0" id="show_order_btn">查看订单</button>
+                                </p>
+                                <p><i class="fa fa-calendar-check-o"></i> <u id="schedule"></u> 预约</p>
                                 <address>
-                                    <strong>Twitter, Inc.</strong><br>
-                                    795 Folsom Ave, Suite 600<br>
-                                    San Francisco, CA 94107<br>
-                                    <abbr title="Phone">P:</abbr> (123) 456-7890
+                                    <strong id="show_qrcode"></strong><br>
+                                    <span id="num"></span><br>
+                                    <span id="dec_num"></span><br>
+                                    <hr>
+                                    <abbr title="会员电话">M:</abbr> <span id="phone"></span>
                                 </address>
                             </div>
                             <div class="clearfix"></div>
-                        </a>
+                        </div>
                     </div>
-
-
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-white" data-dismiss="modal">关闭</button>
@@ -224,7 +227,7 @@
             language: {
                 info: "当前显示第 _START_ 至 _END_ 条, 共 _TOTAL_ 条记录",
                 lengthMenu: "每页显示 _MENU_ 条",
-                search: "搜索",
+                search: "<span class='media-middle'>自动搜索</span>",
                 searchPlaceholder: '会员性名/昵称/手机号',
                 sZeroRecords: "没有匹配结果",
                 sLoadingRecords: "载入中...",
@@ -280,8 +283,14 @@
                 param.page = (data.start / data.length) + 1;//当前页码
                 param.fields = fields;
                 param.order = data.order;
-                param.search = data.search.value;//当前页码
-
+                param.search = data.search.value;//搜索词
+                param.status = $("#status").val();
+                var start_time = $("#start_time").val();
+                var end_time = $("#end_time").val();
+                if (start_time)
+                    param.start_time = start_time;
+                if (end_time)
+                    param.end_time = end_time;
                 $.ajax({
                     type: "POST",
                     url: "/admin/member/consumption",
@@ -291,6 +300,7 @@
                     success: function (result) {
                         //封装返回数据
                         setTimeout(function () {
+                            $(".ladda-button").ladda('stop');
                             var returnData = {};
                             returnData.draw = data.draw;//这里直接自行返回了draw计数器,应该由后台返回
                             returnData.recordsTotal = result.data.length;//返回数据全部记录
@@ -326,9 +336,9 @@
                 {
                     data: "confirm_time",
                     title: "消费时间",
-                    render:function(data,type,row,meta){
-                        if (!data){
-                            data=row.schedule;
+                    render: function (data, type, row, meta) {
+                        if (!data) {
+                            data = row.schedule;
                         }
                         return data;
                     }
@@ -366,10 +376,13 @@
                             }
                             return data;
                         }
-                        return '<button type="button" class="btn btn-white btn-xs" href="#" onclick="mark(' + row.cid + ')" >添加备注</button>';
+                        if (!row.confirm && $('#status').val() > -1) {
+                            return '<button type="button" class="btn btn-outline btn-danger btn-xs" onclick="del(' + row.cid + ')">无效</button>';
+                        }
+                        return '<button type="button" class="btn btn-white btn-xs" onclick="mark(' + row.cid + ')" >添加备注</button>';
                     }
                 }
-            ],
+            ]
         });
 
         //搜索延迟
@@ -387,45 +400,6 @@
             forceParse: false,
             calendarWeeks: true,
             autoclose: true
-        });
-
-        $("#top-search").validate({
-            rules: {
-                start_time: {
-                    date: true
-                },
-                end_time: {
-                    date: true
-                },
-                nameorphone: {
-                    minlength: 1
-                }
-            },
-            messages: {
-                create_time: "开始时间 错误",
-                last_time: "截止时间 错误",
-                nameorphone: "手机号/名字 长度错误"
-            },
-//            submitHandler: function (form) {
-//                $.ajax({
-//                    type: 'POST',
-//                    url: '/admin/member/recharge',
-//                    data: $(form).serialize(),
-//                    success: function (data) {
-//                        layer.open({
-//                            content: '数据已更新',
-//                            skin: 'msg',
-//                            time: 1
-//                        });
-//                        vm.list = data[0];
-//                        vm.sum_amount = data[3];
-//                        vm.total_amount = data[4];
-//                    },
-//                    error: function (xhr, type) {
-//                        err(xhr.responseText);
-//                    }
-//                });
-//            }
         });
 
         var btn = $("#ladda-btn").ladda();
@@ -449,6 +423,9 @@
             });
         });
 
+        $("#show_order_btn").on('click', function () {
+            show_order($(this).data('order-id'));
+        });
     });
 
     //超长字符点击td显示模态框
@@ -466,27 +443,23 @@
     });
 
     //首行点击显示详情节
-    var detailRows = [];
     $('#table').on('click', 'tr td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = l.row(tr);
-        var idx = $.inArray(tr.attr('id'), detailRows);
-
         if (row.child.isShown()) {
             tr.removeClass('details');
             row.child.hide();
-
-            // Remove from the 'open' array
-            detailRows.splice(idx, 1);
         } else {
             tr.addClass('details');
-            row.child(format(row.data())).show();
-
-            // Add to the 'open' array
-            if (idx === -1) {
-                detailRows.push(tr.attr('id'));
-            }
+            format(row.data(), row);
         }
+    });
+
+    //top search bar event
+    var search_btn = $("#search_btn").ladda();
+    search_btn.click(function () {
+        search_btn.ladda('start');
+        l.ajax.reload();
     });
 
     var consume = $("#consume-btn").ladda();
@@ -499,12 +472,47 @@
         }
     });
 
+    $('#consume-add-modal').on('shown.bs.modal', function (e) {
+        $("#qrcode").focus();
+    });
     $('#consume-add-modal').on('hidden.bs.modal', function () {
-        $("#result")
+        render_result(0);
     });
 
-    function format(data) {
-        return data.cid;
+    function format(data, row) {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/member/consume',
+            data: {cid: data.cid},
+            async: false,
+            success: function (res) {
+                var html = '<div class="col-md-6 col-xs-12">\n' +
+                    '                            <div class="col-sm-4">\n' +
+                    '                                <div class="text-center">\n' +
+                    '                                    <img class="m-t-xs img-responsive img-rounded" src="' + res.origin_image + '">\n' +
+                    '                                    <div class="m-t-xs font-bold text-success m-t"><h3>' + res.title + '</h3></div>\n' +
+                    '                                </div>\n' +
+                    '                            </div>\n' +
+                    '                            <div class="col-sm-4 text-left">\n' +
+                    '                                <h3><strong>' + (res.name || res.nickname) + '</strong></h3>\n' +
+                    '                                <p><i class="fa fa-clock-o"></i> ' + res.pay_time + ' 支付\n' +
+                    '                                    <button class="btn btn-xs btn-info m-l show_order_btn" type="button" onclick="show_order(' + res.order_id + ')">查看订单</button>\n' +
+                    '                                </p>\n' +
+                    '                                <p><i class="fa fa-calendar-check-o"></i> <u>' + res.schedule + '</u> 预约</p>\n' +
+                    '                                <address>\n' +
+                    '                                    <strong>预约码：' + res.qrcode + '</strong><br>购买次数' + res.num + '<br>剩余次数：' + res.dec_num + '<br>\n' +
+                    '                                    <hr>\n' +
+                    '                                    <abbr title="会员电话">M:</abbr> ' + res.phone + '\n' +
+                    '                                </address>\n' +
+                    '                            </div>\n' +
+                    '                            <div class="clearfix"></div>\n' +
+                    '   </div>';
+                row.child(html).show();
+            },
+            error: function (xhr, type) {
+                row.child(xhr.responseText).show();
+            }
+        });
     }
 
     function mark(id) {
@@ -512,6 +520,7 @@
         $("#remark-modal").modal('show');
     }
 
+    //预约码请求数据
     function ajax_consume() {
         consume.ladda('start');
         axios.post('/admin/member/consume', {
@@ -520,13 +529,61 @@
             consume.ladda('stop');
             console.log(response);
             l.ajax.reload();
-            document.getElementById('qrcode').value = '';
-            
-            $('#result').removeClass('hidden');
-            // $("#consume-add-modal").modal('hide');
+            toastr.success('消费成功');
+            render_result(response.data);
         }).catch(function (error) {
             consume.ladda('stop');
             err(error.response.data);
+        });
+    }
+
+    //渲染预约码消费信息
+    function render_result(data) {
+        document.getElementById('qrcode').value = '';
+        var dom = $('#result');
+        if (typeof(data) == 'object') {
+            $("#image").attr('src', data.origin_image);
+            $("#title").html(data.title);
+            $("#member_name").html(data.name || data.nickname);
+            $("#show_order_btn").data('order-id', data.order_id);
+            $("#order_time").html(data.pay_time);
+            $("#schedule").html(data.schedule);
+            $("#show_qrcode").html('预约码：' + data.qrcode);
+            $("#num").html('购买次数：<b>' + data.num + '</b>');
+            $("#dec_num").html('剩余次数：<mark>' + data.dec_num + '</mark>');
+            $("#phone").html(data.phone);
+            dom.removeClass('hidden');
+        } else {
+            dom.addClass('hidden');
+        }
+    }
+
+    function show_order(id) {
+        window.open('/admin/member/recharge.html?order_id=' + id, '_blank');
+    }
+
+    function del(cid) {
+        swal({
+            title: "确定要作废本次预约码 !?",
+            text: "未消费完结的订单，会员可在作废后重新预约哦!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Just do it!",
+            closeOnConfirm: false
+        }, function () {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/member/consume_del',
+                data: {cid: cid},
+                success: function (data) {
+                    swal("预约码已失效!", "操作成功.", "success");
+                    l.ajax.reload();
+                },
+                error: function (xhr, type) {
+                    err(xhr.responseText);
+                }
+            });
         });
     }
 </script>

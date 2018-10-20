@@ -113,9 +113,9 @@ function delItem(url, val, callback = '', index) {
                 swal.close();
                 if (res.succ == 0) {
                     toastr.success(res.msg);
-                    if (callback){
-                        eval(callback + '('+index+')');
-                    }else{
+                    if (callback) {
+                        eval(callback + '(' + index + ')');
+                    } else {
                         vm.init_data.list.splice(index, 1);
                     }
                 }
@@ -129,6 +129,27 @@ function delItem(url, val, callback = '', index) {
     });
 }
 
-function closeModalComm(obj){
+function closeModalComm(obj) {
     $(obj).parents('.modal').modal('hide');
+}
+
+/**
+ * 解析时间戳
+ * @param timestamp
+ * @param getDate
+ * @param getTime
+ * @returns {string}
+ */
+function dateParse(timestamp, getDate, getTime) {
+    var Y = date.getFullYear(parseInt(timestamp) * 1000) + '-';
+    var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+    var D = date.getDate() + ' ';
+    var h = date.getHours() + ':';
+    var m = date.getMinutes() + ':';
+    var s = date.getSeconds();
+    if (getDate)
+        return Y + M + D;
+    if (getTime)
+        return h + m + s;
+    return Y + M + D + h + m + s;
 }

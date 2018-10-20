@@ -223,3 +223,74 @@ function write_order_log($order_id, $operater, $msg)
     ];
     Db::name('order_action')->insert($data);
 }
+
+/**
+ * 会员行为记录
+ * @param $type
+ * @param int $user_id
+ * @param int $link_id
+ * @param string $session_id
+ */
+function user_log($type, $user_id = 0, $link_id = 0, $session_id = '')
+{
+
+    $data = [
+        'user_id'  => $user_id,
+        'type'     => behaviorType($type),
+        'link_id'  => $link_id,
+        'add_time' => time()
+    ];
+
+    if ($data['type'] == 1) {
+        $item_info       = Db::name('item')->cache(true, 864000)->where('item_id', $link_id)->field('cate_id,cate_id2')->find();
+        $data['cat_id1'] = $item_info['cate_id'];
+        $data['cat_id2'] = $item_info['cate_id2'];
+    }
+    if ($data['user_id'] == 0) {
+        $data['session_id'] = $session_id;
+    }
+    Db::name('user_behavior')->insert($data);
+}
+
+/**
+ * 获取用户行为type，或行为注释数组
+ * @param $key
+ * @param int $value
+ * @param boolean $get_comment
+ * @return string|int|array
+ */
+function behaviorType($key, $value = 0, $get_comment = false)
+{
+    $type = [
+        'login'       => 0,//登录
+        'visit'       => 1,//浏览商品
+        'faverite'    => 2,//收藏
+        'hate'        => 3,//取消收藏
+        'order'       => 4,//充值|购买
+        'advice'      => 5,//咨询
+        'appointment' => 6,//预约
+        'cancel'      => 7,//cancel预约
+        'consumption' => 8,//消费
+        'share'       => 9,//分享
+        'activity'    => 10,//参加活动
+        'check_in'    => 11,//到店打卡
+    ];
+    if ($value)
+        return array_flip($type)[$value];
+    if ($get_comment)
+        return [
+            0  => '登录',
+            1  => '浏览商品',
+            2  => '收藏',
+            3  => '取消收藏',
+            4  => '充值|购买',
+            5  => '咨询',
+            6  => '预约',
+            7  => 'cancel预约',
+            8  => '消费',
+            9  => '分享',
+            10 => '参加活动',
+            11 => '到店打卡',
+        ];
+    return $type[$key];
+}
