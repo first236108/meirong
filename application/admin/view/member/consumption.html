@@ -533,6 +533,7 @@
             render_result(response.data);
         }).catch(function (error) {
             consume.ladda('stop');
+            render_result();
             err(error.response.data);
         });
     }

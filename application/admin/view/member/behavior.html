@@ -31,112 +31,86 @@
                 </div>
                 <div class="ibox-content" id="ibox-content">
 
-                    <div id="vertical-timeline" class="vertical-container dark-timeline center-orientation">
-                        {foreach $info as $index=>$vo}
-                        <div class="vertical-timeline-block">
-                            <div class="vertical-timeline-icon navy-bg">
-                                <i class="fa fa-briefcase"></i>
-                            </div>
+                    <div id="vertical-timeline" class="vertical-container dark-timeline">
 
-                            <div class="vertical-timeline-content">
-                                <h2>{$type[$vo.type]}</h2>
-                                {if condition="$vo.link_id gt 0"}
-                                <a class="btn btn-sm btn-primary" href="{:url('/admin/member/behavior_detail',bid=$vo.bid)}"> 查看</a>
-                                {/if}
-                                <span class="vertical-date">
-                                        Today <br/>
-                                        <small>Dec 24</small>
-                                    </span>
-                            </div>
-                        </div>
-                        {/foreach}
-                        <div class="vertical-timeline-block">
+                        <div class="vertical-timeline-block" v-for="(vo,index) in info">
                             <div class="vertical-timeline-icon blue-bg">
                                 <i class="fa fa-file-text"></i>
                             </div>
 
                             <div class="vertical-timeline-content">
-                                <h2>Send documents to Mike</h2>
-                                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since.</p>
-                                <a href="#" class="btn btn-sm btn-success"> Download document </a>
+                                <h2>{{type[vo.type]}}</h2>
+                                <p></p>
+                                <button v-if="vo.link_id>0" @click="show_detail(vo.bid)" class="btn btn-sm btn-success"> 查看详情</button>
                                 <span class="vertical-date">
-                                        Today <br/>
-                                        <small>Dec 24</small>
+                                        {{dateparse(vo.add_time,1)}} <br/>
+                                        <small style="color:#ed5565">{{dateparse(vo.add_time,1,1)}}</small>
                                     </span>
                             </div>
                         </div>
 
-                        <div class="vertical-timeline-block">
-                            <div class="vertical-timeline-icon lazur-bg">
-                                <i class="fa fa-coffee"></i>
-                            </div>
-
-                            <div class="vertical-timeline-content">
-                                <h2>Coffee Break</h2>
-                                <p>Go to shop and find some products. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's. </p>
-                                <a href="#" class="btn btn-sm btn-info">Read more</a>
-                                <span class="vertical-date"> Yesterday <br/><small>Dec 23</small></span>
-                            </div>
-                        </div>
-
-                        <div class="vertical-timeline-block">
-                            <div class="vertical-timeline-icon yellow-bg">
-                                <i class="fa fa-phone"></i>
-                            </div>
-
-                            <div class="vertical-timeline-content">
-                                <h2>Phone with Jeronimo</h2>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Iusto, optio, dolorum provident rerum aut hic quasi placeat iure tempora laudantium ipsa ad debitis unde? Iste voluptatibus minus veritatis qui ut.</p>
-                                <span class="vertical-date">Yesterday <br/><small>Dec 23</small></span>
-                            </div>
-                        </div>
-
-                        <div class="vertical-timeline-block">
-                            <div class="vertical-timeline-icon lazur-bg">
-                                <i class="fa fa-user-md"></i>
-                            </div>
-
-                            <div class="vertical-timeline-content">
-                                <h2>Go to the doctor dr Smith</h2>
-                                <p>Find some issue and go to doctor. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s. </p>
-                                <span class="vertical-date">Yesterday <br/><small>Dec 23</small></span>
-                            </div>
-                        </div>
-
-                        <div class="vertical-timeline-block">
-                            <div class="vertical-timeline-icon navy-bg">
-                                <i class="fa fa-comments"></i>
-                            </div>
-
-                            <div class="vertical-timeline-content">
-                                <h2>Chat with Monica and Sandra</h2>
-                                <p>Web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like). </p>
-                                <span class="vertical-date">Yesterday <br/><small>Dec 23</small></span>
-                            </div>
-                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="footer">
-    <div class="pull-right">
-        10GB of <strong>250GB</strong> Free.
-    </div>
-    <div>
-        <strong>Copyright</strong> Example Company &copy; 2014-2017
+
+<div class="modal inmodal fade" id="detail" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Modal title</h4>
+            </div>
+            <div class="modal-body"></div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
-
+<script src="/static/js/axios.min.js"></script>
 <script src="/static/js/vue.min.js"></script>
 <script>
     var vm = new Vue({
         el: '#ibox-content',
         data: {
-            
+            user_id: "{$user_id}",
+            info: {},
+            type: [],
+            className: []
+        },
+        created: function () {
+            var that = this;
+            axios.post('/admin/member/behavior', {
+                'user_id': that.user_id
+            }).then(function (response) {
+                vm.info = response.data.info;
+                vm.type = response.data.type;
+            }).catch(function (error) {
+                err(error.response.data);
+            });
+        },
+        methods: {
+            show_detail: function (bid) {
+                axios.post('/admin/member/behavior_detail', {
+                    'bid': bid
+                }).then(function (res) {
+                    $("#detail .modal-body").html(res.data);
+                    $('#detail .modal-title').html($("#comment").val());
+                    $("#detail").modal('show');
+                }).catch(function (error) {
+                    err(error.response.data);
+                });
+            }
         }
+    });
+
+    $("#detail").on('hidden.bs.modal', function () {
+        $('#detail .modal-title').html('');
+        $("#detail .modal-body").html('');
     });
 </script>
 

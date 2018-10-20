@@ -1,0 +1,45 @@
+<div class="ibox-content">
+    <input type="hidden" id="comment" value="{$comment}">
+    <div class="table-responsive">
+        <table class="table shoping-cart-table">
+            <tbody>
+            <tr>
+                <td width="150">
+                    <div style="background-color: #f8f8f9"><img src="{$item.origin_image}" class="img-responsive">
+                    </div>
+                </td>
+                <td class="desc">
+                    <h3>
+                        <a href="#" class="text-navy">
+                            {$item.title}
+                        </a>
+                    </h3>
+                    <p class="small">
+                        {$item.description}
+                    </p>
+                    <dl class="small m-b-none">
+                        <dt>{$category[$item.cate_id]}</dt>
+                        <dd>{$category[$item.cate_id2]}</dd>
+                    </dl>
+
+                    <div class="m-t-sm">
+                        {if condition="$item.is_recommend eq 1"}
+                        <span class="text-success"><i class="fa fa-thumbs-up"></i> 推荐产品</span>
+                        {/if}
+                        {if condition="$item.prom_id gt 0"}
+                        |<span class="text-warning"><i class="fa fa-sun-o"></i> 促销活动中...</span>
+                        {/if}
+                    </div>
+                </td>
+
+                <td>￥ {$item.price}<br /><s class="small text-muted">￥ {$item.market_price}</s></td>
+                <td>
+                    <h4>
+                        <!--$180,00活动价格-->
+                    </h4>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

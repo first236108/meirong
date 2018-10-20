@@ -1,0 +1,28 @@
+<div class="contact-box">
+    <input type="hidden" id="comment" value="{$comment}">
+    <div>
+        <div class="col-sm-4">
+            <div class="text-center">
+                <img class="m-t-xs img-responsive" src="{$data.origin_image}">
+                <div class="m-t-xs font-bold text-success m-t"><h3>{$data.title}</h3></div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <h3><strong>{gt name="$data.name" value="0"}{$data.name}{else/}{$data.nickname}{/gt}</strong></h3>
+            <hr>
+            <p><i class="fa fa-clock-o"></i> <span>{$data.pay_time}</span> 支付</p>
+            <p><i class="fa fa-calendar"></i> <u>{$data.schedule}</u> 预约</p>
+            {if condition="$data.confirm_time gt 0"}
+            <p><i class="fa fa-calendar-check-o"></i> <u>{$data.confirm_time}</u> 消费</p>
+            {/if}
+            <address>
+                <strong>{$data.qrcode}</strong><br>
+                购买次数：{$data.num}<br>
+                剩余次数：{$data.dec_num}<br>
+                <hr>
+                <abbr title="会员电话">M:</abbr> {$data.phone}
+            </address>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</div>

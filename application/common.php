@@ -263,16 +263,16 @@ function behaviorType($key, $value = 0, $get_comment = false)
 {
     $type = [
         'login'       => 0,//登录
-        'visit'       => 1,//浏览商品
-        'faverite'    => 2,//收藏
-        'hate'        => 3,//取消收藏
-        'order'       => 4,//充值|购买
-        'advice'      => 5,//咨询
-        'appointment' => 6,//预约
-        'cancel'      => 7,//cancel预约
-        'consumption' => 8,//消费
-        'share'       => 9,//分享
-        'activity'    => 10,//参加活动
+        'visit'       => 1,//浏览商品--表名item
+        'faverite'    => 2,//收藏--表名item
+        'hate'        => 3,//取消收藏--表名item
+        'order'       => 4,//充值|购买--表名order
+        'advice'      => 5,//咨询--表名advice
+        'appointment' => 6,//预约--表名consumption
+        'cancel'      => 7,//cancel预约--表名consumption
+        'consumption' => 8,//消费--表名consumption
+        'share'       => 9,//分享--表名share
+        'activity'    => 10,//参加活动--表名activity
         'check_in'    => 11,//到店打卡
     ];
     if ($value)

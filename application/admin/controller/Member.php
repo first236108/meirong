@@ -399,10 +399,10 @@ class Member extends Base
         return json(['data' => $result, 'total' => $count]);
     }
 
-    public function consume()
+    public function consume($cid = null)
     {
-        if (input('?post.cid')) {
-            $map = ['a.cid' => input('post.cid')];
+        if (input('?post.cid') || $cid) {
+            $map = ['a.cid' => $cid ?? input('post.cid')];
         } else {
             $map = ['a.qrcode' => input('post.qrcode'), 'a.is_delete' => 0];
         }
@@ -412,15 +412,19 @@ class Member extends Base
             ->join('order_item d', 'a.item_id=d.id')
             ->join('item e', 'd.item_id=e.item_id')
             ->where($map)
-            ->field('a.cid,a.qrcode,a.order_id,a.item_id,a.user_id,FROM_UNIXTIME(a.add_time) AS add_time,FROM_UNIXTIME(a.schedule) AS schedule,FROM_UNIXTIME(a.confirm_time) AS confirm_time,a.confirm_id,a.is_delete,a.del_remark,b.name,b.nickname,b.phone,FROM_UNIXTIME(c.pay_time) AS pay_time,IF(d.is_give>0,"赠送","购买") as is_give,d.num,d.dec_num,e.title,e.origin_image,e.description')
+            ->field('a.cid,a.qrcode,a.order_id,a.item_id,a.user_id,FROM_UNIXTIME(a.add_time) AS add_time,FROM_UNIXTIME(a.schedule) AS schedule,FROM_UNIXTIME(a.confirm_time) AS confirm_time,a.confirm_id,FROM_UNIXTIME(a.is_delete),a.del_remark,b.name,b.nickname,b.phone,FROM_UNIXTIME(c.pay_time) AS pay_time,IF(d.is_give>0,"赠送","购买") as is_give,d.num,d.dec_num,e.title,e.origin_image,e.description')
             ->find();
         if (!$row)
             return json('预约码错误，请确认', 401);
 
+        if ($cid)
+            return $row;
         if (input('?post.cid'))
             return json($row);
         if ($row['dec_num'] == 0)
             return json('预约码已超出消费次数', 401);
+        if (strtotime($row['confirm_time']))
+            return json('预约码已被消费', 401);
         try {
             Db::startTrans();
             Db::name('order_item')->where('id', $row['item_id'])->setDec('dec_num');
@@ -433,6 +437,7 @@ class Member extends Base
             Db::name('consumption')->where('cid', $row['cid'])->update(['confirm_id' => session('admin.id'), 'confirm_time' => time()]);
             user_log('consumption', $row['user_id'], $row['cid']);//记录用户行为
             Db::commit();
+            $row['dec_num'] -= 1;
             return json($row);
         } catch (Exception $e) {
             Db::rollback();
@@ -452,15 +457,54 @@ class Member extends Base
     public function behavior()
     {
         $user_id = input('user_id') ?? 0;
+        if ($this->request->isGet()) {
+            $this->assign('user_id', $user_id);
+            return view();
+        }
+
         if ($user_id) {
             $map = 'user_id=' . $user_id;
         } else {
             $subQuery = Db::name('user_behavior')->fetchSql(true)->order('bid desc')->limit(1)->value('user_id');
             $map      = 'user_id=(' . $subQuery . ')';
         }
-        $info = Db::name('user_behavior')->where($map)->order('')->select();
-        $this->assign('info', $info);
-        $this->assign('type', behaviorType(0, 0, true));
-        return view();
+        $info = Db::name('user_behavior')->where($map)->order('bid desc')->select();
+        return json(['info' => $info, 'type' => behaviorType(0, 0, true)]);
+    }
+
+    public function behavior_detail()
+    {
+        $bid      = input('bid', 0);
+        $behavior = Db::name('user_behavior')->cache(true)->where('bid', $bid)->find();
+        if (!$behavior)
+            $this->error('参数错误');
+
+        $item    = [1, 2, 3];
+        $consume = [6, 7, 8];
+
+        $this->assign('behavior', $behavior);
+        $this->assign('comment', behaviorType(0, 0, 1)[$behavior['type']]);
+        switch ($behavior['type']) {
+            case in_array($behavior['type'], $item):
+                $table    = 'item';
+                $item     = Db::name($table)->cache(true, 864000)->where('item_id', $behavior['link_id'])->find();
+                $category = Db::name('item_cate')->cache(true)->where('cate_id', 'IN', [$behavior['cat_id1'], $behavior['cat_id2']])->column('name', 'cate_id');
+                $this->assign('item', $item);
+                $this->assign('category', $category);
+                return view('behavior_item');
+                break;
+            case in_array($behavior['type'], $consume):
+                $table = 'consumption';
+                $data  = $this->consume($behavior['link_id']);
+                $this->assign('data', $data);
+                return view('behavior_consume');
+                break;
+            case in_array($behavior['type'], [0, 11]):
+                $this->error('内容不存在');
+                break;
+            default:
+                $table = behaviorType(0, $behavior['type']);
+        }
+        echo $table;
     }
 }
