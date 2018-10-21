@@ -105,6 +105,7 @@
                                 <div class="btn-group">
                                     <button type="button" class="btn-info btn btn-outline btn-xs" @click="turnTo('recharge',user.user_id)"><i class="fa fa-yen"></i>充值</button>
                                     <button type="button" class="btn-success btn btn-outline btn-xs" @click="turnTo('consumption',user.user_id)"><i class="fa fa-vimeo-square"></i>消费</button>
+                                    <button type="button" class="btn-warning btn btn-outline btn-xs" @click="turnTo('behavior',user.user_id)"><i class="fa fa-vimeo-square"></i>日志</button>
                                 </div>
                             </td>
                         </tr>
@@ -288,24 +289,6 @@
                 last_time: "到店时间 错误",
                 nameorphone: "手机号/名字 长度错误"
             }
-//            submitHandler: function (form) {
-//                $.ajax({
-//                    type: 'POST',
-//                    url: '/admin/member/index',
-//                    data: $(form).serialize(),
-//                    success: function (data) {
-//                        layer.open({
-//                            content: '数据已更新',
-//                            skin: 'msg',
-//                            time: 1
-//                        });
-//                        vm.list = data[0];
-//                    },
-//                    error: function (xhr, type) {
-//                        err(xhr.responseText);
-//                    }
-//                });
-//            }
         });
 
         $("#user-add-form").validate({

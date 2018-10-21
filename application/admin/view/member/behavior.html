@@ -1,34 +1,76 @@
 {include file="public/header" /}
 {include file="public/breadcrumb" /}
-<div class="row wrapper border-bottom white-bg page-heading">
-    <div class="col-lg-10">
-        <h2>Timeline - version 2</h2>
-        <ol class="breadcrumb">
-            <li>
-                <a href="index.html">Home</a>
-            </li>
-            <li>
-                <a>Miscellaneous</a>
-            </li>
-            <li class="active">
-                <strong>Timeline v.2</strong>
-            </li>
-        </ol>
-    </div>
-    <div class="col-lg-2">
+<link href="/static/plugins/ladda/ladda-themeless.min.css" rel="stylesheet">
+<div class="ibox-content m-b-sm border-bottom p-m-10 tooltip-demo">
+    <div class="row" id="search-bar">
+        <form id="top-search" method="post" action="/admin/member/recharge.html">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label class="control-label" for="nameorphone">搜索词</label>
+                    <input type="text" id="nameorphone" name="nameorphone" value="" placeholder="手机号/名字/昵称" class="form-control">
+                </div>
+            </div>
 
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button id="search_btn" type="button" class="ladda-button btn btn-primary btn-block" data-style="expand-right" data-tip="tooltip" data-placement="right" data-original-title="搜索">Search !</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
+<div class="text-center float-e-margins p-h-xs">
+    <button class="btn btn-xs btn-success active" @click="selectDate(0)">30天日志</button>
+    <button class="btn btn-xs btn-default" @click="selectDate(1)">90天日志</button>
+    <button class="btn btn-xs btn-default" @click="selectDate(2)">今年...</button>
+</div>
+<div class="row m-t-lg">
+    <div class="col-md-6">
+
+        <div class="profile-image">
+            <img src="http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg" class="img-circle circle-border m-b-md" alt="profile">
+        </div>
+        <div class="profile-info">
+            <div class="">
+                <div>
+                    <h2 class="no-margins">
+                        {{user.name || user.nickname}}
+                    </h2>
+                    <h4>{{user.level}}</h4>
+                    <small>
+                        <i class="fa fa-map-marker"></i> &nbsp;{{user.address}}<br />
+                        <i class="fa fa-birthday-cake"></i> &nbsp;{{user.birthday}}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <table class="table small m-b-xs">
+            <tbody>
+            <tr v-for="(item,index) in user.statis">
+                <td>
+                    {{item[0]}}
+                </td>
+                <td>
+                    <strong>{{item[1]}}</strong>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-3">
+        <small>累计充值</small>
+        <h2 class="no-margins">{{user.total_recharge}} 元</h2>
+        <div id="sparkline1"></div>
+    </div>
+</div>
+
 <div class="wrapper wrapper-content">
     <div class="row animated fadeInRight">
         <div class="col-lg-12">
             <div class="ibox float-e-margins">
-                <div class="text-center float-e-margins p-md">
-                    <span>Turn on/off color/background or orientation version: </span>
-                    <a href="#" class="btn btn-xs btn-primary" id="lightVersion">Light version</a>
-                    <a href="#" class="btn btn-xs btn-primary" id="darkVersion">Dark version</a>
-                    <a href="#" class="btn btn-xs btn-primary" id="leftVersion">Left version</a>
-                </div>
                 <div class="ibox-content" id="ibox-content">
 
                     <div id="vertical-timeline" class="vertical-container dark-timeline">
@@ -73,25 +115,68 @@
 </div>
 <script src="/static/js/axios.min.js"></script>
 <script src="/static/js/vue.min.js"></script>
+<script src="/static/plugins/ladda/spin.min.js"></script>
+<script src="/static/plugins/ladda/ladda.min.js"></script>
+<script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
 <script>
+    var search_btn;
+    $(function () {
+        search_btn = $('#search_btn').ladda();
+        search_btn.click(function () {
+            var obj = $('#nameorphone');
+            if (!$.trim(obj.val())) {
+                err('请输入搜索词 !');
+                obj.focus();
+                return;
+            }
+            search_btn.ladda('start');
+            $.ajax({
+                type: 'POST',
+                url: '/admin/member/getUserInfo',
+                data: {nameorphone: obj.val()},
+                success: function (data) {
+                    initial(data.user_id, vm.status, true);
+                },
+                error: function (xhr, type) {
+                    search_btn.ladda('stop');
+                    err(xhr.responseText);
+                }
+            });
+        });
+    });
+
+    function initial(user_id, status, flag) {
+        axios.post('/admin/member/behavior', {
+            'user_id': user_id,
+            'status': status
+        }).then(function (response) {
+            vm.info = response.data.info;
+            vm.type = response.data.type;
+            vm.status = status;
+            vm.user = response.data.user;
+            vm.user_id = vm.user.user_id;
+            if (typeof(flag) != 'undefined') {
+                toastr.clear();
+                toastr.success('搜索结果已更新');
+                search_btn.ladda('stop');
+            }
+        }).catch(function (error) {
+            toastr.error(error);
+        });
+    }
+
     var vm = new Vue({
-        el: '#ibox-content',
+        el: '#wrapper',
         data: {
             user_id: "{$user_id}",
+            status: 0,
             info: {},
             type: [],
+            user: {},
             className: []
         },
         created: function () {
-            var that = this;
-            axios.post('/admin/member/behavior', {
-                'user_id': that.user_id
-            }).then(function (response) {
-                vm.info = response.data.info;
-                vm.type = response.data.type;
-            }).catch(function (error) {
-                err(error.response.data);
-            });
+            initial(this.user_id, this.status);
         },
         methods: {
             show_detail: function (bid) {
@@ -104,6 +189,12 @@
                 }).catch(function (error) {
                     err(error.response.data);
                 });
+            },
+            selectDate: function (type) {
+                if (this.status == type)
+                    return;
+                initial(this.user_id, type, true);
+                $(event.target).removeClass('btn-default').addClass('btn-success active').siblings().removeClass('btn-success active').addClass('btn-default');
             }
         }
     });

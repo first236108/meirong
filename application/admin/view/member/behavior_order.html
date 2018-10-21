@@ -1,0 +1,47 @@
+<div class="ibox-content">
+    <div class="row">
+        <dl class="dl-horizontal">
+            <dt>订单编号</dt>
+            <dd>{$info.order.order_sn}</dd>
+            <dt>支付时间</dt>
+            <dd>{$info.order.pay_time}</dd>
+            <dt>服务项目合计金额</dt>
+            <dd>￥ {$info.order.order_amount}</dd>
+            {gt name="$info.order.order_prom_amount" value="0"}
+                <dt>订单活动减免</dt>
+                <dd>￥ {$info.order.order_prom_amount}</dd>
+            {/gt}
+            {gt name="$info.order.manager_reduce" value="0"}
+                <dt>商家优惠金额</dt>
+                <dd>￥ {$info.order.manager_reduce}</dd>
+            {/gt}
+            {gt name="$info.order.coupon_amount" value="0"}
+                <dt>优惠券抵扣</dt>
+                <dd>￥ {$info.order.coupon_amount}</dd>
+            {/gt}
+            {gt name="$info.order.points_amount" value="0"}
+                <dt>积分抵扣</dt>
+                <dd>￥ {$info.order.points_amount}</dd>
+            {/gt}
+            <dt>实付金额</dt>
+            <dd class="text-danger">￥ {$info.order.pay_amount}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="ibox-content">
+    <ul class="sortable-list connectList agile-list">
+        {volist name="info.order_item" id="item"}
+        <li class="{if condition='$item.dec_num gt 0'}info-element{else /}success-element{/if}">
+            {$item.title}
+            <div class="agile-detail">
+                {eq name="$item.dec_num" value="0"}
+                    <a onclick="javascript:;" class="pull-right btn btn-xs btn-white">已全部消费</a>
+                {/eq}
+                <i class="fa fa-battery"></i>&nbsp;<span class="text-success">服务次数：{$item.num}</span><br />
+                <i class="fa fa-battery-{:round($item.dec_num/$item.num*4)}"></i>&nbsp;<span class="text-danger">剩余次数：{$item.dec_num}</span>
+            </div>
+        </li>
+        {/volist}
+    </ul>
+</div>

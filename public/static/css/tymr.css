@@ -50,8 +50,8 @@ textarea.form-control {
     cursor: auto !important;
     font-weight: normal !important;
 }
-
 .dd-handle .chat-avatar {
+
     margin-top: -5px
 }
 
@@ -207,3 +207,4 @@ textarea.form-control {
     text-overflow: ellipsis;
     -o-text-overflow: ellipsis;
 }
+#completed li:hover{cursor:auto;}

@@ -48,36 +48,25 @@ class Member extends Base
         return view();
     }
 
-    public function ajaxIndex()
+    public function getUserInfo($user_id = 0)
     {
-        $type        = input('type', 0);
-        $is_valid    = input('is_valid', 1);
-        $create_time = input('create_time', 0);
-        $last_come   = input('last_come', 0);
-        $nameorphone = input('nameorphone', 0);
-        $map         = [
-            ['is_delete', '=', $type],
-            ['is_valid', '=', $is_valid]
-        ];
-
-        if ($create_time) {
-            $map[] = ['create_time', '>', strtotime($create_time)];
-        }
-        if ($last_come) {
-            $map[] = ['last_come', '>', strtotime($last_come)];
-        }
-        if ($nameorphone) {
-            $map[] = ['name|nickname|phone', 'like', '%' . $nameorphone . '%'];
+        if ($user_id) {
+            $map [] = ['user_id', '=', $user_id];
+        } else {
+            $nameorphone = input('nameorphone', 0);
+            $map[]       = ['name|nickname|phone', 'like', '%' . $nameorphone . '%'];
         }
 
-        try {
-            $list  = Users::where($map)->field('password', true)->order('last_come desc')->paginate(2);
-            $level = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
-            $page  = $list->render();
-        } catch (\Exception $e) {
-            return json($e->getMessage(), 403);
+        $user = Users::where($map)->field('password', true)->find();
+        if (!$user) {
+            return json('无匹配结果', 404);
         }
-        return json([$list->items(), $level, $page]);
+
+        $level         = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
+        $user['level'] = $level[$user['level']];
+        if ($user_id)
+            return $user;
+        return json($user);
     }
 
     public function addEditMember()
@@ -169,7 +158,7 @@ class Member extends Base
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
-        $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'confirm_id' => session('admin.id'), 'total_amount' => $total_amount, 'type' => $type, 'order' => $order->getData()]));
+        $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'confirm_id' => session('admin.id'), 'total_amount' => $total_amount, 'type' => $type, 'order' => $order]));
         return view();
     }
 
@@ -301,23 +290,29 @@ class Member extends Base
         }
     }
 
-    public function order_detail($order_id = false)
+    public function order_detail($id = false)
     {
-        if ($order_id === false)
+        if ($id === false)
             $order_id = input('order_id', 0);
+        else
+            $order_id = $id;
         if ($order_id < 1)
             return json('请求参数错误', 404);
         $order      = Db::name('order')->where('order_id', $order_id)->withAttr('pay_time', function ($value, $data) {
             return date('Y-m-d H:i:s', $value);
         })->find();
         $order_item = Db::name('order_item')->where('order_id', $order_id)->select();
-        if ($order_id === false)
+        if ($id !== false)
             return ['order' => $order, 'order_item' => $order_item];
         return json(['order' => $order, 'order_item' => $order_item]);
     }
 
     /**
      * 消费列表
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function consumption()
     {
@@ -399,10 +394,45 @@ class Member extends Base
         return json(['data' => $result, 'total' => $count]);
     }
 
+    /**
+     * 预约
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function appointment()
+    {
+        $id         = input('post.id/d', 0);
+        $index      = input('repeat/d', 0);
+        $order_item = Db::name('order_item')->lock(true)->where('id', $id)->find();
+        if (!$order_item)
+            return json('订单信息不存在', 401);
+        $map     = [
+            'order_id'   => $order_item['order_id'],
+            'item_id'    => $order_item['id'],
+            'confirm_id' => 0,
+            'is_delete'  => 0,
+        ];
+        $consume = Db::name('consumption')->where($map)->order('cid asc')->select();
+
+        if (count($consume) >= $index + 1) {
+            return json($consume[$index]);
+        }
+        if (count($consume) >= $order_item['dec_num']) {
+            return json(end($consume));
+        }
+
+        if ($order_item['dec_num'] == 0)
+            return json('订单所含[' . $order_item['title'] . ']项目已全部消费');
+        $appointment = apponintment($order_item);
+        return json($appointment);
+    }
+
     public function consume($cid = null)
     {
         if (input('?post.cid') || $cid) {
-            $map = ['a.cid' => $cid ?? input('post.cid')];
+            $map = ['a.cid' => $cid ?? input('post.cid/d')];
         } else {
             $map = ['a.qrcode' => input('post.qrcode'), 'a.is_delete' => 0];
         }
@@ -454,6 +484,13 @@ class Member extends Base
         Db::name('consumption')->where('cid', $cid)->update(['is_delete' => time(), 'del_remark' => $remark]);
     }
 
+    /**
+     * 会员行为分析
+     * @return \think\response\Json|\think\response\View
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function behavior()
     {
         $user_id = input('user_id') ?? 0;
@@ -462,34 +499,59 @@ class Member extends Base
             return view();
         }
 
+        $str    = '-30 day';
+        $status = input('post.status', 0);
+        if ($status > 0) {
+            $str = '-90 day';
+            if ($status > 1)
+                $str = date('Y-1-1 00:00:00');
+        }
+        $map = 'add_time > ' . strtotime($str) . ' AND ';
         if ($user_id) {
-            $map = 'user_id=' . $user_id;
+            $map .= 'user_id=' . $user_id;
         } else {
             $subQuery = Db::name('user_behavior')->fetchSql(true)->order('bid desc')->limit(1)->value('user_id');
-            $map      = 'user_id=(' . $subQuery . ')';
+            $map      .= 'user_id=(' . $subQuery . ')';
         }
-        $info = Db::name('user_behavior')->where($map)->order('bid desc')->select();
-        return json(['info' => $info, 'type' => behaviorType(0, 0, true)]);
+        try {
+            $info    = Db::name('user_behavior')->where($map)->order('bid desc')->select();
+            $user_id = $user_id ? $user_id : $info[0]['user_id'];
+            $user    = $this->getUserInfo($user_id)->toArray();
+        } catch (Exception $e) {
+            return json($e->getMessage(), 404);
+        }
+
+        $type           = behaviorType(0, 0, true);
+        $user['statis'] = [];
+        $count          = count($info);
+        if ($count) {
+            $temp = array_count_values(array_column($info, 'type'));
+            foreach ($temp as $index => $num) {
+                $user['statis'][] = [$type[$index], $num];
+            }
+        }
+
+        return json(['user' => $user, 'info' => $info, 'type' => $type]);
     }
 
     public function behavior_detail()
     {
-        $bid      = input('bid', 0);
+        $bid      = input('bid/d', 0);
         $behavior = Db::name('user_behavior')->cache(true)->where('bid', $bid)->find();
         if (!$behavior)
             $this->error('参数错误');
 
-        $item    = [1, 2, 3];
-        $consume = [6, 7, 8];
+        $item    = [1, 2, 3];//商品
+        $consume = [6, 7, 8];//预约消费
 
         $this->assign('behavior', $behavior);
         $this->assign('comment', behaviorType(0, 0, 1)[$behavior['type']]);
         switch ($behavior['type']) {
             case in_array($behavior['type'], $item):
                 $table    = 'item';
-                $item     = Db::name($table)->cache(true, 864000)->where('item_id', $behavior['link_id'])->find();
+                $info     = Db::name($table)->cache(true, 864000)->where('item_id', $behavior['link_id'])->find();
                 $category = Db::name('item_cate')->cache(true)->where('cate_id', 'IN', [$behavior['cat_id1'], $behavior['cat_id2']])->column('name', 'cate_id');
-                $this->assign('item', $item);
+                $this->assign('item', $info);
                 $this->assign('category', $category);
                 return view('behavior_item');
                 break;
@@ -503,8 +565,15 @@ class Member extends Base
                 $this->error('内容不存在');
                 break;
             default:
-                $table = behaviorType(0, $behavior['type']);
+                $table = behaviorType(0, $behavior['type']);//order,share,activity
+                if ($table == 'order') {
+                    $info = $this->order_detail($behavior['link_id']);
+                    //dump($info);
+                    //die;
+                    $this->assign('info', $info);
+                }
+                return view('behavior_' . $table);
         }
-        echo $table;
+        return view('public/modal_404');
     }
 }

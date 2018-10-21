@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-1">
+                <div class="col-sm-2">
                     <div class="form-group">
                         <label>&nbsp;</label>
                         <button id="search_btn" type="button" class="ladda-button btn btn-primary btn-block" data-style="expand-right" data-tip="tooltip" data-placement="top" data-original-title="搜索">Search !</button>
@@ -219,10 +219,10 @@
             responsive: true,
             processing: true,//显示处理状态，排序、加载时
             searchDelay: 500,//自动搜索延迟
-            order: [[4, 'desc']],
+            order: [[5, 'desc']],
             bInfo: true,//不显示分页信息
             aoColumnDefs: [
-                {"orderable": false, "aTargets": [1, 7, 8]}// 制定列不参与排序
+                {"orderable": false, "aTargets": [2, 8, 9]}// 制定列不参与排序
             ],
             language: {
                 info: "当前显示第 _START_ 至 _END_ 条, 共 _TOTAL_ 条记录",

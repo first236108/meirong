@@ -237,13 +237,13 @@
             </div>
         </div>
     </div>
-    <div class="modal inmodal fade" id="order-detail" tabindex="-2" role="dialog"  aria-hidden="true">
+    <div class="modal inmodal fade" id="order-detail" tabindex="-2" role="dialog"  aria-hidden="true" data-backdrop="static" data-keyboard=false>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     <h4 class="modal-title">订单详情</h4>
-                    <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>
+                    <small class="text-muted">实时预约，方便会员立即消费.</small>
                 </div>
                 <div class="modal-body">
                     <div class="ibox-content">
@@ -256,13 +256,16 @@
                                 <dt>服务项目合计金额</dt>
                                 <dd>￥ {{order_detail.order.order_amount}}</dd>
                                 <dt v-if="order_detail.order.order_prom_amount>0">订单活动减免</dt>
-                                <dt v-if="order_detail.order.order_prom_amount>0">￥ {{order_detail.order.order_prom_amount}}</dt>
-                                <dt v-if="order_detail.order.manger_reduce>0">商家优惠金额</dt>
-                                <dt v-if="order_detail.order.manger_reduce>0">￥ {{order_detail.order.manger_reduce}}</dt>
-                                <dt v-if="order_detail.order.coupou_amount>0">优惠券抵扣</dt>
-                                <dt v-if="order_detail.order.coupon_amount>0">￥ {{order_detail.order.coupon_amount}}</dt>
+                                <dd v-if="order_detail.order.order_prom_amount>0">￥ {{order_detail.order.order_prom_amount}}</dd>
+
+                                <dt v-if="order_detail.order.manager_reduce>0">商家优惠金额</dt>
+                                <dd v-if="order_detail.order.manager_reduce>0">￥ {{order_detail.order.manger_reduce}}</dd>
+
+                                <dt v-if="order_detail.order.coupon_amount>0">优惠券抵扣</dt>
+                                <dd v-if="order_detail.order.coupon_amount>0">￥ {{order_detail.order.coupon_amount}}</dd>
+
                                 <dt v-if="order_detail.order.points_amount>0">积分抵扣</dt>
-                                <dt v-if="order_detail.order.points_amount>0">￥ {{order_detail.order.points_amount}}</dt>
+                                <dd v-if="order_detail.order.points_amount>0">￥ {{order_detail.order.points_amount}}</dd>
                                 <dt>实付金额</dt>
                                 <dd class="text-danger">￥ {{order_detail.order.pay_amount}}</dd>
                             </dl>
@@ -273,7 +276,8 @@
                             <li :class="[item.dec_num>0?'info-element':'success-element']" v-for="(item,index) in order_detail.order_item">
                                 {{item.title}}
                                 <div class="agile-detail">
-                                    <a onclick="javascript:;" class="pull-right btn btn-xs btn-white" v-if="item.dec_num==0">已全部消费</a>
+                                    <a onclick="javascript:;" class="pull-right btn btn-xs btn-danger" disabled="disabled" v-if="item.dec_num==0">已全部消费</a>
+                                    <a @click="getQrcode(item.id)" data-repeat="0" class="pull-right btn btn-xs btn-success" v-else>立即预约</a>
                                     <i class="fa fa-battery"></i>&nbsp;<span class="text-success">服务次数：{{item.num}}</span><br />
                                     <i :class="['fa','fa-battery-'+Math.round(item.dec_num/item.num*4)]"></i>&nbsp;<span class="text-danger">剩余次数：{{item.dec_num}}</span>
                                 </div>
@@ -309,7 +313,7 @@
             order:[[6,'desc']],
             bInfo:true,//不显示分页信息
             aoColumnDefs: [
-                {"orderable":false,"aTargets":[1,8]}// 制定列不参与排序
+                {"orderable":false,"aTargets":[5]}// 制定列不参与排序
             ],
             language: {
                 info: "当前显示第 _START_ 至 _END_ 条, 共 _TOTAL_ 条记录",
@@ -378,27 +382,7 @@
                 create_time: "开始时间 错误",
                 last_time: "截止时间 错误",
                 nameorphone: "手机号/名字 长度错误"
-            },
-//            submitHandler: function (form) {
-//                $.ajax({
-//                    type: 'POST',
-//                    url: '/admin/member/recharge',
-//                    data: $(form).serialize(),
-//                    success: function (data) {
-//                        layer.open({
-//                            content: '数据已更新',
-//                            skin: 'msg',
-//                            time: 1
-//                        });
-//                        vm.list = data[0];
-//                        vm.sum_amount = data[3];
-//                        vm.total_amount = data[4];
-//                    },
-//                    error: function (xhr, type) {
-//                        err(xhr.responseText);
-//                    }
-//                });
-//            }
+            }
         });
 
         $("#order-add-form").validate({
@@ -587,6 +571,35 @@
             onSubmit: function (e) {
                 e.preventDefault();
                 return false;
+            },
+            getQrcode: function (id) {
+                var obj = $(event.target);
+                var repeat = obj.data('repeat');
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/member/appointment',
+                    data: {id: id, repeat: repeat},
+                    success: function (data) {
+                        obj.data('repeat', parseInt(repeat) + 1);
+                        obj.text('再次生成预约码');
+                        swal({
+                            title: "预约码["+data.qrcode+"],去消费 !?",
+                            text: "未消费之前可重复预约，会员可自行调整预约时间!",
+                            imageUrl:'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg',
+                            type:"success",
+                            showCancelButton: true,
+                            confirmButtonColor: "#18a689",
+                            confirmButtonText: "Just do it!",
+                            showLoaderOnConfirm:true,
+                            html:data.qrcode
+                        }, function () {
+                            location.href = "/admin/member/consumption.html?user_id=" + data.user_id;
+                        });
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseText);
+                    }
+                });
             }
         },
         updated: function () {
@@ -641,6 +654,5 @@
             err(error.response.data);
         });
     }
-
 </script>
 {include file="public/footer" /}

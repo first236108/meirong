@@ -192,7 +192,7 @@ function getFirstCharter($str)
 }
 
 /**
- * 生成唯一订单号
+ * 生成唯一订单号18位
  * @return string
  */
 function getNewOrderSn()
@@ -293,4 +293,51 @@ function behaviorType($key, $value = 0, $get_comment = false)
             11 => '到店打卡',
         ];
     return $type[$key];
+}
+
+/**
+ * 预约
+ * @param $order_item
+ * @param int $user_id
+ * @param null $time
+ * @return array|bool
+ */
+function apponintment($order_item, $user_id = 0, $time = null)
+{
+    if ($user_id == 0) {
+        $user_id = Db::name('order')->cache(true)->where('order_id', $order_item['order_id'])->value('user_id');
+    }
+    $now = time();
+    $row = [
+        'user_id'    => $user_id,
+        'order_id'   => $order_item['order_id'],
+        'item_id'    => $order_item['id'],
+        'add_time'   => $now,
+        'schedule'   => $time ?? $now,
+        'qrcode'     => uniqueCode(),
+        'confirm_id' => 0,
+        'is_delete'  => 0,
+    ];
+    $cid = Db::name('consumption')->insertGetId($row);
+    if ($cid) {
+        $row['cid'] = $cid;
+        return $row;
+    }
+    return false;
+}
+
+/**
+ * 生成唯一预约码 12位数字,年月4位 秒数5位 随机3位
+ * @return string
+ */
+function uniqueCode()
+{
+    while (true) {
+        list($usec, $sec) = explode(" ", microtime());
+        $sn = date('md') . substr($sec, 5) . mt_rand(100, 999);
+        if (Db::name('consumption')->where('qrcode', $sn)->count())
+            continue;
+        break;
+    }
+    return $sn;
 }

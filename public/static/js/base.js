@@ -8,11 +8,14 @@ toastr.options = {
     closeButton: true,
     progressBar: true,
     positionClass: "toast-top-center",
+    showDuration: 200,
+    extendedTimeOut: 200,
+    hideDuration: 600,
     timeOut: 2000,
     showEasing: "swing",
     hideEasing: "linear",
-    showMethod: "fadeIn",
-    hideMethod: "fadeOut"
+    showMethod: "slideDown",
+    hideMethod: "slideUp"
 };
 
 // 修改指定表的指定字段值 按钮点击切换是否
