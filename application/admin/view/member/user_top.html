@@ -10,7 +10,14 @@
             </div>
         </div>
     </div>
-    <div class="grid">
+    <div class="grid" id="box1">
+        <div class="sk-spinner sk-spinner-wave">
+            <div class="sk-rect1"></div>
+            <div class="sk-rect2"></div>
+            <div class="sk-rect3"></div>
+            <div class="sk-rect4"></div>
+            <div class="sk-rect5"></div>
+        </div>
 
         <div class="grid-item">
             <div class="ibox">
@@ -88,6 +95,7 @@
     });
 
     function initial(status) {
+        $('#box1').toggleClass('sk-loading');
         $.ajax({
             type: 'POST',
             url: "{:url('/admin/member/user_top')}",
@@ -98,8 +106,10 @@
                 vm.type_comment = data.type_comment;
                 vm.users = data.users;
                 vm.status = data.status;
+                $('#box1').toggleClass('sk-loading');
             },
             error: function (xhr, type) {
+                $('#box1').toggleClass('sk-loading');
                 err(xhr.responseText);
             }
         });

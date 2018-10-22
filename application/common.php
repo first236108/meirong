@@ -230,6 +230,9 @@ function write_order_log($order_id, $operater, $msg)
  * @param int $user_id
  * @param int $link_id
  * @param string $session_id
+ * @throws \think\db\exception\DataNotFoundException
+ * @throws \think\db\exception\ModelNotFoundException
+ * @throws \think\exception\DbException
  */
 function user_log($type, $user_id = 0, $link_id = 0, $session_id = '')
 {

@@ -10,9 +10,19 @@ use think\Db;
 
 class Report extends Base
 {
-    public function sumary()
+    public function imcome()
     {
 
+        return view();
+    }
+
+    public function service()
+    {
+        return view();
+    }
+
+    public function salary()
+    {
         return view();
     }
 }

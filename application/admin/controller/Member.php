@@ -183,7 +183,7 @@ class Member extends Base
             return json('赠送服务项目错误', 401);
         }
 
-        unset($data['item'], $data['serice_count'], $data['give'], $data['give_count'], $data['phone']);
+        unset($data['item'], $data['serice_count'], $data['give'], $data['give_count'], $data['phone'], $data['total_amount']);
 
         $result = $data['pay_amount'];
         isset($data['manager_reduce']) && $result += floatval($data['manager_reduce']);
@@ -205,7 +205,7 @@ class Member extends Base
             $data['points_amount'] = intval($data['use_points']) * intval($ratio);
             $result                += $data['points_amount'];
         }
-        if ($data['total_amount'] > $result) {
+        if ($data['order_amount'] > $result) {
             return json('订单金额不符', 401);
         }
 
@@ -232,8 +232,8 @@ class Member extends Base
                 Db::name('users')->where('user_id', $data['user_id'])->setDec('points', $data['use_points']);
             }
             #如果付款金额大于充值项目，写入用户余额
-            if ($data['total_amount'] < $result) {
-                Db::name('users')->where('user_id', $data['user_id'])->setInc('money', $result - $data['total_amount']);
+            if ($data['order_amount'] < $result) {
+                Db::name('users')->where('user_id', $data['user_id'])->setInc('money', $result - $data['order_amount']);
             }
 
             #充值项目
@@ -426,6 +426,7 @@ class Member extends Base
         if ($order_item['dec_num'] == 0)
             return json('订单所含[' . $order_item['title'] . ']项目已全部消费');
         $appointment = apponintment($order_item);
+        user_log('appointment', $appointment['user_id'], $order_item['order_id']);
         return json($appointment);
     }
 

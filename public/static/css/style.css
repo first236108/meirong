@@ -6819,13 +6819,13 @@ body.body-small .vote-icon {
     opacity: 1;
   }
 }
-.ibox-content > .sk-spinner {
+.sk-spinner {
   display: none;
 }
-.ibox-content.sk-loading {
+.sk-loading {
   position: relative;
 }
-.ibox-content.sk-loading:after {
+.sk-loading:after {
   content: '';
   background-color: rgba(255, 255, 255, 0.7);
   position: absolute;
@@ -6834,7 +6834,7 @@ body.body-small .vote-icon {
   right: 0;
   bottom: 0;
 }
-.ibox-content.sk-loading > .sk-spinner {
+.sk-loading > .sk-spinner {
   display: block;
   position: absolute;
   top: 40%;
