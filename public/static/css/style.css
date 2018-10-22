@@ -1109,6 +1109,26 @@ button.dim:active:before {
   background-color: #f8ac59;
   color: #ffffff;
 }
+.label-blue,
+.badge-blue {
+  background-color: #607d8b;
+  color: #ffffff;
+}
+.label-green,
+.badge-green {
+  background-color: #7fcc84;
+  color: #ffffff;
+}
+.label-purple,
+.badge-purple {
+  background-color: #c144d6;
+  color: #ffffff;
+}
+.label-brown,
+.badge-brown {
+  background-color: #CC6600;
+  color: #ffffff;
+}
 .label-danger,
 .badge-danger {
   background-color: #ed5565;
@@ -1129,7 +1149,7 @@ button.dim:active:before {
   background-color: #FFFFFF;
   color: #5E5E5E;
 }
-.label-white,
+.label-disable,
 .badge-disable {
   background-color: #2A2E36;
   color: #8B91A0;

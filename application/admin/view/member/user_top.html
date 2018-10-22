@@ -1,0 +1,109 @@
+{include file="public/header" /}
+{include file="public/breadcrumb" /}
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-center float-e-margins p-h-xs">
+                <button class="btn btn-xs btn-success active" @click="selectDate(0)">30天排行</button>
+                <button class="btn btn-xs btn-default" @click="selectDate(1)">90天排行</button>
+                <button class="btn btn-xs btn-default" @click="selectDate(2)">今年...</button>
+            </div>
+        </div>
+    </div>
+    <div class="grid">
+
+        <div class="grid-item">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <h2 class="text-danger">充值金额排行榜</h2>
+                    <small>仅计算充值/购买的实际支付金额.</small>
+                    <ul class="list-group clear-list m-t">
+                        <li class="list-group-item fist-item" v-for="(vo,index) in recharge_top">
+                            <div class="row">
+                                <span class="pull-right">{{vo.amount}}</span>
+                                <span :class="['label',classname[index]]">{{index+1}}</span> &nbsp;
+                                <span class="text-md pointer" :title="users[vo.user_id].name">{{users[vo.user_id].name}}</span>
+                                <u class="pull-right m-r small">{{users[vo.user_id].level_name}}</u>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-item" v-for="(item,index) in top">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <h3>{{type_comment[index]}} 次数排行</h3>
+                    <small>仅统计{{type_comment[index]}}.</small>
+                    <ul class="list-group clear-list m-t">
+                        <li class="list-group-item fist-item" v-for="(vu,idx) in item">
+                            <div class="row">
+                                <span class="pull-right">{{vu[1]}} 次</span>
+                                <span :class="['label',classname[idx]]">{{idx+1}}</span> &nbsp;
+                                <span class="text-md pointer" :title="users[vu[0]].name">{{users[vu[0]].name}}</span>
+                                <u class="pull-right m-r small">{{users[vu[0]].level_name}}</u>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/plugins/masonary/masonry.pkgd.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script>
+    $(function () {
+        $('.grid').masonry({
+            itemSelector: '.grid-item',
+            columnWidth: 300,
+            gutter: 25
+        });
+    });
+    var vm = new Vue({
+        el: '#wrapper',
+        data: {
+            recharge_top: {},
+            top: {},
+            type_comment: [],
+            users: [],
+            classname: ['label-danger', 'label-warning', 'label-success', 'label-info', 'label-primary', 'label-default', 'label-green', 'label-blue', 'label-purple', 'label-brown'],
+            status: 0
+        },
+        created: function () {
+            initial(this.status);
+        },
+        methods: {
+            selectDate: function (type) {
+                if (this.status == type)
+                    return;
+                initial(type);
+                $(event.target).removeClass('btn-default').addClass('btn-success active').siblings().removeClass('btn-success active').addClass('btn-default');
+            }
+        }
+    });
+
+    function initial(status) {
+        $.ajax({
+            type: 'POST',
+            url: "{:url('/admin/member/user_top')}",
+            data: {status: status},
+            success: function (data) {
+                vm.recharge_top = data.recharge_top;
+                vm.top = data.top;
+                vm.type_comment = data.type_comment;
+                vm.users = data.users;
+                vm.status = data.status;
+            },
+            error: function (xhr, type) {
+                err(xhr.responseText);
+            }
+        });
+    }
+</script>
+
+{include file="public/footer" /}

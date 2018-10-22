@@ -208,3 +208,20 @@ textarea.form-control {
     -o-text-overflow: ellipsis;
 }
 #completed li:hover{cursor:auto;}
+.grid .ibox {
+    margin-bottom: 0;
+}
+
+.grid-item {
+    margin-bottom: 25px;
+    width: 300px;
+}
+.grid-item-width2{
+    width: 800px;
+}
+.text-md{
+    font-size:1.8rem;
+}
+.pointer{
+    cursor: pointer;
+}

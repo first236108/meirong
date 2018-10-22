@@ -3,18 +3,18 @@
 <link href="/static/plugins/ladda/ladda-themeless.min.css" rel="stylesheet">
 <div class="ibox-content m-b-sm border-bottom p-m-10 tooltip-demo">
     <div class="row" id="search-bar">
-        <form id="top-search" method="post" action="/admin/member/recharge.html">
+        <form id="top-search">
             <div class="col-sm-3">
                 <div class="form-group">
                     <label class="control-label" for="nameorphone">搜索词</label>
-                    <input type="text" id="nameorphone" name="nameorphone" value="" placeholder="手机号/名字/昵称" class="form-control">
+                    <input type="text" id="nameorphone" name="nameorphone" value="" placeholder="手机号/名字/昵称" class="form-control" @keydown.enter.prevent="document.getElementById('search_btn').dispatchEvent(new Event('click'));">
                 </div>
             </div>
 
             <div class="col-sm-2">
                 <div class="form-group">
                     <label>&nbsp;</label>
-                    <button id="search_btn" type="button" class="ladda-button btn btn-primary btn-block" data-style="expand-right" data-tip="tooltip" data-placement="right" data-original-title="搜索">Search !</button>
+                    <button id="search_btn" type="button" class="ladda-button btn btn-primary btn-block" data-style="expand-right">Search !</button>
                 </div>
             </div>
         </form>
@@ -25,6 +25,7 @@
     <button class="btn btn-xs btn-default" @click="selectDate(1)">90天日志</button>
     <button class="btn btn-xs btn-default" @click="selectDate(2)">今年...</button>
 </div>
+
 <div class="row m-t-lg">
     <div class="col-md-6">
 
@@ -39,7 +40,7 @@
                     </h2>
                     <h4>{{user.level}}</h4>
                     <small>
-                        <i class="fa fa-map-marker"></i> &nbsp;{{user.address}}<br />
+                        <i class="fa fa-map-marker"></i> &nbsp;{{user.address}}<br/>
                         <i class="fa fa-birthday-cake"></i> &nbsp;{{user.birthday}}
                     </small>
                 </div>
@@ -64,6 +65,7 @@
         <small>累计充值</small>
         <h2 class="no-margins">{{user.total_recharge}} 元</h2>
         <div id="sparkline1"></div>
+        <div id="content"></div>
     </div>
 </div>
 
@@ -113,11 +115,13 @@
         </div>
     </div>
 </div>
+
 <script src="/static/js/axios.min.js"></script>
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/plugins/ladda/spin.min.js"></script>
 <script src="/static/plugins/ladda/ladda.min.js"></script>
 <script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
+<script src="/static/plugins/sparkline/jquery.sparkline.min.js"></script>
 <script>
     var search_btn;
     $(function () {
@@ -143,6 +147,14 @@
                 }
             });
         });
+
+//        $("#sparkline1").bind('sparklineRegionChange', function (ev) {
+//            var sparkline = ev.sparklines[0],
+//                region = sparkline.getCurrentRegionFields()[0];
+//            $("#content").text(vm.timeline[region.offset] + ' 充值 ' + region.value + ' 元.');
+//        }).bind('mouseleave', function () {
+//            $("#content").text('');
+//        });
     });
 
     function initial(user_id, status, flag) {
@@ -155,6 +167,8 @@
             vm.status = status;
             vm.user = response.data.user;
             vm.user_id = vm.user.user_id;
+            vm.graph = response.data.graph_data.data;
+            vm.timeline = response.data.graph_data.timeline;
             if (typeof(flag) != 'undefined') {
                 toastr.clear();
                 toastr.success('搜索结果已更新');
@@ -173,7 +187,9 @@
             info: {},
             type: [],
             user: {},
-            className: []
+            className: [],
+            graph: [],
+            timeline: []
         },
         created: function () {
             initial(this.user_id, this.status);
@@ -196,6 +212,19 @@
                 initial(this.user_id, type, true);
                 $(event.target).removeClass('btn-default').addClass('btn-success active').siblings().removeClass('btn-success active').addClass('btn-default');
             }
+        },
+        updated: function () {
+            $("#sparkline1").sparkline(vm.graph, {
+                type: 'bar',
+                barWidth: 8,
+                height: '5rem',
+                barColor: '#1ab394',
+                negBarColor: '#c6c6c6',
+                tooltipFormat: '{{offset:offset}} 充值： {{value}}',
+                tooltipValueLookups: {
+                    'offset': vm.timeline
+                }
+            });
         }
     });
 

@@ -259,7 +259,7 @@ function user_log($type, $user_id = 0, $link_id = 0, $session_id = '')
  * @param boolean $get_comment
  * @return string|int|array
  */
-function behaviorType($key, $value = 0, $get_comment = false)
+function behaviorType($key, $value = null, $get_comment = false)
 {
     $type = [
         'login'       => 0,//登录
@@ -275,7 +275,7 @@ function behaviorType($key, $value = 0, $get_comment = false)
         'activity'    => 10,//参加活动--表名activity
         'check_in'    => 11,//到店打卡
     ];
-    if ($value)
+    if (!is_null($value))
         return array_flip($type)[$value];
     if ($get_comment)
         return [
@@ -286,7 +286,7 @@ function behaviorType($key, $value = 0, $get_comment = false)
             4  => '充值|购买',
             5  => '咨询',
             6  => '预约',
-            7  => 'cancel预约',
+            7  => '取消预约',
             8  => '消费',
             9  => '分享',
             10 => '参加活动',

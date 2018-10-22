@@ -521,7 +521,7 @@ class Member extends Base
             return json($e->getMessage(), 404);
         }
 
-        $type           = behaviorType(0, 0, true);
+        $type           = behaviorType(0, null, true);
         $user['statis'] = [];
         $count          = count($info);
         if ($count) {
@@ -531,7 +531,15 @@ class Member extends Base
             }
         }
 
-        return json(['user' => $user, 'info' => $info, 'type' => $type]);
+        $graph_data['timeline'] = [];
+        $graph_data['data']     = [];
+        $recharge_map           = ['user_id' => $user_id, 'pay_status' => 1, 'status' => ['IN', '1,4,5']];
+        $recharge               = Db::name('order')->cache(true, 86400)->where($recharge_map)->order('pay_time')->field('pay_amount,FROM_UNIXTIME(pay_time) as pay_time')->select();
+        if ($recharge) {
+            $graph_data['timeline'] = array_column($recharge, 'pay_time');
+            $graph_data['data']     = array_column($recharge, 'pay_amount');
+        }
+        return json(['user' => $user, 'graph_data' => $graph_data, 'info' => $info, 'type' => $type]);
     }
 
     public function behavior_detail()
@@ -545,7 +553,7 @@ class Member extends Base
         $consume = [6, 7, 8];//预约消费
 
         $this->assign('behavior', $behavior);
-        $this->assign('comment', behaviorType(0, 0, 1)[$behavior['type']]);
+        $this->assign('comment', behaviorType(0, null, 1)[$behavior['type']]);
         switch ($behavior['type']) {
             case in_array($behavior['type'], $item):
                 $table    = 'item';
@@ -575,5 +583,51 @@ class Member extends Base
                 return view('behavior_' . $table);
         }
         return view('public/modal_404');
+    }
+
+    public function user_top()
+    {
+        if ($this->request->isGet())
+            return view();
+
+        $str    = '-30 day';
+        $status = input('post.status', 0);
+        if ($status > 0) {
+            $str = '-90 day';
+            if ($status > 1)
+                $str = date('Y-1-1 00:00:00');
+        }
+        $user_ids     = [];
+        $str          = strtotime($str);
+        $recharge_top = Db::name('order')->cache(true, 86400)->where([['status', 'IN', '1,5'], ['pay_status', '=', 1], ['add_time', '>', $str]])
+            ->group('user_id')->order('amount desc')->limit(10)
+            ->field('SUM(pay_amount) as amount,user_id')->select();
+        if ($recharge_top)
+            $user_ids = array_column($recharge_top, 'user_id');
+        //$visit    = Db::name('user_behavior')->cache(true, 86400)->where('type=1')->group('user_id')->order('count desc')->limit(10)->column('count(bid) as count', 'user_id');
+        //$favorite = Db::name('user_behavior')->cache(true, 86400)->where('type=2')->group('user_id')->order('count desc')->limit(10)->column('count(bid) as count', 'user_id');
+        $type   = '1, 2, 4, 6, 8, 9, 10, 11';
+        $result = Db::name('user_behavior')->cache(true, 86400)
+            ->where([['type', 'IN', $type], ['add_time', '>', $str]])->group('type,user_id')->order('type asc,count desc')
+            ->field('count(bid) as count,user_id,type')->select();
+
+        $top = [];
+        if ($result) {
+            $user_ids  = array_merge($user_ids, array_column($result, 'user_id'));
+            $key       = array_column($result, 'type');
+            $count_key = array_count_values($key);
+            foreach (array_keys($count_key) as $index => $item) {
+                $origin = array_search($item, $key);
+                for ($i = 0; $i < $count_key[$item]; $i++) {
+                    $top[$item][$i] = [$result[$origin + $i]['user_id'], $result[$origin + $i]['count']];
+                }
+            }
+        }
+
+        $type_comment = behaviorType(0, null, 1);
+
+        $users = Db::name('users a')->cache(true, 86400)->join('user_level b', 'a.level=b.level_id')->where('a.user_id', 'IN', $user_ids)
+            ->column('IF(name is null or name="",nickname,name) as name,b.level_name', 'a.user_id');
+        return json(['recharge_top' => $recharge_top, 'top' => $top, 'type_comment' => $type_comment, 'users' => $users]);
     }
 }
