@@ -527,7 +527,6 @@
             'qrcode': document.getElementById('qrcode').value
         }).then(function (response) {
             consume.ladda('stop');
-            console.log(response);
             l.ajax.reload();
             toastr.success('消费成功');
             render_result(response.data);

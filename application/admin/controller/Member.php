@@ -310,9 +310,6 @@ class Member extends Base
     /**
      * 消费列表
      * @return \think\response\Json
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
      */
     public function consumption()
     {
@@ -397,9 +394,6 @@ class Member extends Base
     /**
      * 预约
      * @return \think\response\Json
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
      */
     public function appointment()
     {
@@ -488,9 +482,6 @@ class Member extends Base
     /**
      * 会员行为分析
      * @return \think\response\Json|\think\response\View
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
      */
     public function behavior()
     {

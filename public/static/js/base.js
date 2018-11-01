@@ -157,3 +157,16 @@ function dateparse(timestamp, getDate, getTime) {
         return Y + M + D;
     return Y + M + D + h + m + s;
 }
+
+/**
+ * JSON转数组
+ * @param obj
+ * @returns {Array}
+ */
+function objToArray(obj){
+    var result=[];
+    for (var i in obj) {
+        result.push(obj[i]);
+    }
+    return result;
+}
