@@ -201,6 +201,7 @@
 <script src="/static/js/axios.min.js"></script>
 <script src="/static/plugins/dataTables/datatables.min.js"></script>
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
+<script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
 <script src="/static/plugins/switchery/switchery.js"></script>
@@ -231,7 +232,7 @@
                 searchPlaceholder: '会员性名/昵称/手机号',
                 sZeroRecords: "没有匹配结果",
                 sLoadingRecords: "载入中...",
-                sProcessing: "<img src='http://www.datatables.club/example//resources/user_share/row_details/select2-spinner.gif'>处理中...",
+                sProcessing: "<img src='http://image.igccc.com/loading.gif'>处理中...",
                 oAria: {
                     "sSortAscending": ": 升序排列",
                     "sSortDescending": ": 降序排列"
@@ -311,8 +312,7 @@
                         }, 50);
                     },
                     error: function (xhr, type) {
-                        console.log(xhr);
-                        console.log(type);
+                        err(xhr.responseText);
                     }
                 });
             },
@@ -395,6 +395,8 @@
         });
 
         $('#search-bar .input-group.date').datepicker({
+            language:  'zh-CN',
+            format: 'yyyy-mm-dd',
             todayBtn: "linked",
             keyboardNavigation: false,
             forceParse: false,

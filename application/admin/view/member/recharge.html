@@ -298,6 +298,7 @@
 <script src="/static/js/axios.min.js"></script>
 <script src="/static/plugins/dataTables/datatables.min.js"></script>
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
+<script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
 <script src="/static/plugins/switchery/switchery.js"></script>
@@ -359,6 +360,8 @@
         switchery3 = new Switchery(elem3, {color: '#ED5565', size: 'small'});
 
         $('#search-bar .input-group.date').datepicker({
+            language:  'zh-CN',
+            format: 'yyyy-mm-dd',
             todayBtn: "linked",
             keyboardNavigation: false,
             forceParse: false,

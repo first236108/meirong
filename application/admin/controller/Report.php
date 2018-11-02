@@ -17,23 +17,28 @@ class Report extends Base
         if ($this->request->isGet())
             return view();
 
-        $str        = '-120 day';
+        $str      = '-120 day';
+        $end_time = time();
+        if (input('post.start_time'))
+            $str = input('post.start_time');
+        if (input('post.end_time'))
+            $end_time = strtotime(input('post.end_time')) + 86399;
+
         $start_time = strtotime(date('Y-m-d', strtotime($str)));
-        $end_time   = time();
-        $map        = [
+
+        $map   = [
             ['status', 'IN', [1, 5]],
             ['pay_status', '=', 1],
             ['type', '=', 0],
             ['pay_amount', '>', 0],
-            ['pay_time', '>', $start_time],
-            ['pay_time', '<', $end_time],
+            ['pay_time', 'between', [$start_time, $end_time]],
             ['confirm_id', '>', 0]
         ];
-        $admin      = Db::name('admin')->column('IF(name,name,nickname) as name', 'id');
-        $data       = Db::name('order')->where($map)
+        $admin = Db::name('admin')->column('IF(name,name,nickname) as name', 'id');
+        $data  = Db::name('order')->where($map)
             ->field('order_id, FROM_UNIXTIME(pay_time, "%Y-%m-%d") as days,confirm_id,sum(pay_amount) as pay_amount')
             ->group('days, confirm_id')
-            ->order('days')
+            ->order('days desc')
             ->select();
         if (!$data) return json('没有数据啦', 404);
 
@@ -42,7 +47,7 @@ class Report extends Base
         $series      = [];
         foreach ($date as $index => $day) {
             foreach ($data as $idx => $row) {
-                if (strtotime($row['days']) > strtotime($day))
+                if (strtotime($row['days']) < strtotime($day))
                     break;
                 $series[$row['confirm_id']][$index] = $row['pay_amount'];
             }
@@ -57,12 +62,60 @@ class Report extends Base
             }
         }
 
-        return json(['admin' => $admin, 'confirm_ids' => $confirm_ids, 'date' => $date, 'series' => $series]);
+        return json(['admin' => $admin, 'confirm_ids' => $confirm_ids, 'date' => $date, 'series' => $series, 'data' => $data, 'start_time' => date('Y-m-d', $start_time), 'end_time' => date('Y-m-d', $end_time),'sum'=>array_sum(array_column($data,'pay_amount'))]);
     }
 
     public function service()
     {
-        return view();
+        if ($this->request->isGet())
+            return view();
+
+        $str      = '-120 day';
+        $end_time = time();
+        if (input('post.start_time'))
+            $str = input('post.start_time');
+        if (input('post.end_time'))
+            $end_time = strtotime(input('post.end_time')) + 86399;
+
+        $start_time = strtotime(date('Y-m-d', strtotime($str)));
+
+        $map   = [
+            ['status', 'IN', [1, 5]],
+            ['pay_status', '=', 1],
+            ['type', '=', 0],
+            ['pay_amount', '>', 0],
+            ['pay_time', 'between', [$start_time, $end_time]],
+            ['confirm_id', '>', 0]
+        ];
+        $admin = Db::name('admin')->column('IF(name,name,nickname) as name', 'id');
+        $data  = Db::name('order')->where($map)
+            ->field('order_id, FROM_UNIXTIME(pay_time, "%Y-%m-%d") as days,confirm_id,sum(pay_amount) as pay_amount')
+            ->group('days, confirm_id')
+            ->order('days desc')
+            ->select();
+        if (!$data) return json('没有数据啦', 404);
+
+        $confirm_ids = array_values(array_unique(array_column($data, 'confirm_id')));
+        $date        = array_values(array_unique(array_column($data, 'days')));
+        $series      = [];
+        foreach ($date as $index => $day) {
+            foreach ($data as $idx => $row) {
+                if (strtotime($row['days']) < strtotime($day))
+                    break;
+                $series[$row['confirm_id']][$index] = $row['pay_amount'];
+            }
+        }
+
+        #无业绩时填充null，图表不显示0
+        foreach ($series as $index => $serie) {
+            if ($temp = array_keys(array_diff_key($date, $serie))) {
+                foreach ($temp as $key) {
+                    $series[$index][$key] = null;
+                }
+            }
+        }
+
+        return json(['admin' => $admin, 'confirm_ids' => $confirm_ids, 'date' => $date, 'series' => $series, 'data' => $data, 'start_time' => date('Y-m-d', $start_time), 'end_time' => date('Y-m-d', $end_time),'sum'=>array_sum(array_column($data,'pay_amount'))]);
     }
 
     public function salary()
