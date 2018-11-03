@@ -17,6 +17,7 @@ class Member extends Base
 {
     public function Index()
     {
+        $user_id     = input('user_id', 0);
         $type        = input('type', 0);
         $is_valid    = input('is_valid', 1);
         $create_time = input('create_time', 0);
@@ -37,6 +38,9 @@ class Member extends Base
             $map[] = ['name|nickname|phone', 'like', '%' . $nameorphone . '%'];
         }
 
+        if ($user_id) {
+            $map = 'user_id=' . $user_id;
+        }
         $list = Users::where($map)->field('password', true)->select();
         if (input('json', 0)) {
             return json($list);
@@ -369,12 +373,12 @@ class Member extends Base
             $map[] = [$time_field, '<', strtotime($end_time)];
         }
 
-        $count      = Db::name('consumption a')
+        $count  = Db::name('consumption a')
             ->join('users b', 'a.user_id=b.user_id')
             ->join('order_item c', 'a.item_id=c.id')
             ->where($map)
             ->count();
-        $result     = Db::name('consumption a')
+        $result = Db::name('consumption a')
             ->join('users b', 'a.user_id=b.user_id')
             ->join('order_item c', 'a.item_id=c.id')
             ->join('admin d', 'a.confirm_id=d.id', 'LEFT')
@@ -383,11 +387,7 @@ class Member extends Base
             ->page($p, $limit)
             ->order($sort)
             ->select();
-        $sex_avatar = ['http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg', 'http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg'];
-        foreach ($result as $index => $item) {
-            $result[$index]['avatar'] = $item['avatar'] ?? $sex_avatar[$item['sex']];
-            unset($result[$index]['sex']);
-        }
+        $result = defaultAvatar($result);
         return json(['data' => $result, 'total' => $count]);
     }
 
@@ -621,5 +621,15 @@ class Member extends Base
         $users = Db::name('users a')->cache(true, 86400)->join('user_level b', 'a.level=b.level_id')->where('a.user_id', 'IN', $user_ids)
             ->column('IF(name is null or name="",nickname,name) as name,b.level_name', 'a.user_id');
         return json(['recharge_top' => $recharge_top, 'top' => $top, 'type_comment' => $type_comment, 'users' => $users]);
+    }
+
+    public function advisory()
+    {
+        $list = Db::name('advisory a')
+            ->join('users b', 'a.user_id=b.user_id')
+            ->field('a.*,IFNULL(b.name,b.nickname) AS name,b.avatar,b.sex')
+            ->where('a.status', 0)->select();
+        $this->assign('list', $list);
+        return view();
     }
 }

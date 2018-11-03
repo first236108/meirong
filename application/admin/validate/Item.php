@@ -30,6 +30,6 @@ class Item extends Validate
         'use_points'     => '使用积分错误',
         'manager_reduce' => '店长调价金额错误',
         'pay_amount'     => '实际支付金额错误',
-        'confirm_id'     => '请选择跟单技师'
+        'confirm_id'     => '请选择跟单美容师'
     ];
 }

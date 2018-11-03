@@ -142,7 +142,7 @@ return [
     'exception_handle'       => '',
 
     'auth'         => [
-        'AUTH_ON'   => false,
+        'AUTH_ON'   => true,
         'AUTH_USER' => 'ty_admin', // 用户信息表
     ],
     'qiniu_access' => 'WqovXMSXJLcnBSYiycDX4LiY3HJ8CsJ-tzF4RmAu',

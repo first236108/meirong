@@ -1,41 +1,74 @@
 {include file="public/header" /}
-{include file="public/breadcrumb" /}
-    <div class="wrapper wrapper-content animated fadeInRight tooltip-demo">
+
+    <div class="wrapper wrapper-content animated fadeInRight tooltip-demo ecommerce">
         <div class="row">
             <div class="col-lg-12">
-                <div class="ibox float-e-margins">
-                    <div class="ibox-title">
-                        <h5>系统设置 <small> 全局参数.</small></h5>
-                        <div class="ibox-tools">
-                            <a class="collapse-link" data-tip="tooltip" data-placement="left" title="" data-original-title="折叠/展开">
-                                <i class="fa fa-chevron-up"></i>
-                            </a>
+                <form method="post" class="form-horizontal">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#tab-1"> 系统设置</a></li>
+                            <li class=""><a data-toggle="tab" href="#tab-2"> 薪资提成</a></li>
+                        </ul>
+                        <div class="tab-content p-h-lg white-bg">
+                            <div class="tab-pane active" id="tab-1">
+                                <div class="form-group"><label class="col-sm-2 control-label">网站名称</label>
+                                    <div class="col-sm-10 col-lg-4">
+                                        <input type="text" name="site_title" placeholder="网站名称" class="form-control" value="{$config.site_title}">
+                                        <span class="help-block m-b-none">此项会显示到标签栏</span>
+                                    </div>
+                                </div>
+                                <div class="hr-line-dashed"></div>
+                                <div class="form-group"><label class="col-sm-2 control-label">积分比率</label>
+                                    <div class="col-sm-10 col-lg-4">
+                                        <input type="text" name="points_ratio" placeholder="积分抵扣比率" class="form-control" value="{$config.points_ratio}">
+                                        <span class="help-block m-b-none">积分抵扣比率,如100积分兑换1元,直接输入100即可</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="tab-2">
+                                <div class="col-md-4">
+                                    <div class="form-group m-b-none">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">充值提成</span>
+                                            <input type="text" name="" value="{$config.rate_recharge}" class="form-control">
+                                            <span class="input-group-addon">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group m-b-none">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">商品提成</span>
+                                            <input type="text" name="" value="{$config.rate_goods}" class="form-control">
+                                            <span class="input-group-addon">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group m-b-none">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">实指提成</span>
+                                            <input type="text" name="" value="{$config.rate_goods}" class="form-control">
+                                            <span class="input-group-addon">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group m-b-none">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">实非提成</span>
+                                            <input type="text" name="" value="{$config.rate_goods}" class="form-control">
+                                            <span class="input-group-addon">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 white-bg text-center p-h-lg">
+                            <button class="btn btn-primary" type="submit">保存设置</button>
                         </div>
                     </div>
-                    <div class="ibox-content">
-                        <form method="post" class="form-horizontal">
-                            <div class="form-group"><label class="col-sm-2 control-label">网站名称</label>
-                                <div class="col-sm-10 col-lg-4">
-                                    <input type="text" name="site_title" placeholder="网站名称" class="form-control" value="{$config.site_title}">
-                                    <span class="help-block m-b-none">此项会显示到标签栏</span>
-                                </div>
-                            </div>
-                            <div class="hr-line-dashed"></div>
-                            <div class="form-group"><label class="col-sm-2 control-label">积分比率</label>
-                                <div class="col-sm-10 col-lg-4">
-                                    <input type="text" name="points_ratio" placeholder="积分抵扣比率" class="form-control" value="{$config.points_ratio}">
-                                    <span class="help-block m-b-none">积分抵扣比率,如100积分兑换1元,直接输入100即可</span>
-                                </div>
-                            </div>
-                            <div class="hr-line-dashed"></div>
-                            <div class="form-group">
-                                <div class="col-sm-4 col-sm-offset-2">
-                                    <button class="btn btn-primary" type="submit">保存设置</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>

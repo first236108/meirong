@@ -3,7 +3,6 @@
 namespace app\admin\controller;
 
 use think\Db;
-use think\File;
 use Qiniu\Auth;
 
 class Index extends Base
@@ -154,11 +153,30 @@ class Index extends Base
 
     public function rule()
     {
+        if (input('?post.controller')) {
+            $controller = input('post.controller');
+            $actions    = get_class_methods('app\\admin\\controller\\' . $controller);
+            $base       = get_class_methods('app\\admin\\controller\\Base');
+            return json(array_diff($actions, $base));
+        }
+
         if ($this->request->isPost()) {
+            $planList = [];
+            $planPath = env('app_path') . 'admin/controller';
+            $dirRes   = opendir($planPath);
+            if ($dirRes) {
+                while ($dir = readdir($dirRes)) {
+                    if (!in_array($dir, ['.', '..', '.svn', 'git', '.idea'])) {
+                        $planList[] = basename($dir, '.php');
+                    }
+                }
+            }
+            $planList = array_diff($planList, ['Login', 'Base']);
+
             $list = Db::name('auth_rule')
                 ->field('id,name,title,CASE cate WHEN 1 THEN "系统设置" WHEN 2 THEN "运营管理" ELSE "内容维护" END AS cate')
                 ->select();
-            return ['succ' => 0, 'data' => $list];
+            return ['succ' => 0, 'data' => $list, 'planList' => array_reverse($planList)];
         }
 
         return view();
@@ -179,7 +197,7 @@ class Index extends Base
                 'cate'  => '请选择权限分类...'
             ]);
             if ($result !== true)
-                return ['succ' => 1, 'msg' => $result];
+                return json(['succ' => 1, 'msg' => $result]);
 
             if ($id > 0)
                 $flag = Db::name('auth_rule')->update($data);
@@ -192,7 +210,7 @@ class Index extends Base
         }
 
         $info = Db::name('auth_rule')->find($id);
-        return ['succ' => 0, 'info' => $info];
+        return json(['succ' => 0, 'info' => $info]);
     }
 
     public function ruleDel()
@@ -219,7 +237,6 @@ class Index extends Base
             if ($result !== true) {
                 return ['succ' => 1, 'msg' => $result];
             }
-
 
             $data['password'] = enPwd($data['password'], session('admin.salt'));
             Db::name('admin')->where('id', session('admin.id'))->setField('password', $data['password']);
@@ -255,7 +272,7 @@ class Index extends Base
         $value    = input('value', 0);
         if (!$table || !$id_name || !$id_value || !$field)
             return null;
-        $flag = Db::name($table)->where($id_name,'in', $id_value)->setField($field, $value);
+        $flag = Db::name($table)->where($id_name, 'in', $id_value)->setField($field, $value);
         return $flag ? $flag : null;
     }
 
@@ -282,6 +299,6 @@ class Index extends Base
     {
         $auth  = new Auth(config('qiniu_access'), config('qiniu_secret'));
         $token = $auth->uploadToken(config('qiniu_bucket'));
-        return json(['token'=>$token,'cdn'=>config('qiniu_cdn')], 200);
+        return json(['token' => $token, 'cdn' => config('qiniu_cdn')], 200);
     }
 }

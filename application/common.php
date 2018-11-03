@@ -341,3 +341,11 @@ function uniqueCode()
     }
     return $sn;
 }
+
+function defaultAvatar($arr){
+    $sex_avatar = ['http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg', 'http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg'];
+    foreach ($arr as $index => $item) {
+        $arr[$index]['avatar'] = $item['avatar'] ?? $sex_avatar[$item['sex']];
+    }
+    return $arr;
+}

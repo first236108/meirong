@@ -36,7 +36,7 @@ class Report extends Base
         ];
         $admin = Db::name('admin')->column('IF(name,name,nickname) as name', 'id');
         $data  = Db::name('order')->where($map)
-            ->field('order_id, FROM_UNIXTIME(pay_time, "%Y-%m-%d") as days,confirm_id,sum(pay_amount) as pay_amount')
+            ->field('order_id, FROM_UNIXTIME(pay_time, "%Y-%m-%d") as days,confirm_id,ROUND(SUM(pay_amount)) as pay_amount')
             ->group('days, confirm_id')
             ->order('days desc')
             ->select();
@@ -89,7 +89,7 @@ class Report extends Base
         ];
         $admin = Db::name('admin')->column('IF(name,name,nickname) as name', 'id');
         $data  = Db::name('order')->where($map)
-            ->field('order_id, FROM_UNIXTIME(pay_time, "%Y-%m-%d") as days,confirm_id,sum(pay_amount) as pay_amount')
+            ->field('order_id, FROM_UNIXTIME(pay_time, "%Y-%m-%d") as days,confirm_id,ROUND(SUM(pay_amount)) as pay_amount')
             ->group('days, confirm_id')
             ->order('days desc')
             ->select();

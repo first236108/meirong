@@ -52,9 +52,12 @@ class Base extends Controller
     //验证当前访问权限
     public function authControl()
     {
-        $a = $this->rbacAuth->check(request()->module() . '/' . request()->controller() . '/' . request()->action(), session('admin.id'));
+        $a = $this->rbacAuth->check(request()->controller() . '/' . request()->action(), session('admin.id'));
         if (!$a) {
-            $this->error('权限不足!');
+            $a = $this->rbacAuth->check(request()->controller(), session('admin.id'));
+            if (!$a) {
+                $this->error('权限不足!');
+            }
         }
     }
 
@@ -69,22 +72,34 @@ class Base extends Controller
         return $arr;
     }
 
-    //面包屑导航
+    //未读消息及网站基本信息
     public function publicAssign()
     {
-        $rules                  = Db::name('auth_rule')->cache(true)->select();
-        $second                 = request()->module() . '/' . request()->controller() . '/' . 'index';
-        $third                  = request()->module() . '/' . request()->controller() . '/' . request()->action();
-        $second_key             = array_search(strtolower($second), array_column($rules, 'name'), true);
-        $third_key              = array_search(strtolower($third), array_column($rules, 'name'), true);
-        $breadcrumb[0]['title'] = 'Home';
-        $breadcrumb[0]['link']  = url('admin/index/index');
-        $breadcrumb[1]['title'] = $rules[$second_key]['title'];
-        $breadcrumb[1]['link']  = url($second);
-        $breadcrumb[2]['title'] = $rules[$third_key]['title'];
-        $breadcrumb[2]['link']  = url($third);
-        $this->assign('breadcrumb', $breadcrumb);
+        $unread = Db::name('advisory')->where('status', 0)->count();
+        $list   = [];
+        if ($unread) {
+            $list = Db::name('advisory a')
+                ->join('users b', 'a.user_id=b.user_id')
+                ->field('a.*,IFNULL(b.name,b.nickname) AS name,b.avatar,b.sex')
+                ->where('a.status', 0)->select();
+            $list = defaultAvatar($list);
+            $now  = time();
+            foreach ($list as $index => $item) {
+                $gap = intval($now - $item['add_time']);
+                if ($gap > 86400) {
+                    $list[$index]['gaptime'] = intval($gap / 86400) . '天';
+                } elseif ($gap > 3600) {
+                    $list[$index]['gaptime'] = intval($gap / 3600) . '小时';
+                } else {
+                    $list[$index]['gaptime'] = intval($gap / 60) . '分钟';
+                }
+            }
+        }
+
         $config = getSiteConfig('site_info');
+
+        $this->assign('unread', $unread);
+        $this->assign('msglist', $list);
         $this->assign('config', $config);
     }
 }

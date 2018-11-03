@@ -10,7 +10,7 @@ namespace app\admin\controller;
 
 use think\Controller;
 use think\Db;
-use think\captcha\Captcha;
+use think\facade\Cache;
 
 Class Login extends Controller
 {
@@ -71,5 +71,10 @@ Class Login extends Controller
     {
         $code = input('code', 'login');
         return makcVerify($code);
+    }
+
+    public function clearCache()
+    {
+        Cache::clear();
     }
 }

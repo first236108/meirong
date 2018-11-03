@@ -1,97 +1,98 @@
-    <div class="footer">
-        <div class="pull-right">
-            10GB of <strong>250GB</strong> Free.
-        </div>
-        <div>
-            <strong>Copyright</strong> Example Company &copy; 2014-2017
-        </div>
+<div class="footer">
+    <div class="pull-right">
+        10GB of <strong>250GB</strong> Free.
+    </div>
+    <div>
+        <strong>Copyright</strong> Example Company &copy; 2014-2017
+    </div>
+</div>
+
+{if condition="isset($show_small_chat)"}
+<div class="small-chat-box fadeInRight animated">
+    <div class="heading" draggable="true">
+        <small class="chat-date pull-right">
+            02.19.2015
+        </small>
+        Small chat
     </div>
 
-    {if condition="isset($show_small_chat)"}
-    <div class="small-chat-box fadeInRight animated">
-        <div class="heading" draggable="true">
-            <small class="chat-date pull-right">
-                02.19.2015
-            </small>
-            Small chat
-        </div>
+    <div class="content">
 
-        <div class="content">
-
-            <div class="left">
-                <div class="author-name">
-                    Monica Jackson <small class="chat-date">
+        <div class="left">
+            <div class="author-name">
+                Monica Jackson
+                <small class="chat-date">
                     10:02 am
                 </small>
-                </div>
-                <div class="chat-message active">
-                    Lorem Ipsum is simply dummy text input.
-                </div>
-
             </div>
-            <div class="right">
-                <div class="author-name">
-                    Mick Smith
-                    <small class="chat-date">
-                        11:24 am
-                    </small>
-                </div>
-                <div class="chat-message">
-                    Lorem Ipsum is simpl.
-                </div>
+            <div class="chat-message active">
+                Lorem Ipsum is simply dummy text input.
             </div>
-            <div class="left">
-                <div class="author-name">
-                    Alice Novak
-                    <small class="chat-date">
-                        08:45 pm
-                    </small>
-                </div>
-                <div class="chat-message active">
-                    Check this stock char.
-                </div>
-            </div>
-            <div class="right">
-                <div class="author-name">
-                    Anna Lamson
-                    <small class="chat-date">
-                        11:24 am
-                    </small>
-                </div>
-                <div class="chat-message">
-                    The standard chunk of Lorem Ipsum
-                </div>
-            </div>
-            <div class="left">
-                <div class="author-name">
-                    Mick Lane
-                    <small class="chat-date">
-                        08:45 pm
-                    </small>
-                </div>
-                <div class="chat-message active">
-                    I belive that. Lorem Ipsum is simply dummy text.
-                </div>
-            </div>
-
 
         </div>
-        <div class="form-chat">
-            <div class="input-group input-group-sm">
-                <input type="text" class="form-control">
-                <span class="input-group-btn"> <button
-                        class="btn btn-primary" type="button">Send
+        <div class="right">
+            <div class="author-name">
+                Mick Smith
+                <small class="chat-date">
+                    11:24 am
+                </small>
+            </div>
+            <div class="chat-message">
+                Lorem Ipsum is simpl.
+            </div>
+        </div>
+        <div class="left">
+            <div class="author-name">
+                Alice Novak
+                <small class="chat-date">
+                    08:45 pm
+                </small>
+            </div>
+            <div class="chat-message active">
+                Check this stock char.
+            </div>
+        </div>
+        <div class="right">
+            <div class="author-name">
+                Anna Lamson
+                <small class="chat-date">
+                    11:24 am
+                </small>
+            </div>
+            <div class="chat-message">
+                The standard chunk of Lorem Ipsum
+            </div>
+        </div>
+        <div class="left">
+            <div class="author-name">
+                Mick Lane
+                <small class="chat-date">
+                    08:45 pm
+                </small>
+            </div>
+            <div class="chat-message active">
+                I belive that. Lorem Ipsum is simply dummy text.
+            </div>
+        </div>
+
+
+    </div>
+    <div class="form-chat">
+        <div class="input-group input-group-sm">
+            <input type="text" class="form-control">
+            <span class="input-group-btn"> <button
+                    class="btn btn-primary" type="button">Send
                     </button> </span></div>
-        </div>
+    </div>
 
-    </div>
-    <div id="small-chat">
-        <span class="badge badge-warning pull-right">5</span>
-        <a class="open-small-chat">
-            <i class="fa fa-comments"></i>
-        </a>
-    </div>
-    {/if}
+</div>
+<div id="small-chat">
+    <span class="badge badge-warning pull-right">5</span>
+    <a class="open-small-chat">
+        <i class="fa fa-comments"></i>
+    </a>
+</div>
+{/if}
 </div>
 </div>
 <!-- Mainly scripts -->
@@ -141,16 +142,39 @@
         if (relUrl.indexOf("?") != -1) {
             relUrl = relUrl.split("?")[0];
         }
-        return relUrl;
+        var x = 0;
+        for (var i = 0; i < 3; i++) {
+            x = relUrl.indexOf('/', x + 1);
+            if (x < 0) {
+                return relUrl;
+            }
+        }
+        return relUrl.substring(0, x).toLocaleLowerCase();
     }
 
     uri = GetUrlRelativePath();
     $("#side-menu > li > ul >li a").each(function () {
-        if ($(this).attr('href') == uri) {
+        if ($(this).attr('href').indexOf(uri) >= 0) {
             $(this).parent().addClass('active').parent().parent().addClass('active');
             return false;
         }
     });
+
+    function clearCache() {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/login/clearCache',
+            success: function (data) {
+                toastr.success('清除完成');
+            },
+            error: function (xhr, type) {
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    $("#breadcrumb1").text($("#side-menu > li.active>a").text());
+    $("#breadcrumb2").text($("#side-menu > li.active>ul>li.active>a").text());
 
 </script>
 

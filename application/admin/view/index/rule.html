@@ -1,5 +1,5 @@
 {include file="public/header" /}
-{include file="public/breadcrumb" /}
+
 <link href="/static/plugins/dataTables/datatables.min.css" rel="stylesheet">
 
 <div class="wrapper wrapper-content animated fadeInRight tooltip-demo" v-cloak>
@@ -58,8 +58,20 @@
                         <div class="form-group"><label>权限名称<span class="text-danger">*</span></label>
                             <input type="text" name="title" v-model="list.title" placeholder="权限名称" class="form-control">
                         </div>
+                        <div class="form-group">
+                            <label>选择控制器</label>
+                            <select id="controller" class="form-control" @change="getMethods">
+                                <option :value="vo" v-for="(vo,index) in controller">{{vo}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>选择方法</label>
+                            <select id="action" class="form-control" @change="fixPath">
+                                <option :value="va" v-for="(va,index) in actions">{{va}}</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>路径<span class="text-danger">*</span></label>
-                            <input type="text" name="name" v-model="list.name" placeholder="admin/index/rule" class="form-control">
+                            <input type="text" name="name" v-model="list.name" placeholder="请选择控制器和方法" readonly="readonly" class="form-control">
                         </div>
                         <div class="form-group m-b-xs"><label>分类<span class="text-danger">*</span></label>
                             <select name="cate" class="form-control" v-model="list.cate">
@@ -77,8 +89,20 @@
                         <div class="form-group"><label>权限名称<span class="text-danger">*</span></label>
                             <input type="text" name="title" placeholder="权限名称" class="form-control">
                         </div>
+                        <div class="form-group">
+                            <label>选择控制器</label>
+                            <select id="controller" class="form-control" @change="getMethods">
+                                <option :value="vo" v-for="(vo,index) in controller">{{vo}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>选择方法</label>
+                            <select id="action" class="form-control" @change="fixPath">
+                                <option :value="va" v-for="(va,index) in actions">{{va}}</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>路径<span class="text-danger">*</span></label>
-                            <input type="text" name="name" placeholder="admin/index/rule" class="form-control">
+                            <input type="text" name="name" v-model="list.name" placeholder="请选择控制器和方法" readonly="readonly" class="form-control">
                         </div>
                         <div class="form-group m-b-xs"><label>分类<span class="text-danger">*</span></label>
                             <select name="cate" class="form-control">
@@ -112,7 +136,7 @@
             aoColumnDefs: [
                 {orderable: false, aTargets: [4]}// 制定列不参与排序
             ],
-            language:{
+            language: {
                 sLengthMenu: "每页显示 _MENU_ 条记录",
                 search: "搜索:",
                 paginate: {
@@ -136,7 +160,7 @@
             },
             messages: {
                 title: "权限名称要填写哦",
-                name: "权限路径必填",
+                name: "权限路径必选",
                 cate: "请选择权限分类"
             },
             submitHandler: function (form) {
@@ -174,6 +198,7 @@
             success: function (res) {
                 if (res.succ == 0) {
                     vm.init_data.list = res.data;
+                    vm.controller = res.planList;
                 }
                 else
                     toastr.warning(res.msg);
@@ -190,12 +215,32 @@
             init_data: {
                 list: {}
             },
-            list: {},
+            list: {name:''},
             total: 1,
-            p: 1
+            p: 1,
+            controller: [],
+            actions: []
         },
         created: function () {
             init();
+        },
+        methods: {
+            getMethods: function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/index/rule',
+                    data: {controller: $("#controller").val()},
+                    success: function (data) {
+                        vm.actions = data;
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseText);
+                    }
+                });
+            },
+            fixPath: function () {
+                vm.list.name = $("#controller").val() + '/' + $("#action").val();
+            }
         }
     });
 </script>
