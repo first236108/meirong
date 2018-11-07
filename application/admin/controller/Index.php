@@ -62,8 +62,7 @@ class Index extends Base
                 if (!$data['password'])
                     unset($data['password']);
                 else {
-                    $salt             = Db::name('admin')->where('id', $data['id'])->value('salt');
-                    $data['password'] = enPwd($data['password'], $salt);
+                    $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
                 }
                 $flag        = Db::name('admin')->field('name,nickname,password,phone,email')->update($data);
                 $flag2       = Db::name('auth_group_access')->update(['uid' => $data['id'], 'group_id' => $data['group_id']]);
@@ -72,8 +71,7 @@ class Index extends Base
             } else {
                 if (!$data['password'])
                     $data['password'] = '123456';
-                $data['salt']        = get_rand_str();
-                $data['password']    = enPwd($data['password'], $data['salt']);
+                $data['password']    = password_hash($data['password'], PASSWORD_BCRYPT);
                 $data['create_time'] = time();
                 $flag                = Db::name('admin')->field('group_id', true)->insertGetId($data);
                 $flag2               = Db::name('auth_group_access')->insert(['uid' => $flag, 'group_id' => $data['group_id']]);
@@ -238,8 +236,9 @@ class Index extends Base
                 return ['succ' => 1, 'msg' => $result];
             }
 
-            $data['password'] = enPwd($data['password'], session('admin.salt'));
-            Db::name('admin')->where('id', session('admin.id'))->setField('password', $data['password']);
+            $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+
+            Db::name('admin')->where('id', session('admin.id'))->update(['password' => $data['password']]);
             return ['succ' => 0, 'msg' => '密码已更新...'];
         }
         return view();

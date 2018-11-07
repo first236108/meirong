@@ -90,7 +90,7 @@ class Member extends Base
         }
 
         $user = new Users;
-        if (!isset($data['password']) && strlen($data['password'])) {
+        if (!isset($data['user_id']) && strlen($data['password'])) {
             $data['password'] = '123456';
         }
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);

@@ -1,8 +1,7 @@
 {include file="public/header" /}
 
 <link href="/static/plugins/iCheck/custom.css" rel="stylesheet">
-<!--<link href="/static/plugins/dropzone/basic.css" rel="stylesheet">-->
-<!--<link href="/static/plugins/dropzone/dropzone.css" rel="stylesheet">-->
+<link href="/static/plugins/blueimp/blueimp-gallery.min.css" rel="stylesheet">
 
 <div class="wrapper wrapper-content animated fadeInRight tooltip-demo" style="background-color: #fff">
     <div class="ibox-title">
@@ -26,12 +25,12 @@
         {volist name="list" id="vo"}
         <div class="col-md-3">
             <div class="ibox">
-                <div class="ibox-content product-box">
-                    <div class="product-imitation">
+                <div class="ibox-content product-box lightBoxGallery">
+                    <div class="product-imitation relative">
                         {if condition="$vo.is_recommend > 0"}
-                        <img class="pull-left recommend" src="/static/image/recommend2.png" alt="店长推荐">
+                        <img class="pull-left recommend absolue" src="/static/image/recommend2.png" alt="店长推荐">
                         {/if}
-                        <img src="{$vo.origin_image}" alt="">
+                        <a href="{$vo.origin_image}" title="{$vo.title}" data-gallery=""><img src="{$vo.origin_image}" alt=""></a>
                     </div>
                     <div class="product-desc">
                         <span class="product-price">
@@ -44,7 +43,7 @@
                             </div>
                         </span>
                         <small class="text-muted">{$vo.cate_name}</small>
-                        <a href="{:url('addEditItem',['item_id'=>$vo['item_id']])}" class="product-name"> {$vo.title}</a>
+                        <a href="{:url('/index/item/detail',['item_id'=>$vo['item_id']])}" class="product-name"> {$vo.title}</a>
                         <div class="small m-t-xs break-line">{$vo.description,$vo.item_id}</div>
                         <div class="m-t text-righ">
 
@@ -62,7 +61,15 @@
     </div>
     {$page}
 </div>
-
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
 <div class="modal inmodal" id="item-list-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
 
     <div class="modal-dialog modal-lg">
@@ -527,6 +534,7 @@
 <script src="/static/plugins/ueditor/ueditor.config.js"></script>
 <script src="/static/plugins/ueditor/ueditor.all.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/blueimp/jquery.blueimp-gallery.min.js"></script>
 <script>
     var ue;
     $(document).ready(function () {

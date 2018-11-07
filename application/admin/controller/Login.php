@@ -38,11 +38,9 @@ Class Login extends Controller
             $user = Db::name('admin')->where('name', $data['username'])->find();
             if (!$user) {
                 return ['succ' => 2, 'msg' => '用户不存在'];
-            } elseif ($user['password'] != enPwd($data['password'], $user['salt'])) {
-                return ['succ' => 3, 'msg' => '密码错误...'];
             } elseif ($user['status'] == 0) {
                 return ['succ' => 4, 'msg' => '此用户已被禁止登录...'];
-            } else {
+            } elseif (password_verify($data['password'], $user['password'])) {
                 session('admin', $user);
                 $data = [
                     'name'     => $user['name'],
@@ -50,6 +48,8 @@ Class Login extends Controller
                 ];
                 cookie('admin', enCrypt(json_encode($data)), 86400 * 3);
                 return ['succ' => 0, 'msg' => 'OK', 'url' => url('admin/index/index')];
+            } else {
+                return ['succ' => 3, 'msg' => '密码错误...'];
             }
         }
 

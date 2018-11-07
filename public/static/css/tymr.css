@@ -225,3 +225,11 @@ textarea.form-control {
 .pointer{
     cursor: pointer;
 }
+.relative{
+    position:relative;
+}
+.absolue{
+    position: absolute;
+    left: 0;
+    top:0;
+}
