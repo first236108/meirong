@@ -177,4 +177,10 @@ class Item extends Base
         $list = Db::name('item')->where($map)->column('title,price,market_price,origin_image,first_letter,service_count,unit', 'item_id');
         return json($list);
     }
+
+    public function article()
+    {
+        $list = Db::name('article')->order('add_time desc')->select();
+        return view();
+    }
 }

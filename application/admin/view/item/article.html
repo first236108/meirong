@@ -1,0 +1,644 @@
+{include file="public/header" /}
+<link href="/static/plugins/blueimp/blueimp-gallery.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/plugins/webuploader/webuploader.css">
+<style>
+    #picker div:nth-child(2) {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    #theList li{
+        list-style: none;
+        width: 50%;
+    }
+    #theList li span{
+        margin:0 5px;
+    }
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox m-b-none">
+                <div class="ibox-title">
+                    <button class="btn btn-xs btn-success" onclick="$('#article-modal').modal('show');">添加</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">NEW</span>
+                    <h5>IT-01 - Design Team</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="team-members">
+                        <a href="#"><img alt="member" class="img-circle" src="img/a1.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a2.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a3.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a5.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a6.jpg"></a>
+                    </div>
+                    <h4>Info about Design Team</h4>
+                    <p>
+                        It is a long established fact that a reader will be distracted by the readable content
+                        of a page when looking at its layout. The point of using Lorem Ipsum is that it has.
+                    </p>
+                    <div>
+                        <span>Status of current project:</span>
+                        <div class="stat-percent">95%</div>
+                        <div class="progress progress-mini">
+                            <div style="width: 95%;" class="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div class="row  m-t-sm">
+                        <div class="col-sm-4">
+                            <div class="font-bold">PROJECTS</div>
+                            12
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="font-bold">RANKING</div>
+                            4th
+                        </div>
+                        <div class="col-sm-4 text-right">
+                            <div class="font-bold">BUDGET</div>
+                            $200,913 <i class="fa fa-level-up text-navy"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>IT-02 - Developers Team</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="team-members">
+                        <a href="#"><img alt="member" class="img-circle" src="img/a8.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a4.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a1.jpg"></a>
+                    </div>
+                    <h4>Info about Design Team</h4>
+                    <p>
+                        Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.
+                    </p>
+                    <div>
+                        <span>Status of current project:</span>
+                        <div class="stat-percent">61%</div>
+                        <div class="progress progress-mini">
+                            <div style="width: 61%;" class="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div class="row  m-t-sm">
+                        <div class="col-sm-4">
+                            <div class="font-bold">PROJECTS</div>
+                            43
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="font-bold">RANKING</div>
+                            1th
+                        </div>
+                        <div class="col-sm-4 text-right">
+                            <div class="font-bold">BUDGET</div>
+                            $705,913 <i class="fa fa-level-up text-navy"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ibox">
+                <div class="ibox-title">
+
+                    <h5>IT-02 - Graphic Team</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="team-members">
+                        <a href="#"><img alt="member" class="img-circle" src="img/a3.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a4.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a7.jpg"></a>
+                        <a href="#"><img alt="member" class="img-circle" src="img/a2.jpg"></a>
+                    </div>
+                    <h4>Info about Design Team</h4>
+                    <p>
+                        Very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
+                    </p>
+                    <div>
+                        <span>Status of current project:</span>
+                        <div class="stat-percent">82%</div>
+                        <div class="progress progress-mini">
+                            <div style="width: 82%;" class="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div class="row  m-t-sm">
+                        <div class="col-sm-4">
+                            <div class="font-bold">PROJECTS</div>
+                            68
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="font-bold">RANKING</div>
+                            2th
+                        </div>
+                        <div class="col-sm-4 text-right">
+                            <div class="font-bold">BUDGET</div>
+                            $701,400 <i class="fa fa-level-up text-navy"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--<video id="video" controls="controls" onpause="captureImage()" onloadeddata="captureImage()">-->
+    <!--<source src="/mov_bbb.mp4">-->
+    <!--</video>-->
+    <!--<div id="imgbox"></div>-->
+
+    <div class="modal inmodal" id="article-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content animated fadeIn">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeModalComm(this)"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">添加/修改 文章视频</h5>
+                </div>
+                <form action="">
+                    <div class="modal-body">
+                        <div class="tabs-container">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a data-toggle="tab" href="#tab-1"> 图文</a></li>
+                                <li class=""><a data-toggle="tab" href="#tab-2"> 视频</a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="tab-1" class="tab-pane active">
+                                    <div class="panel-body">
+
+                                        <fieldset class="form-horizontal">
+                                            <div class="form-group"><label class="col-sm-2 control-label">标题:</label>
+                                                <div class="col-sm-10"><input type="text" name="title" class="form-control" placeholder="文章标题"></div>
+                                            </div>
+                                            <div class="form-group"><label class="col-sm-2 control-label">封面图片:</label>
+                                                <div class="col-sm-10"><input type="text" class="form-control" placeholder="$160.00"></div>
+                                            </div>
+
+                                            <div class="form-group"><label class="col-sm-2 control-label">内容:</label>
+                                                <div class="col-sm-10">
+                                                    <script id="container" name="content" type="text/plain"></script>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+
+                                    </div>
+                                </div>
+                                <div id="tab-2" class="tab-pane">
+                                    <div class="panel-body">
+
+                                        <fieldset class="form-horizontal">
+                                            <div class="form-group"><label class="col-sm-2 control-label">标题:</label>
+                                                <div class="col-sm-10"><input type="text" name="title2" class="form-control" placeholder="视频标题"></div>
+                                            </div>
+                                            <div class="form-group"><label class="col-sm-2 control-label">上传视频:</label>
+                                                <div class="col-sm-10">
+                                                    <div id="uploader">
+                                                        <ul id="theList"></ul>
+                                                        <div id="picker">选择文件</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group"><label class="col-sm-2 control-label">封面图片:</label>
+                                                <div class="col-sm-10" id="imgbox" style="width: 200px;min-height: 100px;">
+                                                </div>
+                                            </div>
+
+                                        </fieldset>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-white" onclick="closeModalComm(this);">关 闭</button>
+                        <button type="submit" class="btn btn-primary">保 存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="/static/plugins/blueimp/jquery.blueimp-gallery.min.js"></script>
+<script src="/static/plugins/ueditor/ueditor.config.js"></script>
+<script src="/static/plugins/ueditor/ueditor.all.min.js"></script>
+<script src="/static/plugins/webuploader/webuploader.js"></script>
+<script>
+    var ue, cdn, base64;
+    var options = {
+        host: "http://upload-z1.qiniup.com/",
+        tokenUrl: "/admin/index/uploadToken",
+        domain: "",//cdn
+        mockToken: false,
+        mockTokenValue: '',
+        hash: true
+    };
+    var video = document.getElementById("video");
+    var imgbox = document.getElementById("imgbox");
+    var captureImage = function () {
+        var canvas = document.createElement("canvas");//创建一个canvas
+        canvas.width = video.videoWidth;//设置canvas的宽度为视频的宽度
+        canvas.height = video.videoHeight;//设置canvas的高度为视频的高度
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);//绘制图像
+
+        var img = document.createElement("img");//创建img
+        img.src = canvas.toDataURL("image/png");//将绘制的图像用img显示出来
+        if (imgbox.childNodes.length) {
+            imgbox.replaceChild(img, imgbox.firstChild);//将img添加到imgbox里
+        } else {
+            imgbox.appendChild(img);
+        }
+
+    };
+
+    ue = UE.getEditor('container', {
+        toolbars: [[
+            'fullscreen', 'source', '|', 'undo', 'redo', '|',
+            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
+            'rowspacingtop', 'rowspacingbottom', 'lineheight', '|',
+            'fontfamily', 'fontsize', 'indent', '|',
+            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|',
+            'link', 'unlink', 'anchor', '|',
+            'simpleupload', 'insertimage', 'emotion', 'scrawl', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'template', 'background', '|',
+            'horizontal', 'date', 'time', 'spechars', 'snapscreen', '|',
+            'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
+            'searchreplace', 'drafts'
+        ]],
+        autoFloatEnable: true
+    });
+
+    function getUpToken() {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/index/uploadToken',
+            data: {name: 'Zepto.js'},
+            success: function (data) {
+                options.mockTokenValue = data.token;
+                cdn = data.cdn;
+            },
+            error: function (e) {
+                toastr.error('获取上传token失败');
+            }
+        });
+    }
+
+    $(function () {
+
+        var uploader = WebUploader.create({
+            auto: false,
+            swf: "Uploader.swf",
+            server: options.host,
+            pick: "#picker",
+            resize: false,
+            dnd: "#theList",
+            paste: document.body,
+            disableGlobalDnd: true,
+            thumb: {
+                width: 100
+                , height: 100
+                , quality: 70
+                , allowMagnify: true
+                , crop: true
+            },
+            accept: [
+                {
+                    title: 'Images',
+                    extensions: 'gif,jpg,jpeg,bmp,png',
+                    mimeTypes: 'image/*'
+                },
+                {
+                    title: 'Videos',
+                    extensions: 'mp4,mkv,avi',
+                    mimeTypes: 'video/*'
+                }
+            ],
+            compress: false,
+            prepareNextFile: true,
+            chunked: true,
+            chunkSize: 5242880,
+            threads: 1,
+            fileNumLimit: 1,
+            fileSingleSizeLimit: 5242880*100,
+            duplicate: true
+        });
+
+        var token;
+        var m = new Map();
+
+        uploader.on("fileQueued", function (file) {
+            $("#picker").hide();
+            $("#theList").append('<li id="' + file.id + '">' +
+                '<img /><span>' + file.name + '</span><span class="btn btn-xs btn-success itemUpload">上传</span><span class="btn btn-xs btn-warning itemStop">暂停</span><span class="btn btn-xs btn-danger itemDel">删除</span>' +
+                '<div class="percentage"><div class="progress progress-mini"><div class="progress-bar" id="progress'+file.id+'"></div></div></div>' +
+                '<a id="url" href="">url</a>' +
+                '</li>');
+
+            var $img = $("#" + file.id).find("img");
+
+            uploader.makeThumb(file, function (error, src) {
+                if (error) {
+                    $img.replaceWith("<span>不能预览</span>");
+                }
+                base64 = src;
+                $img.attr("src", src);
+            });
+
+            var ctx = new Array();
+            m.set(file.name, ctx);
+
+        });
+
+
+        uploader.on("uploadStart", function (file) {
+            if (!options.mockToken) {
+                GetToken(options.tokenUrl, file);
+            } else {
+                uploader.options.formData = {
+                    token: options.mockTokenValue,
+                    // file: base64
+                };
+                token = options.mockTokenValue;
+            }
+        });
+
+        uploader.on("uploadBeforeSend", function (block, data, headers) {
+            console.log("uploadBeforeSend............");
+            if (parseInt(block.file.size) <= parseInt(uploader.options.chunkSize)) {
+                headers['Authorization'] = 'UpToken ' + token;
+                uploader.options.chunked = false;
+                console.log("使用表单上传.........");
+            } else {
+                debugger;
+                uploader.options.chunked = true;
+                headers['Authorization'] = 'UpToken ' + token;
+                headers['Content-Type'] = 'application/octet-stream';
+                headers['withCredentials'] = true;
+                block.transport.options.server = options.host + "/mkblk/" + (block.end - block.start);
+                block.transport.options.sendAsBinary = true;
+                block.transport.options.formData = false;
+                console.log(true);
+            }
+        });
+
+        uploader.on("uploadProgress", function (file, percentage) {
+            $("#progress" + file.id).css('width',percentage * 100 + "%");
+        });
+
+        uploader.on("uploadAccept", function (block, ret) {
+            console.log("uploadAccept.............");
+            //ctx[block.chunk] = ret.ctx;
+            console.log("block.file.name:" + block.file.name);
+            m.get(block.file.name)[block.chunk] = ret.ctx;
+        });
+
+        uploader.on("uploadSuccess", function (file, res) {
+            console.log("uploadSuccess............");
+            console.log(res);
+            debugger;//todo 上传成功处理
+            if (parseInt(file.size) <= parseInt(uploader.options.chunkSize)) {
+                UploadComplete(file, res);
+                console.log(res);
+            } else {
+                MakeFile(m.get(file.name), file, options.hash);
+            }
+
+        });
+
+        $("#theList").on("click", ".itemUpload", function () {
+            uploader.upload();
+
+            //"上传"-->"暂停"
+            $(this).hide();
+            $(".itemStop").show();
+        });
+
+        $("#theList").on("click", ".itemStop", function () {
+            uploader.stop(true);
+
+            //"暂停"-->"上传"
+            $(this).hide();
+            $(".itemUpload").show();
+        });
+
+        $("#theList").on("click", ".itemDel", function () {
+            uploader.removeFile($(this).parent().attr("id"));	//从上传文件列表中删除
+            $("#picker").show();
+            $(this).parent().remove();	//从上传列表dom中删除
+        });
+
+        function GetToken(tokenUrl, file) {
+            $.ajax({
+                async: false,
+                type: 'get',
+                url: tokenUrl,
+                success: function (res) {
+                    token = res.token;
+                    options.domain = res.cdn;
+                    if (options.hash) {
+                        uploader.options.formData = {
+                            token: token
+                        };
+                    } else {
+                        uploader.options.formData = {
+                            token: token,
+                            key: file.name
+                        };
+                    }
+                }
+            });
+        }
+
+        function MakeFile(ctx, file, hash) {
+            console.log("ctx:" + ctx);
+            var b = ctx.join(",");
+            if (hash) {
+                $.ajax({
+                    type: 'POST',
+                    url: options.host + '/mkfile/' + file.size,
+                    data: b,
+                    contentType: "text/plain",
+                    contentLength: b.length,
+                    beforeSend: function (XMLHttpRequest) {
+                        XMLHttpRequest.setRequestHeader("Authorization", 'UpToken ' + token);
+                    },
+                    success: function (res) {
+                        UploadComplete(file, res);
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: options.host + '/mkfile/' + file.size + '/key/' + URLSafeBase64Encode(file.name),
+                    data: b,
+                    contentType: "text/plain",
+                    contentLength: b.length,
+                    beforeSend: function (XMLHttpRequest) {
+                        XMLHttpRequest.setRequestHeader("Authorization", 'UpToken ' + token);
+                    },
+                    success: function (res) {
+                        UploadComplete(file, res);
+                    }
+                });
+            }
+        }
+
+        function UploadComplete(file, res) {
+            ctx = new Array();
+            uploader.options.chunked = true;
+            $("#" + file.id + " .percentage").append('<div>上传完毕</div>');
+            $(".itemStop").hide();
+            $(".itemUpload").hide();
+            $(".itemDel").hide();
+            $("#" + file.id + " .url").text(options.domain + res.key);
+            $("#url").attr("href", options.domain + res.key).text(options.domain + res.key);
+        }
+
+        function URLSafeBase64Decode(data) {
+            data = data.replace(/_/g, '/').replace(/-/g, '+');
+            var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+                ac = 0,
+                dec = "",
+                tmp_arr = [];
+
+            if (!data) {
+                return data;
+            }
+
+            data += '';
+
+            do { // unpack four hexets into three octets using index points in b64
+                h1 = b64.indexOf(data.charAt(i++));
+                h2 = b64.indexOf(data.charAt(i++));
+                h3 = b64.indexOf(data.charAt(i++));
+                h4 = b64.indexOf(data.charAt(i++));
+
+                bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+
+                o1 = bits >> 16 & 0xff;
+                o2 = bits >> 8 & 0xff;
+                o3 = bits & 0xff;
+
+                if (h3 === 64) {
+                    tmp_arr[ac++] = String.fromCharCode(o1);
+                } else if (h4 === 64) {
+                    tmp_arr[ac++] = String.fromCharCode(o1, o2);
+                } else {
+                    tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+                }
+            } while (i < data.length);
+
+            dec = tmp_arr.join('');
+
+            return dec;
+        }
+
+        function utf8_encode(argString) {
+
+            if (argString === null || typeof argString === 'undefined') {
+                return '';
+            }
+
+            var string = (argString + ''); // .replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            var utftext = '',
+                start, end, stringl = 0;
+
+            start = end = 0;
+            stringl = string.length;
+            for (var n = 0; n < stringl; n++) {
+                var c1 = string.charCodeAt(n);
+                var enc = null;
+
+                if (c1 < 128) {
+                    end++;
+                } else if (c1 > 127 && c1 < 2048) {
+                    enc = String.fromCharCode(
+                        (c1 >> 6) | 192, (c1 & 63) | 128
+                    );
+                } else if (c1 & 0xF800 ^ 0xD800 > 0) {
+                    enc = String.fromCharCode(
+                        (c1 >> 12) | 224, ((c1 >> 6) & 63) | 128, (c1 & 63) | 128
+                    );
+                } else { // surrogate pairs
+                    if (c1 & 0xFC00 ^ 0xD800 > 0) {
+                        throw new RangeError('Unmatched trail surrogate at ' + n);
+                    }
+                    var c2 = string.charCodeAt(++n);
+                    if (c2 & 0xFC00 ^ 0xDC00 > 0) {
+                        throw new RangeError('Unmatched lead surrogate at ' + (n - 1));
+                    }
+                    c1 = ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
+                    enc = String.fromCharCode(
+                        (c1 >> 18) | 240, ((c1 >> 12) & 63) | 128, ((c1 >> 6) & 63) | 128, (c1 & 63) | 128
+                    );
+                }
+                if (enc !== null) {
+                    if (end > start) {
+                        utftext += string.slice(start, end);
+                    }
+                    utftext += enc;
+                    start = end = n + 1;
+                }
+            }
+
+            if (end > start) {
+                utftext += string.slice(start, stringl);
+            }
+
+            return utftext;
+        }
+
+        function URLSafeBase64Encode(data) {
+            var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+            var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+                ac = 0,
+                enc = '',
+                tmp_arr = [];
+
+            if (!data) {
+                return data;
+            }
+
+            data = utf8_encode(data + '');
+
+            do { // pack three octets into four hexets
+                o1 = data.charCodeAt(i++);
+                o2 = data.charCodeAt(i++);
+                o3 = data.charCodeAt(i++);
+
+                bits = o1 << 16 | o2 << 8 | o3;
+
+                h1 = bits >> 18 & 0x3f;
+                h2 = bits >> 12 & 0x3f;
+                h3 = bits >> 6 & 0x3f;
+                h4 = bits & 0x3f;
+
+                // use hexets to index into b64, and append result to encoded string
+                tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+            } while (i < data.length);
+
+            enc = tmp_arr.join('');
+
+            switch (data.length % 3) {
+                case 1:
+                    enc = enc.slice(0, -2) + '==';
+                    break;
+                case 2:
+                    enc = enc.slice(0, -1) + '=';
+                    break;
+            }
+
+            return enc.replace(/\//g, '_').replace(/\+/g, '-');
+        }
+    });
+</script>
+{include file="public/footer" /}

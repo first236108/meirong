@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use think\Db;
 use Qiniu\Auth;
+use think\Exception;
 
 class Index extends Base
 {
@@ -280,12 +281,16 @@ class Index extends Base
         $file    = request()->file('file');
         $path    = input('path', '');
         $absPath = $path ? getcwd() . DIRECTORY_SEPARATOR . 'upload' . DIRECTORY_SEPARATOR . $path : getcwd() . DIRECTORY_SEPARATOR . 'upload';
-        $info    = $file->validate(['size' => 1048576 * 4, 'ext' => 'jpg,png,gif'])->move($absPath);
-        if ($info) {
-            $path = DIRECTORY_SEPARATOR . 'upload' . DIRECTORY_SEPARATOR . $path;
-            return json(['succ' => 0, 'data' => $path . DIRECTORY_SEPARATOR . $info->getSaveName()]);
-        } else {
-            return json(['succ' => 2, 'msg' => $file->getError()]);
+        try {
+            $info = $file->validate(['size' => 100048576 * 4, 'ext' => 'jpg,png,gif'])->move($absPath);
+            if ($info) {
+                $path = DIRECTORY_SEPARATOR . 'upload' . DIRECTORY_SEPARATOR . $path;
+                return json(['succ' => 0, 'data' => $path . DIRECTORY_SEPARATOR . $info->getSaveName()]);
+            } else {
+                return json(['succ' => 2, 'msg' => $file->getError()]);
+            }
+        } catch (\Exception $e) {
+            return json(['succ' => 2, 'msg' => $e->getMessage()]);
         }
     }
 
