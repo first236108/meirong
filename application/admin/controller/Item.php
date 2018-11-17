@@ -8,6 +8,7 @@
 
 namespace app\admin\controller;
 
+use app\admin\model\Article;
 use think\Db;
 
 class Item extends Base
@@ -180,7 +181,61 @@ class Item extends Base
 
     public function article()
     {
-        $list = Db::name('article')->order('add_time desc')->select();
+        if ($this->request->isPost()) {
+            $data   = input('post.');
+            $result = $this->validate($data, [
+                'title' => 'require',
+                'image' => 'require',
+                'type'  => 'require|length:1'
+            ], [
+                'title' => '标题不能为空',
+                'image' => '封面图片不能为空',
+            ]);
+            if (true !== $result)
+                return json($result, 403);
+
+            if (isset($data['id'])) {
+                $flag = Db::name('article')->update($data);
+            } else {
+                $data['add_time'] = time();
+                $flag             = Db::name('article')->strict(false)->insertGetId($data);
+            }
+
+            if (!$flag)
+                return json('保存失败', 403);
+            return json('ok');
+        }
+        $model = new Article();
+        $map   = 'is_delete=0';
+        if (input('get.is_delete')) {
+            $map = 'is_delete > 0';
+        }
+        $list = $model->where($map)->order('id desc')->select()->toArray();
+
+        $count = ceil(count($list) / 3);
+        $max   = 1;
+        if ($count) {
+            $max  = max(array_column($list, 'click_count'));
+            $list = array_chunk($list, $count);
+        }
+
+        $this->assign('ept', '<div class="col-lg-6 col-lg-offset-3"><h2 class="bg-warning b-r-md text-center">暂时没有数据哦</h2></div>');
+        $this->assign('list', $list);
+        $this->assign('max', $max);
         return view();
+    }
+
+    public function getOrDelArticle()
+    {
+        if ($this->request->isPost()) {
+            $val  = input('post.act') ? 0 : time();
+            $flag = Db::name('article')->where('id', input('post.id/d', 0))->update(['is_delete' => $val]);
+            if ($flag)
+                return json('ok');
+            else
+                return json('删除失败', 403);
+        }
+        $result = Db::name('article')->where('id', input('get.id', 0))->find();
+        return json($result);
     }
 }

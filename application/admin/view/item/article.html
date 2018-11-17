@@ -1,6 +1,9 @@
 {include file="public/header" /}
+<link href="/static/plugins/ladda/ladda-themeless.min.css" rel="stylesheet">
 <link href="/static/plugins/blueimp/blueimp-gallery.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/plugins/webuploader/webuploader.css">
+<link href="/static/plugins/switchery/switchery.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css">
 <style>
     #picker div:nth-child(2) {
         width: 100% !important;
@@ -15,156 +18,94 @@
     #theList li span {
         margin: 0 5px;
     }
+
+    #imgbox img {
+        max-width: 100%;
+    }
+
+    #preview img {
+        max-width: 100%;
+    }
+
+    .team-members img {
+        max-width: 100%;
+    }
 </style>
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="row">
+    <div class="row tooltip-demo">
         <div class="col-lg-12">
             <div class="ibox m-b-none">
                 <div class="ibox-title">
-                    <button class="btn btn-xs btn-success" onclick="$('#article-modal').modal('show');">添加</button>
+                    {if (input('?is_delete'))}
+                    <button class="btn btn-xs btn-primary" onclick="location.href='{:url(\'admin/item/article\')}'"><i class="fa fa-arrow-left"></i> 返回</button>
+                    {else /}
+                    <button class="btn btn-xs btn-success" onclick="$('#article-modal').modal('show');" data-tip="tooltip" data-placement="top" data-original-title="新增文章"><i class="fa fa-plus"></i> 添加</button>
+                    <span type="button" onclick="location.href='/admin/item/article.html?is_delete=1'" data-tip="tooltip" data-placement="top" data-original-title="历史删除项目" class="btn btn-default btn-xs pull-right self-m-l"><i class="fa fa-refresh"></i>&nbsp;历史</span>
+                    {/if}
                 </div>
             </div>
         </div>
+        {volist name="list" id="vos" empty="$ept"}
         <div class="col-lg-4">
+            {volist name="vos" id="vo"}
             <div class="ibox">
                 <div class="ibox-title">
-                    <span class="label label-primary pull-right">NEW</span>
-                    <h5>IT-01 - Design Team</h5>
+                    {if ($vo.is_delete==0)}
+                    <button type="button" class="btn btn-xs btn-outline" onclick="delArticel(this)" data-id="{$vo.id}" data-tip="tooltip" data-placement="right" title="" data-original-title="删除内容"><i class="fa fa-times text-warning"></i></button>
+                    {else /}
+                    <button type="button" class="btn btn-xs btn-outline" onclick="delArticel(this,1)" data-id="{$vo.id}" data-tip="tooltip" data-placement="right" title="" data-original-title="找回"><i class="fa fa-mail-reply-all text-success"></i></button>
+                    {/if}
+                    {volist name="vo.tag" id="vt"}
+                    <span class="label label-primary pull-right">{$vt}</span>
+                    {/volist}
                 </div>
                 <div class="ibox-content">
                     <div class="team-members">
-                        <a href="#"><img alt="member" class="img-circle" src="img/a1.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a2.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a3.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a5.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a6.jpg"></a>
+                        {if ($vo.type==1)}
+                        <video src="{$vo.content}" controls poster="{$vo.image}"></video>
+                        {else /}
+                        <img src="{$vo.image}" alt="">
+                        {/if}
                     </div>
-                    <h4>Info about Design Team</h4>
-                    <p>
-                        It is a long established fact that a reader will be distracted by the readable content
-                        of a page when looking at its layout. The point of using Lorem Ipsum is that it has.
-                    </p>
+                    <h4 class="text-success pointer" onclick="editArticle({$vo.id})">{$vo.title}</h4>
+                    <h5 class="text-muted">{$vo.add_time}</h5>
                     <div>
-                        <span>Status of current project:</span>
-                        <div class="stat-percent">95%</div>
+                        <span>热度:</span>
+                        <div class="stat-percent">{:round($vo.click_count/$max*100)}%</div>
                         <div class="progress progress-mini">
-                            <div style="width: 95%;" class="progress-bar"></div>
+                            <div style="width: {:round($vo.click_count/$max*100)}%;" class="progress-bar {if ($vo.click_count==$max)}progress-bar-danger{/if}"></div>
                         </div>
                     </div>
                     <div class="row  m-t-sm">
                         <div class="col-sm-4">
-                            <div class="font-bold">PROJECTS</div>
-                            12
+                            <div class="font-bold text-muted">评论</div>
+                            {$vo.commit_count}
                         </div>
                         <div class="col-sm-4">
-                            <div class="font-bold">RANKING</div>
-                            4th
+                            <div class="font-bold text-muted">点赞</div>
+                            {$vo.star}
                         </div>
                         <div class="col-sm-4 text-right">
-                            <div class="font-bold">BUDGET</div>
-                            $200,913 <i class="fa fa-level-up text-navy"></i>
+                            <div class="font-bold text-muted">点击次数</div>
+                            {$vo.click_count} {if ($vo.click_count==$max)}&nbsp;<i class="fa fa-level-up text-navy"></i>{/if}
                         </div>
                     </div>
 
                 </div>
             </div>
+            {/volist}
         </div>
-        <div class="col-lg-4">
-            <div class="ibox">
-                <div class="ibox-title">
-                    <h5>IT-02 - Developers Team</h5>
-                </div>
-                <div class="ibox-content">
-                    <div class="team-members">
-                        <a href="#"><img alt="member" class="img-circle" src="img/a8.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a4.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a1.jpg"></a>
-                    </div>
-                    <h4>Info about Design Team</h4>
-                    <p>
-                        Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.
-                    </p>
-                    <div>
-                        <span>Status of current project:</span>
-                        <div class="stat-percent">61%</div>
-                        <div class="progress progress-mini">
-                            <div style="width: 61%;" class="progress-bar"></div>
-                        </div>
-                    </div>
-                    <div class="row  m-t-sm">
-                        <div class="col-sm-4">
-                            <div class="font-bold">PROJECTS</div>
-                            43
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="font-bold">RANKING</div>
-                            1th
-                        </div>
-                        <div class="col-sm-4 text-right">
-                            <div class="font-bold">BUDGET</div>
-                            $705,913 <i class="fa fa-level-up text-navy"></i>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="ibox">
-                <div class="ibox-title">
-
-                    <h5>IT-02 - Graphic Team</h5>
-                </div>
-                <div class="ibox-content">
-                    <div class="team-members">
-                        <a href="#"><img alt="member" class="img-circle" src="img/a3.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a4.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a7.jpg"></a>
-                        <a href="#"><img alt="member" class="img-circle" src="img/a2.jpg"></a>
-                    </div>
-                    <h4>Info about Design Team</h4>
-                    <p>
-                        Very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
-                    </p>
-                    <div>
-                        <span>Status of current project:</span>
-                        <div class="stat-percent">82%</div>
-                        <div class="progress progress-mini">
-                            <div style="width: 82%;" class="progress-bar"></div>
-                        </div>
-                    </div>
-                    <div class="row  m-t-sm">
-                        <div class="col-sm-4">
-                            <div class="font-bold">PROJECTS</div>
-                            68
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="font-bold">RANKING</div>
-                            2th
-                        </div>
-                        <div class="col-sm-4 text-right">
-                            <div class="font-bold">BUDGET</div>
-                            $701,400 <i class="fa fa-level-up text-navy"></i>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
+        {/volist}
     </div>
-    <!--<video id="video" controls="controls" onpause="captureImage()" onloadeddata="captureImage()">-->
-    <!--<source src="/mov_bbb.mp4">-->
-    <!--</video>-->
-    <!--<div id="imgbox"></div>-->
 
     <div class="modal inmodal" id="article-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog modal-lg">
             <div class="modal-content animated fadeIn">
                 <div class="modal-header">
-                    <button type="button" class="close" onclick="closeModalComm(this)"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <button type="button" class="close" onclick="edit={};closeModalComm(this)"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                     <h5 class="modal-title">添加/修改 文章视频</h5>
                 </div>
-                <form action="">
+                <form action="" id="form1">
                     <div class="modal-body">
                         <div class="tabs-container">
                             <ul class="nav nav-tabs">
@@ -177,16 +118,33 @@
 
                                         <fieldset class="form-horizontal">
                                             <div class="form-group"><label class="col-sm-2 control-label">标题:</label>
-                                                <div class="col-sm-10"><input type="text" name="title" class="form-control" placeholder="文章标题"></div>
+                                                <div class="col-sm-10"><input type="text" id="title1" class="form-control" placeholder="文章标题"></div>
                                             </div>
                                             <div class="form-group"><label class="col-sm-2 control-label">封面图片:</label>
-                                                <div class="col-sm-10"><input type="text" class="form-control" placeholder="$160.00"></div>
+                                                <div class="col-sm-10">
+                                                    <div id="uploader1">
+                                                        <button type="button" class="btn btn-success">选择图片</button>
+                                                        <input type="file" id="select1" accept="image/png,image/jpeg,image/gif,image/jpg">
+                                                    </div>
+                                                    <div class="col-sm-6 p-0 hidden" id="process1">
+                                                        <span>上传进度:</span>
+                                                        <div class="stat-percent">0%</div>
+                                                        <div class="progress progress-mini">
+                                                            <div style="width: 0%;" class="progress-bar"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-7 hidden m-t" id="preview">
+                                                        <img src="" alt="">
+                                                    </div>
+                                                </div>
                                             </div>
-
                                             <div class="form-group"><label class="col-sm-2 control-label">内容:</label>
                                                 <div class="col-sm-10">
                                                     <script id="container" name="content" type="text/plain"></script>
                                                 </div>
+                                            </div>
+                                            <div class="form-group"><label class="col-sm-2 control-label">标签:</label>
+                                                <div class="col-sm-10"><input class="tagsinput form-control" id="tag1" type="text" value="瘦身,嫩肤"/></div>
                                             </div>
                                         </fieldset>
 
@@ -197,22 +155,40 @@
 
                                         <fieldset class="form-horizontal">
                                             <div class="form-group"><label class="col-sm-2 control-label">标题:</label>
-                                                <div class="col-sm-10"><input type="text" name="title2" class="form-control" placeholder="视频标题"></div>
+                                                <div class="col-sm-10"><input type="text" id="title2" class="form-control" placeholder="视频标题"></div>
                                             </div>
+                                            <input type="hidden" name="video" id="video">
                                             <div class="form-group"><label class="col-sm-2 control-label">上传视频:</label>
                                                 <div class="col-sm-10">
                                                     <div id="uploader">
                                                         <ul id="theList"></ul>
-                                                        <span class="btn btn-primary" id="picker">选择文件</span>
-                                                        <input type="file" id="select2">
+                                                        <span class="btn btn-primary" id="picker">选择视频</span>
+                                                        <input type="file" id="select2" accept="video/mp4">
+                                                    </div>
+                                                    <div class="col-sm-6 p-0 hidden" id="process">
+                                                        <span>上传进度:</span>
+                                                        <div class="stat-percent">0%</div>
+                                                        <div class="progress progress-mini">
+                                                            <div style="width: 0%;" class="progress-bar"></div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="form-group"><label class="col-sm-2 control-label">封面图片:</label>
-                                                <div class="col-sm-10" id="imgbox" style="width: 200px;min-height: 100px;">
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">视频预览:</label>
+                                                <div class="col-sm-10">
+                                                    <video crossOrigin="anonymous" controls id="videobox" onloadeddata="captureImage()" onpause="captureImage()" ontimeupdate="captureImage()">
+                                                    </video>
                                                 </div>
                                             </div>
-
+                                            <div class="form-group"><label class="col-sm-2 control-label">封面图片:</label>
+                                                <input type="hidden" name="image" id="image">
+                                                <div class="col-sm-10" id="imgbox" style="min-height: 100px;">
+                                                </div>
+                                            </div>
+                                            <div class="form-group"><label class="col-sm-2 control-label">标签:</label>
+                                                <div class="col-sm-10"><input class="tagsinput form-control" id="tag2" type="text" value="瘦身,美妆"/></div>
+                                            </div>
                                         </fieldset>
 
                                     </div>
@@ -221,8 +197,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-white" onclick="closeModalComm(this);">关 闭</button>
-                        <button type="submit" class="btn btn-primary">保 存</button>
+                        <button type="button" class="btn btn-white" onclick="edit={};closeModalComm(this);">关 闭</button>
+                        <button type="button" class="ladda-button btn btn-primary" data-style="zoom-in" id="ladda-btn">保 存</button>
                     </div>
                 </form>
             </div>
@@ -235,18 +211,16 @@
 <script src="/static/plugins/ueditor/ueditor.config.js"></script>
 <script src="/static/plugins/ueditor/ueditor.all.min.js"></script>
 <script src="/static/plugins/qiniu/qiniu.min.js"></script>
+<script src="/static/plugins/ladda/spin.min.js"></script>
+<script src="/static/plugins/ladda/ladda.min.js"></script>
+<script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
+<script src="/static/plugins/bootstrap-tagsinput/bootstrap-tagsinput.js"></script>
+<script src="/static/plugins/switchery/switchery.js"></script>
 <script>
-    var ue, token,cdn;
-    var options = {
-        host: "http://upload-z1.qiniup.com/",
-        tokenUrl: "/admin/index/uploadToken",
-        domain: "",//cdn
-        mockToken: false,
-        mockTokenValue: '',
-        hash: true
-    };
-    var video = document.getElementById("video");
+    var ue, token, cdn, imgkey, edit;
+    var video = document.getElementById("videobox");
     var imgbox = document.getElementById("imgbox");
+    var btn = $("#ladda-btn").ladda();
     var captureImage = function () {
         var canvas = document.createElement("canvas");//创建一个canvas
         canvas.width = video.videoWidth;//设置canvas的宽度为视频的宽度
@@ -254,29 +228,37 @@
         canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);//绘制图像
 
         var img = document.createElement("img");//创建img
+
         img.src = canvas.toDataURL("image/png");//将绘制的图像用img显示出来
         if (imgbox.childNodes.length) {
             imgbox.replaceChild(img, imgbox.firstChild);//将img添加到imgbox里
         } else {
             imgbox.appendChild(img);
         }
-
     };
 
+    //提交按钮
+    btn.click(function () {
+        btn.ladda('start');
+        if (edit) {
+            subEdit();
+        } else {
+            if ($("#tab-2").css('display') == 'none') {
+                cback(imgkey);
+            } else {
+                putb64(token, imgbox.firstElementChild.src, 'cback');
+            }
+        }
+    });
     ue = UE.getEditor('container', {
         toolbars: [[
             'fullscreen', 'source', '|', 'undo', 'redo', '|',
-            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
-            'rowspacingtop', 'rowspacingbottom', 'lineheight', '|',
-            'fontfamily', 'fontsize', 'indent', '|',
-            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|',
-            'link', 'unlink', 'anchor', '|',
-            'simpleupload', 'insertimage', 'emotion', 'scrawl', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'template', 'background', '|',
-            'horizontal', 'date', 'time', 'spechars', 'snapscreen', '|',
-            'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
-            'searchreplace', 'drafts'
-        ]],
-        autoFloatEnable: true
+            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
+            'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent','horizontal','|', 'fontfamily', 'fontsize', '|',
+            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
+            'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
+            'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
+        ]]
     });
 
     function getUpToken() {
@@ -292,50 +274,39 @@
             }
         });
     }
-    getUpToken();
+
     var config = {
         useCdnDomain: true,
         disableStatisticsReport: false,
-        retryCount: 6,
-        region: qiniu.region.z1
+        retryCount: 4,
+        region: qiniu.region.z1,
+        concurrentRequestLimit: 3
     };
     var putExtra = {
         fname: "",
         params: {},
-        mimeType: null
+        mimeType: ["image/png", "image/jpg", "image/jpeg", "image/gif", "video/mp4"]
     };
 
     $("#select2").unbind("change").bind("change", function () {
         var file = this.files[0];
-        // eslint-disable-next-line
         var finishedAttr = [];
-        // eslint-disable-next-line
         var compareChunks = [];
         var observable;
+        var asdf = makefilename();
         if (file) {
-            var key = file.name;
-            // 添加上传dom面板
-            // var board = addUploadBoard(file, config, key, "");
-            // if (!board) {
-            //   return;
-            // }
-            putExtra.params["x:name"] = key.split(".")[0];
-            // board.start = true;
-            // var dom_total = $(board)
-            //   .find("#totalBar")
-            //   .children("#totalBarColor");
+            var dom = $("#process");
+            dom.removeClass('hidden');
 
-            // 设置next,error,complete对应的操作，分别处理相应的进度信息，错误信息，以及完成后的操作
             var error = function (err) {
-                debugger;
-                // board.start = true;
-                // $(board).find(".control-upload").text("继续上传");
-                // console.log(err);
-                alert("上传出错");
+                dom.find('.progress-bar').addClass('progress-bar-danger');
+                toastr.error(err.message);
             };
 
             var complete = function (res) {
-                //todo
+                $("#uploader").hide();
+                $("#video").val(cdn + res.key);
+                video.src = cdn + res.key;
             };
 
             var next = function (response) {
@@ -352,17 +323,9 @@
                     if (chunks[i].percent === 100) {
                         finishedAttr[i] = true;
                     }
-                    // $(board)
-                    //     .find(".fragment-group li")
-                    //     .eq(i)
-                    //     .find("#childBarColor")
-                    //     .css(
-                    //         "width",
-                    //         chunks[i].percent + "%"
-                    //     );
                 }
-                // $(board).find(".speed").text("进度：" + total.percent + "% ");
-                // dom_total.css("width", total.percent + "%");
+                dom.find('.progress-bar').css('width', total.percent + "%");
+                dom.find('.stat-percent').text(total.percent.toFixed(2) + "%");
                 compareChunks = chunks;
             };
 
@@ -373,25 +336,227 @@
             };
             var subscription;
             // 调用sdk上传接口获得相应的observable，控制上传和暂停
-            debugger;
-            observable = qiniu.upload(file, key, token, putExtra, config);
+            observable = qiniu.upload(file, asdf, token, putExtra, config);
             subscription = observable.subscribe(subObject);
-            // $(board)
-            //   .find(".control-upload")
-            //   .on("click", function() {
-            //     if(board.start){
-            //       $(this).text("暂停上传");
-            //       board.start = false;
-            //       subscription = observable.subscribe(subObject);
-            //     }else{
-            //       board.start = true;
-            //       $(this).text("继续上传");
-            //       subscription.unsubscribe();
-            //     }
-            //   });
+            // subscription = observable.subscribe(subObject);// 暂停
+            // subscription.unsubscribe();//继续上传
         }
     });
 
+    $("#select1").unbind("change").bind("change", function () {
+        var file = this.files[0];
+        var finishedAttr = [];
+        var compareChunks = [];
+        var observable;
+        var temp1 = makefilename();
+        if (file) {
+            var dom = $("#process1");
+            dom.removeClass('hidden');
 
+            var error = function (err) {
+                dom.find('.progress-bar').addClass('progress-bar-danger');
+                toastr.error(err.message);
+            };
+
+            var complete = function (res) {
+                $("#uploader1").hide();
+                $("#image").val(cdn + res.key);
+                $("#preview").removeClass('hidden').find('img').attr('src', cdn + res.key);
+                imgkey = res.key;
+            };
+
+            var next = function (response) {
+                var chunks = response.chunks || [];
+                var total = response.total;
+                // 这里对每个chunk更新进度，并记录已经更新好的避免重复更新，同时对未开始更新的跳过
+                for (var i = 0; i < chunks.length; i++) {
+                    if (chunks[i].percent === 0 || finishedAttr[i]) {
+                        continue;
+                    }
+                    if (compareChunks[i].percent === chunks[i].percent) {
+                        continue;
+                    }
+                    if (chunks[i].percent === 100) {
+                        finishedAttr[i] = true;
+                    }
+                }
+                dom.find('.progress-bar').css('width', total.percent + "%");
+                dom.find('.stat-percent').text(total.percent.toFixed(2) + "%");
+                compareChunks = chunks;
+            };
+
+            var subObject = {
+                next: next,
+                error: error,
+                complete: complete
+            };
+            var subscription;
+            observable = qiniu.upload(file, temp1, token, putExtra, config);
+            subscription = observable.subscribe(subObject);
+        }
+    });
+
+    function cback(key) {
+        $("#image").val(cdn + key);
+        var param = {
+            image: cdn + key,
+            title: ''
+        };
+        if ($("#tab-2").css('display') == 'none') {
+            param.title = $("#title1").val();
+            param.content = ue.getContent();
+            param.tag = $("#tag1").val();
+            param.type = 0;
+        } else {
+            param.title = $("#title2").val();
+            param.content = $("#video").val();
+            param.type = $("#tag2").val();
+            param.type = 1;
+        }
+        var errmsg = '';
+        if (!$.trim(param.title)) errmsg = '请输入标题';
+        if (!$.trim(param.image)) errmsg = '请选择封面图片';
+        if (errmsg) {
+            err(errmsg);
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/admin/item/article',
+            data: param,
+            success: function (data) {
+                btn.ladda('stop');
+                location.reload();
+            },
+            error: function (xhr, type) {
+                btn.ladda('stop');
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    function editArticle(id) {
+        if (!id)
+            return;
+        $.ajax({
+            type: 'GET',
+            url: '/admin/item/getOrDelArticle',
+            data: {id: id},
+            success: function (data) {
+                edit = data;
+                showinfo();
+                $('#article-modal').modal('show');
+            },
+            error: function (xhr, type) {
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    function subEdit() {
+        edit.image = $("#image").val();
+        if ($("#tab-1").css('display') == 'none'){
+            edit.type=1;
+            edit.title=$("#title2").val();
+            edit.content=$("#video").val();
+            edit.tag=$("#tag2").val();
+        }else{
+            edit.type=0;
+            edit.title=$("#title1").val();
+            edit.content=ue.getContent();
+            edit.tag=$("#tag1").val();
+        }
+        var errmsg = '';
+        if (!edit.title) errmsg = '请输入标题';
+        if (!edit.image) errmsg = '请选择封面图片';
+        if (errmsg) {
+            err(errmsg);
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/admin/item/article',
+            data: edit,
+            success: function (data) {
+                btn.ladda('stop');
+                location.reload();
+            },
+            error: function (xhr, type) {
+                btn.ladda('stop');
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    function delArticel(obj,undelete){
+        if (undelete){
+            doAjax(obj,1)
+        }else{
+            swal({
+                title: "确定删除 !?",
+                text: "软删除，可重新找回哦!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Just do it!",
+                closeOnConfirm: true
+            }, function () {
+                doAjax(obj,0)
+            });
+        }
+    }
+
+    function doAjax(obj,act){
+        $.ajax({
+            type: 'POST',
+            url: '/admin/item/getOrDelArticle',
+            data:{id:$(obj).data('id'),act:act},
+            success: function (data) {
+                $(obj).parent().parent().remove();
+            },
+            error: function (xhr, type) {
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    function showinfo() {
+        $("#image").val(edit.image);
+        if (edit.type > 0) {
+            $("#title2").val(edit.title);
+            $("#video").val(edit.content);
+            video.src = edit.content;
+            $('#tag2').tagsinput('removeAll');
+            $("#tag2").tagsinput('add', edit.tag);
+            $("#form1").find('.nav-tabs li').removeClass('active').eq(1).addClass('active');
+            $("#tab-1").removeClass('active');
+            $("#tab-2").addClass('active');
+            setTimeout(function () {
+                var img = document.createElement("img");
+                img.src = edit.image;
+                if (imgbox.childNodes.length) {
+                    imgbox.replaceChild(img, imgbox.firstChild);//将img添加到imgbox里
+                } else {
+                    imgbox.appendChild(img);
+                }
+            }, 1000);
+        } else {
+            $("#title1").val(edit.title);
+            $("#preview").removeClass('hidden').find('img').attr('src', edit.image);
+            ue.setContent(edit.content);
+            $('#tag1').tagsinput('removeAll');
+            $("#tag1").tagsinput('add', edit.tag);
+        }
+    }
+
+    $('#article-modal').on('shown.bs.modal', function () {
+        if (!token) getUpToken();
+    });
+
+    $('.tagsinput').tagsinput({
+        tagClass: 'label label-primary',
+        maxTags: 6,
+        trimValue: true
+    });
 </script>
 {include file="public/footer" /}

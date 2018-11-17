@@ -150,7 +150,7 @@
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">项目详情:</label>
                                             <div class="col-sm-10">
-                                                <script id="container" name="content" type="text/plain"></script>
+                                                <script id="asdf" name="content" type="text/plain"></script>
                                             </div>
                                         </div>
 
@@ -408,7 +408,7 @@
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">项目详情:</label>
                                             <div class="col-sm-10">
-                                                <script id="container" name="content" type="text/plain"></script>
+                                                <script id="container1" name="content1" type="text/plain"></script>
                                             </div>
                                         </div>
 
@@ -536,7 +536,7 @@
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/blueimp/jquery.blueimp-gallery.min.js"></script>
 <script>
-    var ue;
+    var ue,ue1;
     $(document).ready(function () {
         $('.i-checks').iCheck({
             checkboxClass: 'icheckbox_square-green',
@@ -613,8 +613,20 @@
             url: url,
             success: function (data) {
                 vm.edit_item = data;
-                if (vm.edit_item.detail)
-                    ue.setContent(vm.edit_item.detail);
+                UE.getEditor('asdf', {
+                    toolbars: [[
+                        'fullscreen', 'source', '|', 'undo', 'redo', '|',
+                        'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
+                        'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent','horizontal','|', 'fontfamily', 'fontsize', '|',
+                        'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
+                        'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
+                        'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
+                    ]]
+                }).ready(function() {
+                    if (vm.edit_item.detail)
+                    this.setContent(vm.edit_item.detail);
+                });
+
             },
             error: function (e) {
                 err();
@@ -770,22 +782,18 @@
             init();
             getUpToken();
         },
-        updated:function(){
-            ue = UE.getEditor('container', {
-                toolbars: [[
-                    'fullscreen', 'source', '|', 'undo', 'redo', '|',
-                    'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
-                    'rowspacingtop', 'rowspacingbottom', 'lineheight', '|',
-                    'fontfamily', 'fontsize', 'indent', '|',
-                    'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|',
-                    'link', 'unlink', 'anchor', '|',
-                    'simpleupload', 'insertimage', 'emotion', 'scrawl', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'template', 'background', '|',
-                    'horizontal', 'date', 'time', 'spechars', 'snapscreen', '|',
-                    'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
-                    'searchreplace', 'drafts'
-                ]],
-                autoFloatEnable: true
-            });
+        updated: function () {
+            if (!ue1)
+                ue1 = UE.getEditor('container1', {
+                    toolbars: [[
+                        'fullscreen', 'source', '|', 'undo', 'redo', '|',
+                        'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
+                        'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent','horizontal','|', 'fontfamily', 'fontsize', '|',
+                        'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
+                        'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
+                        'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
+                    ]]
+                });
         }
     });
 
@@ -814,7 +822,7 @@
             var reader = new FileReader();
             reader.readAsDataURL(files[0]);
             reader.onload = function (e) {
-                putb64(reader.result);
+                putb64(vm.token, reader.result, 'call');
                 fileList.firstElementChild.src = vm.temp;
                 fileList.firstElementChild.height = '96';
                 if (id == 1 || !vm.origin_image) {
@@ -842,20 +850,24 @@
         document.getElementById('origin_image').value = data;
     }
 
-    function putb64(base64_data) {
-        pic = base64_data.replace(/^.*?,/, '');
-        var url = "http://upload-z1.qiniup.com/putb64/-1/";
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                vm.temp = vm.cdn + JSON.parse(xhr.responseText).key;
-            }
-        };
-        xhr.open("POST", url, false);
-        xhr.setRequestHeader("Content-Type", "application/octet-stream");
-        xhr.setRequestHeader("Authorization", "UpToken " + vm.token);
-        xhr.send(pic);
+    function call(key) {
+        vm.temp = vm.cdn + key;
     }
+
+    // function putb64(base64_data) {
+    //     pic = base64_data.replace(/^.*?,/, '');
+    //     var url = "http://upload-z1.qiniup.com/putb64/-1/";
+    //     var xhr = new XMLHttpRequest();
+    //     xhr.onreadystatechange = function () {
+    //         if (xhr.readyState == 4) {
+    //             vm.temp = vm.cdn + JSON.parse(xhr.responseText).key;
+    //         }
+    //     };
+    //     xhr.open("POST", url, false);
+    //     xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    //     xhr.setRequestHeader("Authorization", "UpToken " + vm.token);
+    //     xhr.send(pic);
+    // }
 
     var searltime;
     $(".sort-input").keyup(function (e) {

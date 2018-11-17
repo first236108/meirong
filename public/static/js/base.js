@@ -170,3 +170,27 @@ function objToArray(obj){
     }
     return result;
 }
+
+/**
+ * 生成随机文件名
+ * @returns {string}
+ */
+function makefilename(){
+    var myDate = new Date();
+    return myDate.getFullYear().toString()+myDate.getMonth().toString()+myDate.getDate().toString()+myDate.getTime().toString().substring(5,10)+Math.random().toString().substring(2,5);
+}
+
+function putb64(token,base64_data,callback) {
+    pic = base64_data.replace(/^.*?,/, '');
+    var url = "http://upload-z1.qiniup.com/putb64/-1/";
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            eval(callback+'("'+JSON.parse(xhr.responseText).key+'")');
+        }
+    };
+    xhr.open("POST", url, false);
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    xhr.setRequestHeader("Authorization", "UpToken " + token);
+    xhr.send(pic);
+}

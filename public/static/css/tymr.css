@@ -233,3 +233,13 @@ textarea.form-control {
     left: 0;
     top:0;
 }
+#select2,#select1{
+    width: 7rem;
+    display: inline;
+    height: 3rem;
+    position: relative;
+    left: -7rem;
+    top: -.4rem;
+    z-index: 100;
+    opacity: 0;
+}
