@@ -14,7 +14,7 @@
             {if condition="$type==1"}
             <span class="btn btn-success btn-xs pull-left self-m-l" type="button" onclick="delProduct(0,' 恢复 ')" data-tip="tooltip" data-placement="top" title="" data-original-title="删除项目"><i class="fa fa-plus"></i>&nbsp;找回</span>
             {else /}
-            <span class="btn btn-success btn-xs pull-left self-m-l" type="button" onclick="$('#item-list-modal').modal('show');" data-target="#admin-user-modal" data-tip="tooltip" data-placement="top" title="" data-original-title="添加服务项目"><i class="fa fa-plus"></i>&nbsp;添加</span>
+            <span class="btn btn-success btn-xs pull-left self-m-l" type="button" onclick="addmodal();" data-tip="tooltip" data-placement="top" title="" data-original-title="添加服务项目"><i class="fa fa-plus"></i>&nbsp;添加</span>
             <span class="btn btn-danger btn-xs pull-left self-m-l" type="button" onclick="delProduct(1,' 删除 ')" data-tip="tooltip" data-placement="top" title="" data-original-title="删除项目"><i class="fa fa-minus"></i>&nbsp;删除</span>
             <span class="btn btn-primary btn-xs pull-left self-m-l" type="button" onclick="recomment()" data-tip="tooltip" data-placement="top" title="" data-original-title="推荐置顶"><i class="fa fa-edit"></i>&nbsp;推荐</span>
             <span class="btn btn-default btn-xs pull-right self-m-l" type="button" onclick="location.href='/admin/item/index.html?type=1'" data-tip="tooltip" data-placement="top" title="" data-original-title="历史项目"><i class="fa fa-refresh"></i>&nbsp;历史</span>
@@ -50,7 +50,7 @@
                             <a onclick="changeOnSale('{$vo.item_id}',0,this)" class="btn btn-xs btn-outline btn-warning toggle-down {if $vo.on_sale==0}hidden{/if}">下架 <i class="fa fa-long-arrow-down"></i> </a>
                             <a onclick="changeOnSale('{$vo.item_id}',1,this)" class="btn btn-xs btn-outline btn-success toggle-up {if $vo.on_sale==1}hidden{/if}">上架 <i class="fa fa-long-arrow-up"></i> </a>
 
-                            <a onclick="getEditData('/admin/item/addEditItem/item_id/{$vo.item_id}')" data-toggle="modal" data-target="#item-list-modal" class="btn btn-xs btn-outline btn-primary m-l-lg">编辑修改 <i class="fa fa-long-arrow-right"></i> </a>
+                            <a onclick="getEditData('/admin/item/addEditItem/item_id/{$vo.item_id}');" class="btn btn-xs btn-outline btn-primary m-l-lg">编辑修改 <i class="fa fa-long-arrow-right"></i> </a>
                             <span class="i-checks pull-right"><label> <input type="checkbox" value="{$vo['item_id']}" data-recommend="{$vo['is_recommend']}" class="del"> <i></i></label></span>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">项目详情:</label>
                                             <div class="col-sm-10">
-                                                <script id="asdf" name="content" type="text/plain"></script>
+                                                <script id="container1" name="content" type="text/plain"></script>
                                             </div>
                                         </div>
 
@@ -408,7 +408,7 @@
                                         </div>
                                         <div class="form-group"><label class="col-sm-2 control-label">项目详情:</label>
                                             <div class="col-sm-10">
-                                                <script id="container1" name="content1" type="text/plain"></script>
+                                                <script id="container" name="content" type="text/plain"></script>
                                             </div>
                                         </div>
 
@@ -532,11 +532,11 @@
 <script src="/static/js/vue.min.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
 <script src="/static/plugins/ueditor/ueditor.config.js"></script>
-<script src="/static/plugins/ueditor/ueditor.all.min.js"></script>
+<script src="/static/plugins/ueditor/ueditor.all.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/blueimp/jquery.blueimp-gallery.min.js"></script>
 <script>
-    var ue,ue1;
+    var editor;
     $(document).ready(function () {
         $('.i-checks').iCheck({
             checkboxClass: 'icheckbox_square-green',
@@ -605,28 +605,39 @@
 
             }
         });
+
+        editor = new UE.ui.Editor({
+            toolbars: [[
+                'fullscreen', 'source', '|', 'undo', 'redo', '|',
+                'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
+                'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent','horizontal','|', 'fontfamily', 'fontsize', '|',
+                'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
+                'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
+                'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
+            ]]
+        });
+        editor.ready(function () {
+            if (vm.edit_item.detail)
+                this.setContent(vm.edit_item.detail);
+        });
     });
 
+    function addmodal(){
+        $("#item-list-modal").modal('show');
+        if (!editor.hasOwnProperty('ui') || editor.ui.editor.key!='container')
+            editor.render('container');
+    }
+
     function getEditData(url) {
+        $("#item-list-modal").modal('show');
         $.ajax({
             type: 'GET',
             url: url,
             success: function (data) {
                 vm.edit_item = data;
-                UE.getEditor('asdf', {
-                    toolbars: [[
-                        'fullscreen', 'source', '|', 'undo', 'redo', '|',
-                        'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
-                        'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent','horizontal','|', 'fontfamily', 'fontsize', '|',
-                        'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
-                        'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
-                        'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
-                    ]]
-                }).ready(function() {
-                    if (vm.edit_item.detail)
-                    this.setContent(vm.edit_item.detail);
-                });
-
+                setTimeout(function(){
+                    editor.render('container1');
+                },1500);
             },
             error: function (e) {
                 err();
@@ -782,19 +793,9 @@
             init();
             getUpToken();
         },
-        updated: function () {
-            if (!ue1)
-                ue1 = UE.getEditor('container1', {
-                    toolbars: [[
-                        'fullscreen', 'source', '|', 'undo', 'redo', '|',
-                        'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
-                        'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent','horizontal','|', 'fontfamily', 'fontsize', '|',
-                        'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
-                        'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
-                        'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
-                    ]]
-                });
-        }
+        // updated: function () {
+        //
+        // }
     });
 
     function getUpToken() {
@@ -853,21 +854,6 @@
     function call(key) {
         vm.temp = vm.cdn + key;
     }
-
-    // function putb64(base64_data) {
-    //     pic = base64_data.replace(/^.*?,/, '');
-    //     var url = "http://upload-z1.qiniup.com/putb64/-1/";
-    //     var xhr = new XMLHttpRequest();
-    //     xhr.onreadystatechange = function () {
-    //         if (xhr.readyState == 4) {
-    //             vm.temp = vm.cdn + JSON.parse(xhr.responseText).key;
-    //         }
-    //     };
-    //     xhr.open("POST", url, false);
-    //     xhr.setRequestHeader("Content-Type", "application/octet-stream");
-    //     xhr.setRequestHeader("Authorization", "UpToken " + vm.token);
-    //     xhr.send(pic);
-    // }
 
     var searltime;
     $(".sort-input").keyup(function (e) {
