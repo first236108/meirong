@@ -185,11 +185,11 @@ function putb64(token,base64_data,callback) {
     var url = "http://upload-z1.qiniup.com/putb64/-1/";
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
+        if (xhr.readyState == 4 && xhr.status === 200) {
             eval(callback+'("'+JSON.parse(xhr.responseText).key+'")');
         }
     };
-    xhr.open("POST", url, false);
+    xhr.open("POST", url, false);//true异步，false同步
     xhr.setRequestHeader("Content-Type", "application/octet-stream");
     xhr.setRequestHeader("Authorization", "UpToken " + token);
     xhr.send(pic);

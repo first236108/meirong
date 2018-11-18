@@ -79,7 +79,7 @@ textarea.form-control {
     max-width: 8rem;
 }
 
-#addEditItemForm .file {
+#addItemForm .file, #editItemForm .file{
     border-radius: 4px;
     position: relative;
     display: inline-block;
@@ -106,7 +106,7 @@ textarea.form-control {
     width: 8rem;
 }
 
-#addEditItemForm .file input {
+#addItemForm .file input, #editItemForm .file input {
     position: absolute;
     font-size: 15rem;
     right: 0;

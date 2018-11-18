@@ -34,7 +34,7 @@ class Users extends Model
 
     public function getAvatarAttr($value, $data)
     {
-        $sex_avatar = ['http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg', 'http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg'];
+        $sex_avatar = ['http://image.igccc.com/FlqnB7TlnbjUbneqwUx7T9vySHGw', 'http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg'];
         $avatar     = $value ?? $sex_avatar[$data['sex']];
         return $avatar;
     }

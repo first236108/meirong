@@ -61,13 +61,14 @@ class Item extends Base
                 return json(['succ' => 1, 'msg' => $result]);
 
             $item                 = new \app\admin\model\Item();
-            $data['detail']       = $data['content'];
+            $data['detail']       = isset($data['content']) ? $data['content'] : ' ';
             $data['first_letter'] = getFirstCharter($data['title']);
             if ($id)
                 $flag = $item->allowField(true)->isUpdate(true)->save($data);
             else {
                 $flag = $item->allowField(true)->save($data);
                 $id   = $item->item_id;
+                trace('[here..]'.$id);
             }
 
             #插入/更新 项目轮播图
@@ -84,8 +85,9 @@ class Item extends Base
                     Db::name('item_img')->insertAll($img);
                 }
             }
-
-            return json(['succ' => !$flag]);
+            if (!$flag)
+                return json('', 403);
+            return json();
         }
         $info        = Db::name('item')->where('item_id', $id)->find();
         $info['img'] = Db::name('item_img')->where('item_id', $id)->select();

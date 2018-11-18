@@ -4,7 +4,6 @@ namespace app\admin\controller;
 
 use think\Db;
 use Qiniu\Auth;
-use think\Exception;
 
 class Index extends Base
 {
@@ -301,8 +300,11 @@ class Index extends Base
 
     public function uploadToken()
     {
-        $auth  = new Auth(config('qiniu_access'), config('qiniu_secret'));
-        $token = $auth->uploadToken(config('qiniu_bucket'));
-        return json(['token' => $token, 'cdn' => config('qiniu_cdn')], 200);
+        $auth   = new Auth(config('qiniu_access'), config('qiniu_secret'));
+        $policy = [
+            'returnBody' => '{"url":$(key),"key":$(key),"state":"SUCCESS"}'
+        ];
+        $token  = $auth->uploadToken(config('qiniu_bucket'), null, 3600, $policy);
+        return json(['token' => $token, 'cdn' => config('qiniu_cdn')]);
     }
 }

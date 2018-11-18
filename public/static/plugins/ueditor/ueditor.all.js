@@ -8020,6 +8020,10 @@ var fillCharReg = new RegExp(domUtils.fillChar, 'g');
             var actionName = this.getOpt(action) || action,
                 imageUrl = this.getOpt('imageUrl'),
                 serverUrl = this.getOpt('serverUrl');
+            //FIXME 修改上地址为七牛
+            if (action == "uploadimage") {
+                return imageUrl;
+            }
 
             if(!serverUrl && imageUrl) {
                 serverUrl = imageUrl.replace(/^(.*[\/]).+([\.].+)$/, '$1controller$2');
@@ -23739,7 +23743,7 @@ UE.plugin.register('autoupload', function (){
         var me  = editor;
         //模拟数据
         var fieldName, urlPrefix, maxSize, allowFiles, actionUrl,
-            loadingHtml, errorHandler, successHandler,
+            loadingHtml, errorHandler, successHandler,token,
             filetype = /image\/\w+/i.test(file.type) ? 'image':'file',
             loadingId = 'loading_' + (+new Date()).toString(36);
 
@@ -23821,6 +23825,21 @@ UE.plugin.register('autoupload', function (){
 
         fd.append(fieldName, file, file.name || ('blob.' + file.type.substr('image/'.length)));
         fd.append('type', 'ajax');
+        //FIXME 简单上传增加七牛token
+        if (!token) {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/index/uploadToken',
+                async: false,//注意此处一定同步
+                success: function (res) {
+                    token = res.token;
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            });
+        }
+        fd.append('token', token);
         xhr.open("post", url, true);
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.addEventListener('load', function (e) {
@@ -24462,7 +24481,8 @@ UE.plugin.register('section', function (){
 UE.plugin.register('simpleupload', function (){
     var me = this,
         isLoaded = false,
-        containerBtn;
+        containerBtn,
+        token;
 
     function initUploadBtn(){
         var w = containerBtn.offsetWidth || 20,
@@ -24486,7 +24506,7 @@ UE.plugin.register('simpleupload', function (){
             '<input id="edui_input_' + timestrap + '" type="file" accept="image/*" name="' + me.options.imageFieldName + '" ' +
             'style="' + btnStyle + '">' +
             '</form>' +
-            '<iframe id="edui_iframe_' + timestrap + '" name="edui_iframe_' + timestrap + '" style="display:none;width:0;height:0;border:0;margin:0;padding:0;position:absolute;"></iframe>';
+            '<iframe id="edui_iframe_' + timestrap + '" name="edui_iframe_' + timestrap + '" src="http://spa.com" style="display:none;width:0;height:0;border:0;margin:0;padding:0;position:absolute;"></iframe>';
 
             wrapper.className = 'edui-' + me.options.theme;
             wrapper.id = me.ui.id + '_iframeupload';
@@ -24565,9 +24585,51 @@ UE.plugin.register('simpleupload', function (){
                     return;
                 }
 
-                domUtils.on(iframe, 'load', callback);
-                form.action = utils.formatUrl(imageActionUrl + (imageActionUrl.indexOf('?') == -1 ? '?':'&') + params);
-                form.submit();
+                // domUtils.on(iframe, 'load', callback);
+                // form.action = utils.formatUrl(imageActionUrl + (imageActionUrl.indexOf('?') == -1 ? '?':'&') + params);
+                //FIXME 增加七牛token
+                if (!token) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/admin/index/uploadToken',
+                        async: false,//注意此处一定同步
+                        success: function (res) {
+                            token = res.token;
+                        },
+                        error: function (e) {
+                            console.log(e.responseText);
+                        }
+                    });
+                }
+                var formdata=new FormData();
+                formdata.append('file',input.files[0]);
+                formdata.append('token',token);
+                $.ajax({
+                    type: 'POST',
+                    url: imageActionUrl,
+                    data: formdata,
+                    processData:false,
+                    contentType:false,
+                    success: function (res) {
+                        link = me.options.imageUrlPrefix + res.url;
+                        if(res.state == 'SUCCESS' && res.url) {
+                            loader = me.document.getElementById(loadingId);
+                            loader.setAttribute('src', link);
+                            loader.setAttribute('_src', link);
+                            loader.setAttribute('title', res.title || '');
+                            loader.setAttribute('alt', res.original || '');
+                            loader.removeAttribute('id');
+                            domUtils.removeClasses(loader, 'loadingclass');
+                        } else {
+                            showErrorLoader && showErrorLoader(res.state);
+                        }
+                    },
+                    error: function (xhr, type) {
+                        console.log(xhr);
+                        showErrorLoader && showErrorLoader(me.getLang('simpleupload.loadError'));
+                    }
+                });
+                // form.submit();
             });
 
             var stateTimer;
