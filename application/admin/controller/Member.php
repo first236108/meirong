@@ -146,6 +146,7 @@ class Member extends Base
         }
         try {
             $total_amount = 0;
+            $order        = ['order' => [], 'order_item' => []];
             $list         = Orders::alias('a')
                 ->join('users b', 'a.user_id=b.user_id')
                 ->join('user_level c', 'b.level=c.level_id')
@@ -153,8 +154,8 @@ class Member extends Base
                 ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
                 ->order('a.add_time desc')
                 ->select();
-            if ($list) {
-                $total_amount = Orders::where('order_id', 'in', array_column($list->toArray(), 'order_id'))->sum('pay_amount');
+            if (!$list->isEmpty()) {
+                $total_amount = array_sum(array_column($list->toArray(), 'pay_amount'));
                 $order        = $this->order_detail($list[0]['order_id']);
             }
 

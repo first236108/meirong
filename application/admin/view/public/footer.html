@@ -160,19 +160,6 @@
         }
     });
 
-    function clearCache() {
-        $.ajax({
-            type: 'POST',
-            url: '/admin/login/clearCache',
-            success: function (data) {
-                toastr.success('清除完成');
-            },
-            error: function (xhr, type) {
-                err(xhr.responseText);
-            }
-        });
-    }
-
     $("#breadcrumb1").text($("#side-menu > li.active>a").text());
     $("#breadcrumb2").text($("#side-menu > li.active>ul>li.active>a").text());
 

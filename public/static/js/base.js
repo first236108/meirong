@@ -194,3 +194,16 @@ function putb64(token,base64_data,callback) {
     xhr.setRequestHeader("Authorization", "UpToken " + token);
     xhr.send(pic);
 }
+
+function clearCache() {
+    $.ajax({
+        type: 'POST',
+        url: '/admin/login/clearCache',
+        success: function (data) {
+            toastr.success('清除完成');
+        },
+        error: function (xhr, type) {
+            err(xhr.responseText);
+        }
+    });
+}

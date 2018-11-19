@@ -91,8 +91,8 @@
                             <td class="text-center">{{user.last_come}}</td>
                             <td class="text-center">
 
-                                <span class="label label-primary" v-if="user.is_valid==1" @click="toggleStatus(user.user_id,0,index)">正常</span>
-                                <span class="label label-danger" v-else @click="toggleStatus(user.user_id,1,index)">黑名单</span>
+                                <span class="label label-primary pointer" v-if="user.is_valid==1" @click="toggleStatus(user.user_id,0,index)">正常</span>
+                                <span class="label label-danger pointer" v-else @click="toggleStatus(user.user_id,1,index)">黑名单</span>
                             </td>
                             <td v-if="user.is_valid==1" class="text-center">
                                 <button type="button" class="btn btn-default btn-outline btn-xs" @click="editUser(index)"><i class="fa fa-edit">修改</i></button>

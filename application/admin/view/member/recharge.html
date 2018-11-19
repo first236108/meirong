@@ -78,8 +78,8 @@
                             <tr v-for="(order,index) in list">
                                 <td class="first-td">{{order.name||order.nickname}}</td>
                                 <td>{{order.order_sn}}</td>
-                                <td>{{order.order_amount}}</td>
                                 <td>{{order.pay_amount}}</td>
+                                <td>{{order.order_amount}}</td>
                                 <td><span class="text-danger">{{admin[order.confirm_id]['nickname'] || admin[order.confirm_id]['name']}}</span></td>
                                 <td>
                                     <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle chat-avatar">
@@ -93,8 +93,8 @@
                             <tfoot>
                             <tr class="text-danger">
                                 <td></td>
-                                <td>总计:</td>
-                                <td>{{total_amount}}</td>
+                                <td class="text-center">总计:</td>
+                                <td class="text-center">{{total_amount}}</td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
