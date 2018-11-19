@@ -12,8 +12,8 @@
                     <div class="dd" id="nestable2" v-cloak>
                         <ol class="dd-list">
                             <li class="dd-item" v-for="(vo,index) in init_data.list">
-                                <button data-action="collapse" type="button" onclick="collapse(this)">Collapse</button>
-                                <button data-action="expand" type="button" style="display: none;" onclick="expand(this)">Expand</button>
+                                <button data-action="collapse" type="button" onclick="collapse(this);">Collapse</button>
+                                <button data-action="expand" type="button" style="display: none;" onclick="expand(this);">Expand</button>
                                 <div class="dd-handle">
                                     <img class="chat-avatar pull-right" :src="vo.image" v-if="vo.image">
                                     <span class="label label-info"><i class="fa fa-sort-desc"></i></span>
@@ -43,7 +43,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content animated fadeIn">
                         <div class="modal-header">
-                            <button type="button" class="close" onclick="closeModal()"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                            <button type="button" class="close" onclick="closeModal();"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
                             <h5 class="modal-title">添加/修改项目分类</h5>
                         </div>
                         <form id="addEditCateForm">
@@ -78,7 +78,7 @@
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-white" onclick="closeModal()">关 闭</button>
+                                <button type="button" class="btn btn-white" onclick="closeModal();">关 闭</button>
                                 <button type="submit" class="btn btn-primary">保 存</button>
                             </div>
                         </form>
@@ -112,14 +112,14 @@
                 name: "分类名称一定要填",
                 // image:"请上传分类图标"
             },
-            ignore:'',
+            ignore: '',
             submitHandler: function (form) {
                 $.ajax({
                     type: 'POST',
                     url: '/admin/item/addEditCate',
                     data: $(form).serialize(),
                     success: function (data) {
-                        if (data.succ == 0){
+                        if (data.succ == 0) {
                             location.reload();
                         }
                         else
@@ -150,11 +150,12 @@
         });
     }
 
+    var cdn, token;
     var vm = new Vue({
         el: "#wrapper",
         data: {
             init_data: {
-                list:{}
+                list: {}
             },
             list: {},
             total: 1,
@@ -165,13 +166,13 @@
         }
     });
 
-    function expand(e){
+    function expand(e) {
         $(e).hide();
         $(e).prev().show();
         $(e).parent().children('ol').show();
     }
 
-    function collapse(e){
+    function collapse(e) {
         $(e).hide();
         $(e).next().show();
         $(e).parent().children('ol').hide();
@@ -180,16 +181,14 @@
     function serialise() {
         var data,
             depth = 0,
-            list  = $('#nestable2');
-        step  = function(level, depth)
-        {
-            var array = [ ],
+            list = $('#nestable2');
+        step = function (level, depth) {
+            var array = [],
                 items = level.children('li');
-            items.each(function()
-            {
-                var li   = $(this),
+            items.each(function () {
+                var li = $(this),
                     item = $.extend({}, li.data()),
-                    sub  = li.children('ol');
+                    sub = li.children('ol');
                 if (sub.length) {
                     item.children = step(sub, depth + 1);
                 }
@@ -202,6 +201,7 @@
 
     function closeModal() {
         init();
+        vm.list={};
         $("#item-cate-modal").modal('hide');
     }
 
@@ -209,7 +209,7 @@
         // 选完文件后，是否自动上传。
         auto: true,
         // 文件接收服务端。
-        server: '{:url("admin/index/uploader")}',
+        server: 'https://upload-z1.qiniup.com',
 
         swf: '/static/plugins/webuploader/Uploader.swf',
 
@@ -218,13 +218,15 @@
         accept: {
             title: 'Images',
             extensions: 'gif,jpg,jpeg,bmp,png',
-            mimeTypes: 'image/jpg,image/png,image/gif'
+            mimeTypes: 'image/jpg,image/png,image/gif,image/jpeg'
         },
-        formData:{path:"category"},
-        fileNumLimit: 1
+        fileNumLimit: 1,
+        formData:{
+            token:''
+        }
     });
 
-    uploader.on( 'fileQueued', function( file ) {
+    uploader.on('fileQueued', function (file) {
         var $li = $(
             '<div id="' + file.id + '" class="file-item thumbnail">' +
             '<img>' +
@@ -233,58 +235,75 @@
             ),
             $img = $li.find('img');
 
-        $('#fileList').append( $li );
+        $('#fileList').append($li);
 
         // 创建缩略图
-        uploader.makeThumb( file, function( error, src ) {
-            if ( error ) {
+        uploader.makeThumb(file, function (error, src) {
+            if (error) {
                 $img.replaceWith('<span>不能预览</span>');
                 return;
             }
 
-            $img.attr( 'src', src );
-        }, 100, 100 );
+            $img.attr('src', src);
+        }, 100, 100);
     });
 
-    uploader.on( 'uploadProgress', function( file, percentage ) {
-        var $li = $( '#'+file.id ),
+    uploader.on('uploadProgress', function (file, percentage) {
+        var $li = $('#' + file.id),
             $percent = $li.find('.progress span');
 
         // 避免重复创建
-        if ( !$percent.length ) {
+        if (!$percent.length) {
             $percent = $('<p class="progress"><span></span></p>')
-                .appendTo( $li )
+                .appendTo($li)
                 .find('span');
         }
 
-        $percent.css( 'width', percentage * 100 + '%' );
+        $percent.css('width', percentage * 100 + '%');
     });
 
     // 文件上传成功，给item添加成功class, 用样式标记上传成功。
-    uploader.on( 'uploadSuccess', function( file ,response) {
-        $( '#'+file.id ).addClass('upload-state-done');
-        if (response.succ!=0)
+    uploader.on('uploadSuccess', function (file, response) {
+        $('#' + file.id).addClass('upload-state-done');
+        if (response.state != 'SUCCESS')
             toastr.warning(response.msg);
         else
-            vm.list.image=response.data;
+            vm.list.image = cdn + response.key;
     });
 
+    uploader.on('uploadStart', function (file) {
+        if (!token) {
+            $.ajax({
+                type: 'POST',
+                url: "{:url('admin/ueditor/uploadToken')}",
+                async:false,
+                success: function (data) {
+                    cdn = data.cdn;
+                    token = data.token;
+                },
+                error: function (xhr, type) {
+                    err(xhr.responseText);
+                }
+            });
+        }
+        uploader.options.formData.token = token;
+    });
     // 文件上传失败，显示上传出错。
-    uploader.on( 'uploadError', function( file ) {
-        var $li = $( '#'+file.id ),
+    uploader.on('uploadError', function (file) {
+        var $li = $('#' + file.id),
             $error = $li.find('div.error');
 
         // 避免重复创建
-        if ( !$error.length ) {
-            $error = $('<div class="error"></div>').appendTo( $li );
+        if (!$error.length) {
+            $error = $('<div class="error"></div>').appendTo($li);
         }
 
         $error.text('上传失败');
     });
 
     // 完成上传完了，成功或者失败，先删除进度条。
-    uploader.on( 'uploadComplete', function( file ) {
-        $( '#'+file.id ).find('.progress').remove();
+    uploader.on('uploadComplete', function (file) {
+        $('#' + file.id).find('.progress').remove();
     });
 
 </script>

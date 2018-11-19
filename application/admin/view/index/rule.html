@@ -225,7 +225,8 @@
             init();
         },
         methods: {
-            getMethods: function () {
+            getMethods: function (e) {
+                vm.actions=[];
                 $.ajax({
                     type: 'POST',
                     url: '/admin/index/rule',
@@ -237,9 +238,14 @@
                         err(xhr.responseText);
                     }
                 });
+                this.fixPath(e);
             },
-            fixPath: function () {
-                vm.list.name = $("#controller").val() + '/' + $("#action").val();
+            fixPath: function (e) {
+                if(e.target.id=='controller'){
+                    vm.list.name=$("#controller").val();
+                }else{
+                    vm.list.name = $("#controller").val() + '/' + $("#action").val();
+                }
             }
         }
     });

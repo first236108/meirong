@@ -156,4 +156,14 @@ class Ueditor extends Controller
             return $ret;
         }
     }
+
+    public function uploadToken()
+    {
+        $auth   = new Auth(config('qiniu_access'), config('qiniu_secret'));
+        $policy = [
+            'returnBody' => '{"url":$(key),"key":$(key),"state":"SUCCESS"}'
+        ];
+        $token  = $auth->uploadToken(config('qiniu_bucket'), null, 3600, $policy);
+        return json(['token' => $token, 'cdn' => config('qiniu_cdn')]);
+    }
 }

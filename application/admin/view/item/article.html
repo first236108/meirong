@@ -264,7 +264,7 @@
     function getUpToken() {
         $.ajax({
             type: 'POST',
-            url: '/admin/index/uploadToken',
+            url: "{:url('admin/ueditor/uploadToken')}",
             success: function (data) {
                 token = data.token;
                 cdn = data.cdn;

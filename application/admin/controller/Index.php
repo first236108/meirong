@@ -169,7 +169,7 @@ class Index extends Base
                     }
                 }
             }
-            $planList = array_diff($planList, ['Login', 'Base']);
+            $planList = array_diff($planList, ['Login', 'Base','Ueditor']);
 
             $list = Db::name('auth_rule')
                 ->field('id,name,title,CASE cate WHEN 1 THEN "系统设置" WHEN 2 THEN "运营管理" ELSE "内容维护" END AS cate')
@@ -273,38 +273,5 @@ class Index extends Base
             return null;
         $flag = Db::name($table)->where($id_name, 'in', $id_value)->setField($field, $value);
         return $flag ? $flag : null;
-    }
-
-    public function uploader()
-    {
-        $file    = request()->file('file');
-        $path    = input('path', '');
-        $absPath = $path ? getcwd() . DIRECTORY_SEPARATOR . 'upload' . DIRECTORY_SEPARATOR . $path : getcwd() . DIRECTORY_SEPARATOR . 'upload';
-        try {
-            $info = $file->validate(['size' => 100048576 * 4, 'ext' => 'jpg,png,gif'])->move($absPath);
-            if ($info) {
-                $path = DIRECTORY_SEPARATOR . 'upload' . DIRECTORY_SEPARATOR . $path;
-                return json(['succ' => 0, 'data' => $path . DIRECTORY_SEPARATOR . $info->getSaveName()]);
-            } else {
-                return json(['succ' => 2, 'msg' => $file->getError()]);
-            }
-        } catch (\Exception $e) {
-            return json(['succ' => 2, 'msg' => $e->getMessage()]);
-        }
-    }
-
-    public function delimage()
-    {
-        dump(input('param.'));
-    }
-
-    public function uploadToken()
-    {
-        $auth   = new Auth(config('qiniu_access'), config('qiniu_secret'));
-        $policy = [
-            'returnBody' => '{"url":$(key),"key":$(key),"state":"SUCCESS"}'
-        ];
-        $token  = $auth->uploadToken(config('qiniu_bucket'), null, 3600, $policy);
-        return json(['token' => $token, 'cdn' => config('qiniu_cdn')]);
     }
 }
