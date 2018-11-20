@@ -63,11 +63,10 @@
                             <thead>
                             <tr>
                                 <th>会员</th>
-                                <th>订单编号</th>
+                                <th>头像</th>
                                 <th>付款金额</th>
                                 <th>订单金额</th>
                                 <th>跟单</th>
-                                <th>头像</th>
                                 <th>支付时间</th>
                                 <th>下单时间</th>
                                 <th>状态</th>
@@ -77,13 +76,12 @@
                             <tbody>
                             <tr v-for="(order,index) in list">
                                 <td class="first-td">{{order.name||order.nickname}}</td>
-                                <td>{{order.order_sn}}</td>
-                                <td>{{order.pay_amount}}</td>
-                                <td>{{order.order_amount}}</td>
-                                <td><span class="text-danger">{{admin[order.confirm_id]['nickname'] || admin[order.confirm_id]['name']}}</span></td>
                                 <td>
                                     <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle chat-avatar">
                                 </td>
+                                <td>{{order.pay_amount}}</td>
+                                <td>{{order.order_amount}}</td>
+                                <td><span class="text-danger">{{admin[order.confirm_id]['nickname'] || admin[order.confirm_id]['name']}}</span></td>
                                 <td>{{order.pay_time}}</td>
                                 <td>{{order.add_time}}</td>
                                 <td>{{order.status}}</td>
@@ -95,7 +93,6 @@
                                 <td></td>
                                 <td class="text-center">总计:</td>
                                 <td class="text-center">{{total_amount}}</td>
-                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -320,7 +317,7 @@
                 info: "当前显示第 _START_ 至 _END_ 条, 共 _TOTAL_ 条记录",
                 lengthMenu:"每页显示 _MENU_ 条",
                 search:"快速搜索",
-                searchPlaceholder:'会员性名/昵称/手机号'
+                searchPlaceholder:'会员姓名/昵称'
             },
             dom: '<"html5buttons"B>lTfgtip',
             buttons: [
@@ -606,7 +603,6 @@
             }
         },
         updated: function () {
-
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
                 radioClass: 'iradio_square-green'
