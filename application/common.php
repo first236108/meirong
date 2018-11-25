@@ -199,7 +199,7 @@ function getNewOrderSn()
 {
     while (true) {
         list($usec, $sec) = explode(" ", microtime());
-        $sn = date('Ymd') . substr($sec, 5) . 1000 * $usec . mt_rand(1000, 9999);
+        $sn = date('Ymd') . substr($sec, 5) . substr($usec, 2, 3) . mt_rand(10, 99);
         if (Db::name('order')->where('order_sn', $sn)->count())
             continue;
         break;
@@ -342,7 +342,8 @@ function uniqueCode()
     return $sn;
 }
 
-function defaultAvatar($arr){
+function defaultAvatar($arr)
+{
     $sex_avatar = ['http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg', 'http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg'];
     foreach ($arr as $index => $item) {
         $arr[$index]['avatar'] = $item['avatar'] ?? $sex_avatar[$item['sex']];

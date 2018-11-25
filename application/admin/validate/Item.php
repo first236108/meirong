@@ -19,7 +19,7 @@ class Item extends Validate
         'use_money'      => 'gt:0',
         'use_points'     => 'gt:0',
         'manager_reduce' => 'gt:0',
-        'pay_amount'     => 'gt:0',
+        'pay_amount'     => 'egt:0',//FIXME 全部使用余额的情况下，允许支付金额为0
         'confirm_id'     => 'require|gt:0'
     ];
     protected $message = [

@@ -13,7 +13,7 @@
                 <div class="col-sm-2">
                     <div class="form-group">
                         <label class="control-label" for="type">订单类型</label>
-                        <select name="type" id="type" v-model="type" class="form-control">
+                        <select name="type" id="type" class="form-control">
                             <option value="false">所有订单</option>
                             <option value="1">包含赠送</option>
                             <option value="0">不含赠送</option>
@@ -38,68 +38,29 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="form-group">
-                        <label class="control-label" for="nameorphone">搜索词</label>
-                        <input type="text" id="nameorphone" name="nameorphone" value="" placeholder="手机号/名字/昵称" class="form-control">
-                    </div>
-                </div>
+                <!--<div class="col-sm-3">-->
+                <!--<div class="form-group">-->
+                <!--<label class="control-label" for="search">搜索词</label>-->
+                <!--<input type="text" id="search" name="search" value="" placeholder="手机号/名字/昵称" class="form-control">-->
+                <!--</div>-->
+                <!--</div>-->
                 <div class="col-sm-1">
                     <div class="form-group">
                         <label>&nbsp;</label>
-                        <button type="submit" class="btn btn-primary btn-block" data-tip="tooltip" data-placement="top" data-original-title="搜索">Go</button>
+                        <button type="button" id="search_btn" class="ladda-button btn btn-primary btn-block" data-style="expand-right" data-tip="tooltip" data-placement="top" data-original-title="搜索">Go</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="row" v-cloak>
+    <div class="row">
         <div class="col-lg-12">
             <div class="ibox">
                 <div class="ibox-content">
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered table-hover" id="rechargetable">
-                            <thead>
-                            <tr>
-                                <th>会员</th>
-                                <th>头像</th>
-                                <th>付款金额</th>
-                                <th>订单金额</th>
-                                <th>跟单</th>
-                                <th>支付时间</th>
-                                <th>下单时间</th>
-                                <th>状态</th>
-                                <th>订单详情</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="(order,index) in list">
-                                <td class="first-td">{{order.name||order.nickname}}</td>
-                                <td>
-                                    <img :src="order.avatar" :error="defaultImg(index)" :alt="order.name" class="img-circle chat-avatar">
-                                </td>
-                                <td>{{order.pay_amount}}</td>
-                                <td>{{order.order_amount}}</td>
-                                <td><span class="text-danger">{{admin[order.confirm_id]['nickname'] || admin[order.confirm_id]['name']}}</span></td>
-                                <td>{{order.pay_time}}</td>
-                                <td>{{order.add_time}}</td>
-                                <td>{{order.status}}</td>
-                                <td class="text-center"><button class="btn btn-xs btn-outline btn-primary" @click="viewOrder(order.order_id)">查看</button></td>
-                            </tr>
-                            </tbody>
-                            <tfoot>
-                            <tr class="text-danger">
-                                <td></td>
-                                <td class="text-center">总计:</td>
-                                <td class="text-center">{{total_amount}}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
+
                             </tfoot>
                         </table>
                     </div>
@@ -140,7 +101,7 @@
                         <div class="form-group"><label class="col-sm-2 control-label">跟单</label>
                             <div class="col-sm-10">
                                 <select class="form-control m-b" name="confirm_id" v-model="confirm_id" :arrt="confirm_id">
-                                    <option v-for="(item,key) in admin" :value="item.id">{{item.name || item.nickname}}</option>
+                                    <option v-for="(item,key) in admin" :value="item.id">{{item.nickname || item.name}}</option>
                                 </select>
                             </div>
                         </div>
@@ -162,8 +123,8 @@
                             </div>
                         </div>
 
-                        <selected-item v-for="i in selected" v-bind="i" v-on:delselect="del($event,0)"></selected-item>
-                        <give-item v-for="g in give" v-bind="g" v-on:delselect="del($event,1)"></give-item>
+                        <selected-item v-for="(i,i_index) in selected" v-bind="i" @delselect="del($event,0)" @seletchange="seletchange"></selected-item>
+                        <give-item v-for="(g,g_index) in give" v-bind="g" @delselect="del($event,1)" @givechange="givechange"></give-item>
 
                         <div class="form-group"><label class="col-sm-2 control-label">订单金额</label>
                             <div class="col-sm-10">
@@ -234,7 +195,7 @@
             </div>
         </div>
     </div>
-    <div class="modal inmodal fade" id="order-detail" tabindex="-2" role="dialog"  aria-hidden="true" data-backdrop="static" data-keyboard=false>
+    <div class="modal inmodal fade" id="order-detail" tabindex="-2" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard=false>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -242,7 +203,7 @@
                     <h4 class="modal-title">订单详情</h4>
                     <small class="text-muted">实时预约，方便会员立即消费.</small>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" v-if="order_detail.hasOwnProperty('order')">
                     <div class="ibox-content">
                         <div class="row">
                             <dl class="dl-horizontal">
@@ -275,7 +236,7 @@
                                 <div class="agile-detail">
                                     <a onclick="javascript:;" class="pull-right btn btn-xs btn-danger" disabled="disabled" v-if="item.dec_num==0">已全部消费</a>
                                     <a @click="getQrcode(item.id)" data-repeat="0" class="pull-right btn btn-xs btn-success" v-else>立即预约</a>
-                                    <i class="fa fa-battery"></i>&nbsp;<span class="text-success">服务次数：{{item.num}}</span><br />
+                                    <i class="fa fa-battery"></i>&nbsp;<span class="text-success">服务次数：{{item.num}}</span><br/>
                                     <i :class="['fa','fa-battery-'+Math.round(item.dec_num/item.num*4)]"></i>&nbsp;<span class="text-danger">剩余次数：{{item.dec_num}}</span>
                                 </div>
                             </li>
@@ -304,20 +265,41 @@
 <script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
 <script>
     var l;
+    var init_lock = true;
+    var user_id = {$user_id};
+    var order_id = {$order_id};
+    var fields = [];
+    var admin = [];
     $(document).ready(function () {
-        $('#rechargetable').DataTable({
-            pageLength: 10,
+        var table = $('#rechargetable').DataTable({
+            serverSide: true,//服务器模式
+            pageLength: 5,
             responsive: true,
-            order:[[6,'desc']],
-            bInfo:true,//不显示分页信息
+            order: [[6, 'desc']],
+            processing: true,//显示处理状态，排序、加载时
+            bInfo: true,//不显示分页信息
+            searchDelay: 500,//自动搜索延迟
             aoColumnDefs: [
-                {"orderable":false,"aTargets":[5]}// 制定列不参与排序
+                {"orderable": false, "aTargets": [5]}// 制定列不参与排序
             ],
             language: {
                 info: "当前显示第 _START_ 至 _END_ 条, 共 _TOTAL_ 条记录",
-                lengthMenu:"每页显示 _MENU_ 条",
-                search:"快速搜索",
-                searchPlaceholder:'会员姓名/昵称'
+                lengthMenu: "每页显示 _MENU_ 条",
+                search: "<span class='media-middle'>自动搜索</span>",
+                searchPlaceholder: '会员性名/昵称/手机号',
+                sZeroRecords: "没有匹配结果",
+                sLoadingRecords: "载入中...",
+                sProcessing: "<img src='http://image.igccc.com/loading.gif'>处理中...",
+                oAria: {
+                    "sSortAscending": ": 升序排列",
+                    "sSortDescending": ": 降序排列"
+                },
+                oPaginate: {
+                    "sFirst": "第一页",
+                    "sPrevious": "上一页",
+                    "sNext": "下一页",
+                    "sLast": "最后一页"
+                }
             },
             dom: '<"html5buttons"B>lTfgtip',
             buttons: [
@@ -336,16 +318,125 @@
                 },
                 {
                     sExtends: 'add',
-                    text:'充值',
-                    action: function ( e, dt, node, config ){
+                    text: '充值',
+                    action: function (e, dt, node, config) {
                         $('#order-add-modal').modal('show');
                         getItems();
+                    }
+                }
+            ],
+            search: {
+                smart: false,
+                search: ''//默认搜索内容
+            },
+            ajax: function (data, callback, settings) {
+                var param = {};
+                if (fields.length == 0) {
+                    data.columns.forEach(function (value, index) {
+                        fields[index] = value['data'];
+                    });
+                }
+                if (init_lock && user_id) {
+                    param.user_id = user_id;
+                    init_lock = false;
+                }
+                if (init_lock && order_id) {
+                    param.order_id = order_id;
+                    init_lock = false;
+                }
+                param.limit = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
+                param.start = data.start;//开始的记录序号
+                param.page = (data.start / data.length) + 1;//当前页码
+                param.fields = fields;
+                param.order = data.order;
+                param.search = data.search.value;//搜索词
+                param.type = $("#type").val();
+                var start_time = $("#start_time").val();
+                var end_time = $("#end_time").val();
+                if (start_time)
+                    param.start_time = start_time;
+                if (end_time)
+                    param.end_time = end_time;
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/member/recharge",
+                    cache: false,  //禁用缓存
+                    data: param,  //传入组装的参数
+                    dataType: "json",
+                    success: function (result) {
+                        admin = result.admin;
+                        vm.admin = admin;
+                        //封装返回数据
+                        setTimeout(function () {
+                            search_btn.ladda('stop');
+                            var returnData = {};
+                            returnData.draw = data.draw;//这里直接自行返回了draw计数器,应该由后台返回
+                            returnData.recordsTotal = result.data.length;//返回数据全部记录
+                            returnData.recordsFiltered = result.total;//后台不实现过滤功能，每次查询均视作全部结果
+                            returnData.data = result.data;//返回的数据列表
+                            //调用DataTables提供的callback方法，代表数据已封装完成并传回DataTables进行渲染
+                            callback(returnData);
+                        }, 50);
+                    },
+                    error: function (xhr, type) {
+                        search_btn.ladda('stop');
+                        err(xhr.responseText);
+                    }
+                });
+            },
+            columns: [
+                {
+                    "class": "details-control",
+                    "orderable": false,
+                    "data": null,
+                    "defaultContent": "&nbsp;&nbsp;"
+                },
+                {
+                    data: "nickname",
+                    title: "会员昵称",
+                    render: function (data, type, row, meta) {
+                        if (!data) data = row.name;
+                        return data;
+                    }
+
+                },
+                {
+                    data: "avatar",
+                    title: "头像",
+                    render: function (data, type, row, meta) {
+                        if (!data) data = 'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg';
+                        return data = '<img class="img-circle chat-avatar" src="' + data + '">';
+                    }
+                },
+                {data: "pay_amount", title: "付款金额"},
+                {data: "order_amount", title: "订单金额"},
+                {
+                    data: "confirm_id",
+                    title: "跟单",
+                    render: function (data, type, row, meta) {
+                        return admin[data].nickname;
+                    }
+                },
+                {data: "pay_time", title: "支付时间"},
+                {data: "status", title: "状态"},
+                {
+                    data: "订单详情",
+                    title: "操作",
+                    class: "remark",
+                    render: function (data, type, row, meta) {
+                        return '<button type="button" class="btn btn-xs btn-outline btn-primary" onclick="viewOrder(' + row.order_id + ')" >查看</button>';
                     }
                 }
             ]
         });
 
-        l=$('.ladda-button').ladda();
+        var search_btn = $("#search_btn").ladda();
+        search_btn.click(function () {
+            search_btn.ladda('start');
+            table.ajax.reload();
+        });
+
+        l = $('#ladda-btn').ladda();
 
         var elem = document.querySelector('.js-switch');
         switchery = new Switchery(elem, {color: '#1AB394', size: 'small'});
@@ -357,7 +448,7 @@
         switchery3 = new Switchery(elem3, {color: '#ED5565', size: 'small'});
 
         $('#search-bar .input-group.date').datepicker({
-            language:  'zh-CN',
+            language: 'zh-CN',
             format: 'yyyy-mm-dd',
             todayBtn: "linked",
             keyboardNavigation: false,
@@ -430,34 +521,63 @@
                     return false;
                 }
 
-                if (vm.pay_amount < vm.order_amount){
+                if (vm.pay_amount < vm.order_amount) {
                     layer.open({content: '付款金额不足，请确认', skin: 'msg', time: 1.5});
                     return false;
                 }
-                l.ladda( 'start' );
+                l.ladda('start');
                 $.ajax({
                     type: 'POST',
                     url: '/admin/member/addOrder',
                     data: $(form).serialize(),
                     success: function (data) {
-                        l.ladda( 'stop' );
+                        l.ladda('stop');
                         layer.open({
                             content: '保存成功',
                             skin: 'msg',
                             time: 1,
                             end: function (elem) {
-                                 location.reload();
+                                location.reload();
                             }
                         });
                     },
                     error: function (xhr, type) {
-                        l.ladda( 'stop' );
+                        l.ladda('stop');
                         err(xhr.responseText);
                     }
                 });
             }
         });
+
+        $('#rechargetable').on('click', 'tr td.details-control', function () {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+            if (row.child.isShown()) {
+                tr.removeClass('details');
+                row.child.hide();
+            } else {
+                row.child(format(row.data())).show();
+                tr.addClass('details');
+            }
+        });
     });
+
+    function format(data) {
+        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+            '<tr>' +
+            '<td>订单编号:</td>' +
+            '<td>' + data.order_sn + '</td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>下单时间:</td>' +
+            '<td>' + data.add_time + '</td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>会员等级:</td>' +
+            '<td>' + data.level_name + '</td>' +
+            '</tr>' +
+            '</table>';
+    }
 
     var timer;
 
@@ -468,7 +588,12 @@
             '<div class="col-sm-3 col-xs-3"><input type="text" class="form-control" v-model="service_count" :name="\'serice_count[\'+item_id+\']\'"></div>' +
             '<div class="col-sm-2 col-xs-2"><span class="label label-default vertical-span">{{unit}}</span></div>' +
             '<div class="col-sm-1 col-xs-1"><a class="close-link vertical-span text-danger" :data-id="item_id" v-on:click="$emit(\'delselect\',$event.target)"><i class="fa fa-times" :data-id="item_id"></i></a></div>' +
-            '</div></div></div>'
+            '</div></div></div>',
+        watch: {
+            service_count: function (val) {
+                this.$emit("seletchange", val, this.item_id);
+            }
+        }
     });
 
     Vue.component('give-item', {
@@ -478,19 +603,23 @@
             '<div class="col-sm-3 col-xs-3"><input type="text" class="form-control" v-model="service_count" :name="\'give_count[\'+item_id+\']\'"></div>' +
             '<div class="col-sm-2 col-xs-2"><span class="label label-default vertical-span">{{unit}}</span></div>' +
             '<div class="col-sm-1 col-xs-1"><a class="close-link vertical-span text-danger" :data-id="item_id" v-on:click="$emit(\'delselect\',$event.target)"><i class="fa fa-times" :data-id="item_id"></i></a></div>' +
-            '</div></div></div>'
+            '</div></div></div>',
+        watch: {
+            service_count: function (val) {
+                this.$emit("givechange", val, this.item_id);
+            }
+        }
     });
 
-    var data=JSON.parse({:json_encode($data)});
     var vm = new Vue({
         el: '#wrapper',
         data: {
-            type: data.type,
-            list: data.list,
-            admin: data.admin,
-            total_amount: data.total_amount,
-            confirm_id:data.confirm_id,
-            user: {},
+            // type: data.type,
+            // list: data.list,
+            admin: [],
+            // total_amount: 0,
+            confirm_id: [],
+            user: {},//新增订单modal暂存用户信息
             items: {},
             selected: [],
             give: [],
@@ -501,8 +630,8 @@
             manager_reduce: false,
             manager_reduce_num: 0,
             points_ratio: 1,
-            pay_amount:null,
-            order_detail:data.order
+            pay_amount: null,
+            order_detail: {}
         },
         computed: {
             calc_price: function () {
@@ -542,9 +671,6 @@
                 if (e.target.value == 0)
                     return;
 
-                // $("#tagsinput").tagsinput('add',{item_id:vm.items[e.target.value].item_id,title:vm.items[e.target.value].title});
-                // vm.calc_price+=Number(vm.items[e.target.value].price);
-                // vm.save_price+=Number(vm.items[e.target.value].market_price)-Number(vm.items[e.target.value].price);
                 vm.selected.push(vm.items[e.target.value]);
             },
             giveSelectItem: function (e) {
@@ -583,15 +709,15 @@
                         obj.data('repeat', parseInt(repeat) + 1);
                         obj.text('再次生成预约码');
                         swal({
-                            title: "预约码["+data.qrcode+"],去消费 !?",
+                            title: "预约码[" + data.qrcode + "],去消费 !?",
                             text: "未消费之前可重复预约，会员可自行调整预约时间!",
-                            imageUrl:'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg',
-                            type:"success",
+                            imageUrl: 'http://scsj-v2-bos.bj.bcebos.com/headImg/default.jpg',
+                            type: "success",
                             showCancelButton: true,
                             confirmButtonColor: "#18a689",
                             confirmButtonText: "Just do it!",
-                            showLoaderOnConfirm:true,
-                            html:data.qrcode
+                            showLoaderOnConfirm: true,
+                            html: data.qrcode
                         }, function () {
                             location.href = "/admin/member/consumption.html?user_id=" + data.user_id;
                         });
@@ -600,6 +726,24 @@
                         err(xhr.responseText);
                     }
                 });
+            },
+            givechange: function (val, item_id) {
+                var key;
+                for (key in vm.give) {
+                    if (vm.give[key].item_id == item_id) {
+                        vm.give[key].service_count = val;
+                        return;
+                    }
+                }
+            },
+            seletchange: function (val, item_id) {
+                var key;
+                for (key in vm.selected) {
+                    if (vm.selected[key].item_id == item_id) {
+                        vm.selected[key].service_count = val;
+                        return;
+                    }
+                }
             }
         },
         updated: function () {
@@ -611,14 +755,14 @@
     });
 
     function ajax_get_user(name) {
-        var words=vm.user.phone;
+        var words = vm.user.phone;
         if (name)
-            words=vm.user.name
+            words = vm.user.name;
         if (!vm.user.phone && !vm.user.name)
             return;
         axios.post('/admin/member/index', {
             'nameorphone': words,
-            'json':true
+            'json': true
         }).then(function (response) {
             if (response.data[0]) {
                 vm.user = response.data[0];
@@ -645,11 +789,11 @@
         });
     }
 
-    function viewOrder(id,init){
-        axios.post('/admin/member/order_detail',{order_id:id}).then(function(res){
-            vm.order_detail=res.data;
+    function viewOrder(id) {
+        axios.post('/admin/member/order_detail', {order_id: id}).then(function (res) {
+            vm.order_detail = res.data;
             $("#order-detail").modal('show');
-        }).catch(function(error){
+        }).catch(function (error) {
             err(error.response.data);
         });
     }

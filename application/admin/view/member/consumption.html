@@ -334,8 +334,8 @@
                 {data: "phone", title: "联系方式"},
                 {data: "title", title: "服务项目"},
                 {
-                    data: "confirm_time",
-                    title: "消费时间",
+                    data: "schedule",
+                    title: "预约时间",
                     render: function (data, type, row, meta) {
                         if (!data) {
                             data = row.schedule;
@@ -489,13 +489,13 @@
             async: false,
             success: function (res) {
                 var html = '<div class="col-md-6 col-xs-12">\n' +
-                    '                            <div class="col-sm-4">\n' +
+                    '                            <div class="col-xs-4">\n' +
                     '                                <div class="text-center">\n' +
                     '                                    <img class="m-t-xs img-responsive img-rounded" src="' + res.origin_image + '">\n' +
                     '                                    <div class="m-t-xs font-bold text-success m-t"><h3>' + res.title + '</h3></div>\n' +
                     '                                </div>\n' +
                     '                            </div>\n' +
-                    '                            <div class="col-sm-4 text-left">\n' +
+                    '                            <div class="col-sm-8 col-xs-12 text-left">\n' +
                     '                                <h3><strong>' + (res.name || res.nickname) + '</strong></h3>\n' +
                     '                                <p><i class="fa fa-clock-o"></i> ' + res.pay_time + ' 支付\n' +
                     '                                    <button class="btn btn-xs btn-info m-l show_order_btn" type="button" onclick="show_order(' + res.order_id + ')">查看订单</button>\n' +

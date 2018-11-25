@@ -110,15 +110,30 @@ class Member extends Base
      */
     public function recharge()
     {
-        $type        = input('type', false);
-        $order_id    = input('order_id', 0);
-        $user_id     = input('user_id', 0);
-        $is_valid    = input('status', 1);
-        $start_time  = input('start_time', 0);
-        $end_time    = input('end_time', 0);
-        $nameorphone = input('nameorphone', 0);
+        if ($this->request->isGet()) {
+            $order_id = input('order_id', 0);
+            $this->assign('order_id', $order_id);
+            $user_id  = input('user_id', 0);
+            $this->assign('user_id', $user_id);
+            return view();
+        }
 
-        $this->assign('user_id', $user_id);
+        $type       = input('type', false);
+        $user_id    = input('user_id', 0);
+        $order_id    = input('order_id', 0);
+        $is_valid   = input('status', 1);
+        $start_time = input('start_time', 0);
+        $end_time   = input('end_time', 0);
+        $search     = input('search', '');
+        $p          = input('page', 1);
+        $limit      = input('limit', 10);
+
+        $field  = input('order/a', ['column' => 6, 'dir' => 'desc']);
+        $fields = input('fields/a', []);
+        $sort   = [];
+        foreach ($field as $index => $item) {
+            $sort[$fields[$item['column']]] = $item['dir'];
+        }
 
         $map[] = ['a.status', '=', $is_valid];
 
@@ -141,18 +156,23 @@ class Member extends Base
         if ($end_time) {
             $map[] = ['a.pay_time', '<', strtotime($end_time)];
         }
-        if ($nameorphone) {
-            $map[] = ['b.name|b.nickname|b.phone|c.level_name', 'like', '%' . $nameorphone . '%'];
+        if ($search) {
+            $map[] = ['b.name|b.nickname|b.phone|c.level_name', 'like', '%' . $search . '%'];
         }
         try {
             $total_amount = 0;
             $order        = ['order' => [], 'order_item' => []];
+            $count        = Orders::alias('a')
+                ->join('users b', 'a.user_id=b.user_id')
+                ->join('user_level c', 'b.level=c.level_id')
+                ->where($map)->count();
             $list         = Orders::alias('a')
                 ->join('users b', 'a.user_id=b.user_id')
                 ->join('user_level c', 'b.level=c.level_id')
                 ->where($map)
                 ->field('a.*,b.level,b.name,b.nickname,b.total_recharge,b.avatar,c.level_name')
-                ->order('a.add_time desc')
+                ->order($sort)
+                ->page($p, $limit)
                 ->select();
             if (!$list->isEmpty()) {
                 $total_amount = array_sum(array_column($list->toArray(), 'pay_amount'));
@@ -164,7 +184,7 @@ class Member extends Base
             $this->error($e->getMessage());
         }
         $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'confirm_id' => session('admin.id'), 'total_amount' => $total_amount, 'type' => $type, 'order' => $order]));
-        return view();
+        return json(['data' => $list, 'total' => $count, 'admin' => $admin]);
     }
 
     public function addOrder()
