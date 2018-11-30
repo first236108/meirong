@@ -5,7 +5,6 @@ class Index
 {
     public function index()
     {
-        echo getNewOrderSn();die;
         if (request()->isGet())
             return view();
 

@@ -1,25 +1,46 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{include file="public/header" /}
 
 <h1>test</h1>
 
+
+<footer class="m-tabbar tabbar-fixed">
+    <a href="../index.html" class="tabbar-item tabbar-active">
+                <span class="tabbar-icon">
+                    <i class="icon-home"></i>
+                </span>
+        <span class="tabbar-txt">首页</span>
+    </a>
+    <a href="../index.html" class="tabbar-item">
+                <span class="tabbar-icon">
+                    <i class="icon-like"></i>
+                </span>
+        <span class="tabbar-txt">美丽课堂</span>
+    </a>
+    <a href="../index.html" class="tabbar-item">
+                <span class="tabbar-icon">
+                    <i class="icon-ucenter"></i>
+                </span>
+        <span class="tabbar-txt">我的</span>
+    </a>
+</footer>
+
 <script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+
 <script>
-    // $.ajax({
-    //     type: 'POST',
-    //     url: '/',
-    //     success: function (data) {
-    //         console.log(data);
-    //     },
-    //     error: function (xhr, type) {
-    //         console.log(xhr.responseText);
-    //     }
-    // });
+     $.ajax({
+         type: 'POST',
+         url: '/',
+         success: function (data) {
+             layer.open({content:'ok',skin:'msg',time:2});
+             console.log(data);
+         },
+         error: function (xhr, type) {
+             console.log(xhr.responseText);
+         }
+     });
 </script>
 </body>
 </html>
