@@ -1,0 +1,59 @@
+{include file="public/header" /}
+<link rel="stylesheet" href="/static/css/index.css">
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a onclick="history.back()" class="navbar-item"><i class="back-ico"></i></a>
+        <div class="navbar-center"><span class="navbar-title">{$row.title}</span></div>
+    </header>
+
+    <!--轮播-->
+    <div class="m-slider" id="J_Slider">
+        <div class="slider-wrapper">
+            {volist name="row.img" id="vo"}
+            <div class="slider-item">
+                <a><img src="{$vo.image}"></a>
+            </div>
+            {/volist}
+        </div>
+        <div class="slider-pagination"></div>
+    </div>
+
+    <div class="d-price">
+        <div class="present-price">
+            <div class="main-price-wrapper">
+                <p class="o-t-price">￥ {$row.price}</p>
+                <p class="txt">积分抵扣 2%</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-title">
+        {$row.title}
+    </div>
+
+    <div class="divide-bar">
+        <span class="line"></span>
+        <div class="icon-info">
+            <span class="taobao-iconfont">&nbsp;</span><span class="icon-text">详情</span>
+        </div>
+        <span class="line"></span>
+    </div>
+
+    <div class="d-detail">
+        {$row.detail}
+    </div>
+</section>
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script>
+    $('#J_Slider').slider({
+        // speed: 200,
+        autoplay: 10000,
+        lazyLoad: true
+    });
+</script>
+</body>
+</html>

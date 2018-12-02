@@ -1,10 +1,71 @@
 {include file="public/header" /}
-
-<h1>test</h1>
-
+<link rel="stylesheet" href="/static/css/index.css">
+<div class="m-slider" id="J_Slider">
+    <div class="slider-wrapper">
+        <div class="slider-item">
+            <a href="#">
+                <img src="http://static.ydcss.com/uploads/ydui/1.jpg">
+            </a>
+        </div>
+        <!--<div class="slider-item">-->
+        <!--<a href="#">-->
+        <!--<img src="http://static.ydcss.com/uploads/ydui/2.jpg">-->
+        <!--</a>-->
+        <!--</div>-->
+        <!--<div class="slider-item">-->
+        <!--<a href="#">-->
+        <!--<img src="http://static.ydcss.com/uploads/ydui/3.jpg">-->
+        <!--</a>-->
+        <!--</div>-->
+    </div>
+    <div class="slider-pagination"></div><!-- 分页标识 -->
+</div>
+<!--店长推荐-->
+<div class="newModule_bottom">
+    <div class="look">
+        <h2 class="bannerTitle">
+            <span>店长推荐<i>Recommend</i></span>
+        </h2>
+        <p>精心推荐热门优质本店服务项目</p>
+    </div>
+    <ul></ul>
+</div>
+<article class="m-list list-theme1" id="grid">
+    {volist name="recommend" id="vo"}
+    <div class="grid-item">
+        <a href="{:url('index/index/detail',['id'=>$vo.item_id])}" class="">
+            <div class="origin-img">
+                <img class="block-img" src="{$vo.origin_image}">
+            </div>
+            <div class="grid-item-bottom">
+                <h3 class="list-title">{$vo.title}</h3>
+                <div>
+                    <span class="list-price"><em>¥</em>{$vo.price}</span>
+                    <span class="list-del-price">¥{$vo.market_price}</span>
+                    <div class="pull-right"><i class="icon-good"></i> {$vo.click_count}</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {/volist}
+</article>
+<!--全部-->
+<div class="newModule_bottom">
+    <div class="look">
+        <h2 class="bannerTitle">
+            <span>更多服务<i>More</i></span>
+        </h2>
+        <p>本店所有美丽服务</p>
+    </div>
+    <ul></ul>
+</div>
+<section id="J_List">
+    <div id="J_ListContent" class="m-list list-theme1">
+    </div>
+</section>
 
 <footer class="m-tabbar tabbar-fixed">
-    <a href="../index.html" class="tabbar-item tabbar-active">
+    <a href="/" class="tabbar-item tabbar-active">
                 <span class="tabbar-icon">
                     <i class="icon-home"></i>
                 </span>
@@ -28,19 +89,77 @@
 <script src="/static/js/ydui.js"></script>
 <script src="/static/js/ydui.flexible.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
-
+<script src="/static/js/template.js"></script>
+<!--<script src="/static/plugins/masonary/masonry.pkgd.min.js"></script>-->
+<script id="J_ListHtml" type="text/html">
+    {{each list as data}}
+    <a href="/index/index/detail/id/{{data.item_id}}.html" class="list-item J_Link" data-page="{{list.page}}">
+        <div class="list-img">
+            <img src="{{data.origin_image}}" data-url="{{data.origin_image}}">
+        </div>
+        <div class="list-mes">
+            <h3 class="list-title">{{data.title}}</h3>
+            <div class="list-mes-item">
+                <div>
+                    <span class="list-price"><em>¥</em>{{data.market_price}}</span>
+                    <span class="list-del-price">¥{{data.price}}</span>
+                </div>
+            </div>
+        </div>
+    </a>
+    {{/each}}
+</script>
 <script>
-     $.ajax({
-         type: 'POST',
-         url: '/',
-         success: function (data) {
-             layer.open({content:'ok',skin:'msg',time:2});
-             console.log(data);
-         },
-         error: function (xhr, type) {
-             console.log(xhr.responseText);
-         }
-     });
+    $('#J_Slider').slider({
+        speed: 400,
+        autoplay: 4500,
+        lazyLoad: true
+    });
+
+    var page = 1, pageSize = 2;
+
+    $('#J_List').infiniteScroll({
+        pageSize: pageSize,
+        initLoad: true,
+        backposition: true,
+        jumpLink: '.J_Link',
+        loadingHtml: '<img src="/static/plugins/layer/theme/default/loading-1.gif" />',
+        loadListFn: function () {
+            var def = $.Deferred();
+            $.ajax({
+                url: '/',
+                type: 'POST',
+                data: {page: page, pagesize: pageSize},
+                success: function (ret) {
+                    ret.page = page;
+                    var html = template('J_ListHtml', {list: ret});
+                    $('#J_ListContent').append(html).find('img').lazyLoad({binder: '#J_List'});
+                    def.resolve(ret,page);
+                    ++page;
+                },
+                error: function (xhr, type) {
+                    layer.msg({content: xhr.responseText, skin: 'msg'});
+                }
+            });
+
+            return def.promise();
+        },
+        loadStorageListFn: function (ret, retPage) {
+            var def = $.Deferred();
+            page = retPage;
+
+            var html = '';
+            ret.forEach(function (val) {
+                var list = val.list;
+                list.page = val.page;
+                html += template('J_ListHtml', {list: list});
+            });
+            $('#J_ListContent').append(html);
+            def.resolve();
+            return def.promise();
+        }
+    });
+
 </script>
 </body>
 </html>
