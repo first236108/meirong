@@ -50,7 +50,9 @@
     background: #fff;
     margin-bottom: .2rem;
 }
-
+.item img{
+    width:100%;
+}
 /**detail**/
 .d-price {
     line-height: 1;
