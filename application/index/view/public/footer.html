@@ -1,0 +1,132 @@
+<footer class="m-tabbar tabbar-fixed">
+    <a href="{:url('index/index')}" class="tabbar-item">
+                <span class="tabbar-icon">
+                    <i class="icon-home"></i>
+                </span>
+        <span class="tabbar-txt">首页</span>
+    </a>
+    <a href="{:url('article/index')}" class="tabbar-item">
+                <span class="tabbar-icon">
+                    <i class="icon-like"></i>
+                </span>
+        <span class="tabbar-txt">美丽课堂</span>
+    </a>
+    <a href="{:url('user/index')}" class="tabbar-item">
+                <span class="tabbar-icon">
+                    <i class="icon-ucenter"></i>
+                </span>
+        <span class="tabbar-txt">我的</span>
+    </a>
+</footer>
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script>
+    var footer_index = {'Index': 0, 'Article': 1, 'User': 2};
+    $('.m-tabbar .tabbar-item').eq(footer_index['{:request()->controller()}']).addClass('tabbar-active');
+    Vue.component('go-top', {
+        data: function () {
+            return {
+                scroll: false,
+                display_init: true,
+                fadeout: false
+            };
+        },
+        methods: {
+            toTop: function (scrollDuration) {
+                var cosParameter = window.scrollY / 2,
+                    scrollCount = 0,
+                    oldTimestamp = performance.now();
+
+                function step(newTimestamp) {
+                    scrollCount += Math.PI / (scrollDuration / (newTimestamp - oldTimestamp));
+                    if (scrollCount >= Math.PI) window.scrollTo(0, 0);
+                    if (window.scrollY === 0) return;
+                    window.scrollTo(0, Math.round(cosParameter + cosParameter * Math.cos(scrollCount)));
+                    oldTimestamp = newTimestamp;
+                    window.requestAnimationFrame(step);
+                }
+
+                window.requestAnimationFrame(step);
+            }
+        },
+        created: function () {
+            var vmm = this;
+            window.onscroll = function () {
+                if (window.scrollY > 250) {
+                    document.getElementsByClassName('pagetop')[0].style.display = 'block';
+                    vmm.display_init = false;
+                    vmm.fadeout = false;
+                    vmm.scroll = true;
+                } else {
+                    if (!vmm.display_init) {
+                        vmm.fadeout = true;
+                        vmm.scroll && setTimeout(function () {
+                            document.getElementsByClassName('pagetop')[0].style.display = 'none';
+                        }, 300);
+                    }
+                    vmm.scroll = false;
+                }
+            };
+        },
+        template: '<div class="pagetop animated" :class="[{fadeInUp:scroll},{fadeOutDown:fadeout},{dis_none:display_init}]">\n' +
+            '        <a @click="toTop(400)" class="btn_pagetop"><span>TOP</span></a>\n' +
+            '</div>'
+    });
+
+    function getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+            return unescape(arr[2]);
+        else
+            return null;
+    }
+
+    function login() {
+        layer.open({
+            type: 1
+            , content: '<div class="m-cell">\n' +
+                '    <div class="cell-item">\n' +
+                '        <div class="cell-left">手机号：</div>\n' +
+                '        <div class="cell-right"><input type="text" name="phone" class="cell-input" placeholder="请输入手机号" autocomplete="off" /></div>\n' +
+                '    </div>\n' +
+                '    <div class="cell-item">\n' +
+                '        <div class="cell-left">密码：</div>\n' +
+                '        <div class="cell-right"><input type="password" name="password" class="cell-input" /></div>\n' +
+                '    </div>\n' +
+                '<button type="button" class="btn-block btn-primary" onclick="check_login()">登录</button>' +
+                '</div>'
+            , anim: 'up'
+            , style: 'position:fixed; top:5rem; left:0; width: 100%; height: 200px; padding:10px 0; border:none;'
+        });
+    }
+
+    function check_login() {
+        var phone = $('input[name="phone"]').val();
+        var pwd = $('input[name="password"]').val();
+        if (!phone || !(/^1[3456789]\d{9}$/.test(phone))) {
+            layer.open({type: 2, content: '手机号错误'});
+            return;
+        }
+        if (!pwd || pwd.length < 6) {
+            layer.open({type: 2, content: '密码长度错误'});
+            return;
+        }
+        var index = layer.open({type: 2, content: '登录中…'});
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/login")}',
+            data: {phone: phone, password: pwd},
+            success: function (data) {
+                layer.closeAll();
+                layer.open({content: '登录成功', skin: 'msg', time: 1.5});
+            },
+            error: function (xhr, type) {
+                layer.close(index);
+                layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
+            }
+        });
+    }
+</script>

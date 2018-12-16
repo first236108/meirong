@@ -1,0 +1,97 @@
+{include file="public/header" /}
+<link rel="stylesheet" href="/static/css/index.css">
+<link rel="stylesheet" href="/static/css/animate.css">
+<header class="m-navbar">
+    <div class="navbar-center">
+        <span class="navbar-title">美丽课堂</span>
+    </div>
+</header>
+
+<article class="m-list list-theme1" id="article">
+
+</article>
+<div class="bottom-line">
+    <div class="line">&nbsp;</div>
+    <div class="text">已经到底线了</div>
+    <div class="line">&nbsp;</div>
+    <go-top></go-top>
+</div>
+
+{include file="public/footer" /}
+<script>
+    var p = 1, isbool = true, star_arr = [], video_arr = [];
+    var vm = new Vue({
+        el: '.bottom-line'
+    });
+
+    function getData() {
+        $.ajax({
+            type: 'POST',
+            url: '{:url("article/index")}',
+            data: {page: p},
+            success: function (data) {
+                p++;
+                isbool = true;
+                $('#article').append(data);
+            },
+            error: function (xhr, type) {
+                isbool = false;
+                $('.bottom-line').css('display', 'block');
+                layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
+            }
+        });
+    }
+
+    getData();
+
+    $(window).scroll(function () {
+        if (($(this).scrollTop() + $(window).height()) >= $(document).height() && isbool == true) {
+            isbool = false;
+            getData();
+        }
+    });
+
+    function star(obj) {
+        var id = $(obj).parents('.grid-item').data('id');
+        if (getCookie('token')) {
+            if (star_arr.indexOf(id) > -1)
+                return;
+            $.ajax({
+                type: 'POST',
+                url: '{:url("article/star")}',
+                data: {id: id},
+                success: function (data) {
+                    star_arr.push(id);
+                    $(obj).addClass('red').find('i').removeClass('icon-like-outline').addClass('icon-like');
+                },
+                error: function (xhr, type) {
+                    layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
+                }
+            });
+        } else {
+            login();
+        }
+    }
+
+    function video_click(obj) {
+        var id = $(obj).parent().data('id');
+        if (video_arr.indexOf(id) > -1) return false;
+        $.ajax({
+            type: 'POST',
+            url: '{:url("article/video_click")}',
+            data: {id: id},
+            dataType: 'json',
+            success: function (data) {
+                video_arr.push(id);
+                var span = $(obj).next().find('.num');
+                span.html(parseInt(span.html()) + 1);
+            },
+            error: function (xhr, type) {
+                console.log(xhr);
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

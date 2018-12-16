@@ -107,12 +107,15 @@ function enCrypt($txtStream, $password = 'ENCRYPT_KEY')
  */
 function deCrypt($txtStream, $password = 'ENCRYPT_KEY')
 {
+    //获得字符串长度
+    $txtLen = strlen($txtStream);
+    if (!$txtLen)
+        return '';
     //密锁串，不能出现重复字符，内有A-Z,a-z,0-9,/,=,+,_,
     $lockstream = 'st=lDEFABCNOPyzghi_jQRST-UwxkVWXYZabcdef+IJK6/7nopqr89LMmGH012345uv';
 
     $lockLen = strlen($lockstream);
-    //获得字符串长度
-    $txtLen = strlen($txtStream);
+
     //截取随机密锁值
     $randomLock = $txtStream[$txtLen - 1];
     //获得随机密码值的位置
@@ -133,20 +136,6 @@ function deCrypt($txtStream, $password = 'ENCRYPT_KEY')
         $k++;
     }
     return base64_decode($tmpStream);
-}
-
-/**
- * 后台登录密码加密
- * @param $pwd
- * @param $salt
- * @return bool|string
- */
-function enPwd($pwd, $salt)
-{
-    if (strlen($salt))
-        return md5(substr($salt, 0, 4) . $pwd . substr($salt, -4));
-    else
-        return false;
 }
 
 /**
@@ -349,4 +338,22 @@ function defaultAvatar($arr)
         $arr[$index]['avatar'] = $item['avatar'] ?? $sex_avatar[$item['sex']];
     }
     return $arr;
+}
+
+/**
+ * 生成登录token
+ * @param $source
+ * @return string
+ */
+function create_token($source)
+{
+    //32位token，首位代码登录源，中间21位随机码，最后10位时间戳
+    $origin = ['h5' => 'h', 'android' => 'a', 'ios' => 'i'];
+    while (true) {
+        $str  = $origin[$source] . get_rand_str(21);
+        $flag = Db::name('users')->where('token', $str)->count();
+        if (!$flag)
+            break;
+    }
+    return $str;
 }
