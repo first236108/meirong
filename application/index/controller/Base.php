@@ -25,6 +25,16 @@ class Base extends Controller
         $this->user = Cache::get($this->token);
         if ($this->user)
             $this->user_id = $this->user['user_id'];
+        $needLogin  = [
+            'index'   => ['favorite'],
+            'article' => [],
+            'user'    => [],
+        ];
+        $controller = strtolower(request()->controller());
+        $action     = strtolower(request()->action());
+        if (in_array($action, $needLogin[$controller]) && !$this->user_id)
+            json(['msg' => '请登录后操作'], 401)->send();
+
         $this->assign('user_id', $this->user_id);
     }
 }

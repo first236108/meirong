@@ -1,28 +1,75 @@
 {include file="public/header" /}
-<link rel="stylesheet" href="/static/css/index.css">
-<section class="g-flexview">
-    <header class="m-navbar">
-        <a onclick="history.back()" class="navbar-item"><i class="back-ico"></i></a>
-        <div class="navbar-center"><span class="navbar-title">{$row.title}</span></div>
-    </header>
+<link rel="stylesheet" href="/static/plugins/swiper/swiper.min.css">
+<style>
+    body {
+        background-color: #ffffff
+    }
 
+    .d-detail {
+        padding: 0 .2rem;
+    }
+
+    .d-detail img {
+        max-width: 100%;
+    }
+
+    .d-detail * {
+        background-color: rgba(0, 0, 0, 0) !important;
+    }
+
+    .swiper-container img {
+        max-width: 100%;
+    }
+
+    .swiper-button-white {
+        opacity: .6;
+        height: 18px
+    }
+
+    .swiper-pagination {
+        color: white;
+        background: rgba(0, 0, 0, .4);
+        width: 0.8rem;
+        border-radius: 10px;
+        left: 86%;
+    }
+
+    .tabbar-item.tabbar-active {
+        color: #ff5000;
+    }
+
+    #cart {
+        border: 1px solid;
+        border-radius: 6px;
+    }
+
+</style>
+<header class="m-navbar navbar-fixed">
+    <a href="/" class="navbar-item"><i class="back-ico"></i></a>
+    <div class="navbar-center"><span class="navbar-title">{$row.title}</span></div>
+</header>
+
+<div class="g-view">
     <!--轮播-->
-    <div class="m-slider" id="J_Slider">
-        <div class="slider-wrapper">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
             {volist name="row.img" id="vo"}
-            <div class="slider-item">
-                <a><img src="{$vo.image}"></a>
-            </div>
+            <div class="swiper-slide"><img src="{$vo.image}"></div>
             {/volist}
         </div>
-        <div class="slider-pagination"></div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev swiper-button-white"></div>
+        <div class="swiper-button-next swiper-button-white"></div>
     </div>
 
     <div class="d-price">
         <div class="present-price">
             <div class="main-price-wrapper">
-                <p class="o-t-price">￥ {$row.price}</p>
-                <p class="txt">积分抵扣 2%</p>
+                <p class="o-t-price">￥ <span>{$row.price}</span></p>
+                <p class="txt">积分抵扣 8%</p>
+                {if condition="$row.is_recommend>0"}
+                <p class="txt">店长推荐</p>
+                {/if}
             </div>
         </div>
     </div>
@@ -32,27 +79,162 @@
     </div>
 
     <div class="divide-bar">
-        <span class="line"></span>
+        <span class="line">&nbsp;</span>
         <div class="icon-info">
             <span class="taobao-iconfont">&nbsp;</span><span class="icon-text">详情</span>
         </div>
-        <span class="line"></span>
+        <span class="line">&nbsp;</span>
     </div>
 
     <div class="d-detail">
-        {$row.detail}
+        {$row.detail | raw}
     </div>
-</section>
+</div>
+
+<footer class="m-tabbar tabbar-fixed" id="footer">
+    <a class="tabbar-item" id="share">
+            <span class="tabbar-icon">
+                <i class="icon-share1"></i>
+            </span>
+        <span class="tabbar-txt">分享</span>
+    </a>
+    <a onclick="favorite()" class="tabbar-item">
+            <span class="tabbar-icon">
+                <i class="icon-like-outline"></i>
+            </span>
+        <span class="tabbar-txt">收藏</span>
+    </a>
+    <a onclick="buy()" class="tabbar-item tabbar-active" id="cart">
+            <span class="tabbar-icon">
+                <i class="icon-shopcart"></i>
+            </span>
+        <span class="tabbar-txt">立即购买</span>
+    </a>
+
+    <go-top></go-top>
+</footer>
 
 <script src="/static/js/jquery-3.1.1.min.js"></script>
 <script src="/static/js/ydui.js"></script>
 <script src="/static/js/ydui.flexible.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/swiper/swiper.min.js"></script>
+<script src="/static/plugins/clipboard/clipboard.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/home.js"></script>
 <script>
-    $('#J_Slider').slider({
-        // speed: 200,
-        autoplay: 10000,
-        lazyLoad: true
+
+    var id = '{$row.item_id}';
+    $(function () {
+        var mySwiper = new Swiper('.swiper-container', {
+            direction: 'horizontal', // 垂直切换选项
+            loop: true, // 循环模式选项
+            effect: 'coverflow',//cube,fade,filp
+            pagination: {
+                el: '.swiper-pagination',
+                type: 'fraction'//fraction
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev'
+            }
+        });
+
+        if ("{$row.is_favorite}" > 0) {
+            $("#footer a").eq(1).addClass('tabbar-active').find('i').removeClass('icon-like-outline').addClass('icon-like');
+        }
+    });
+
+    Vue.component('go-top', {
+        data: function () {
+            return {
+                scroll: false,
+                display_init: true,
+                fadeout: false
+            };
+        },
+        methods: {
+            toTop: function (scrollDuration) {
+                var cosParameter = window.scrollY / 2,
+                    scrollCount = 0,
+                    oldTimestamp = performance.now();
+
+                function step(newTimestamp) {
+                    scrollCount += Math.PI / (scrollDuration / (newTimestamp - oldTimestamp));
+                    if (scrollCount >= Math.PI) window.scrollTo(0, 0);
+                    if (window.scrollY === 0) return;
+                    window.scrollTo(0, Math.round(cosParameter + cosParameter * Math.cos(scrollCount)));
+                    oldTimestamp = newTimestamp;
+                    window.requestAnimationFrame(step);
+                }
+
+                window.requestAnimationFrame(step);
+            }
+        },
+        created: function () {
+            var vmm = this;
+            window.onscroll = function () {
+                if (window.scrollY > 250) {
+                    document.getElementsByClassName('pagetop')[0].style.display = 'block';
+                    vmm.display_init = false;
+                    vmm.fadeout = false;
+                    vmm.scroll = true;
+                } else {
+                    if (!vmm.display_init) {
+                        vmm.fadeout = true;
+                        vmm.scroll && setTimeout(function () {
+                            document.getElementsByClassName('pagetop')[0].style.display = 'none';
+                        }, 300);
+                    }
+                    vmm.scroll = false;
+                }
+            };
+        },
+        template: '<div class="pagetop animated" :class="[{fadeInUp:scroll},{fadeOutDown:fadeout},{dis_none:display_init}]">\n' +
+            '        <a @click="toTop(400)" class="btn_pagetop"><span>TOP</span></a>\n' +
+            '</div>'
+    });
+    var vm = new Vue({
+        el: '#footer'
+    });
+
+    function buy() {
+        layer.open({
+            content:'亲，因微信费率问题，到店支付更享优惠哦!~',
+            btn:'朕知道了'
+        });
+    }
+
+    function favorite() {
+        var obj = $(event.currentTarget);
+        $.ajax({
+            type: 'POST',
+            url: '{:url("index/favorite")}',
+            data: {item_id: id},
+            success: function (data) {
+                obj.toggleClass('tabbar-active');
+            },
+            error: function (xhr, type) {
+                if (xhr.status==401){
+                    login(location.href);
+                }else{
+                    layer.open({content: xhr.responseJSON.msg, time: 2, skin: 'msg'});
+                }
+            }
+        });
+    }
+
+    var btn = new ClipboardJS('#share', {
+        text: function (trigger) {
+            return location.href;
+        }
+    });
+    btn.on('success', function (e) {
+        layer.open({
+            content: '已经复制网址,请粘贴分享给好友吧!~',
+            time: 2,
+            skin: 'msg'
+        });
     });
 </script>
 </body>

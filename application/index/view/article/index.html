@@ -1,6 +1,4 @@
 {include file="public/header" /}
-<link rel="stylesheet" href="/static/css/index.css">
-<link rel="stylesheet" href="/static/css/animate.css">
 <header class="m-navbar">
     <div class="navbar-center">
         <span class="navbar-title">美丽课堂</span>
@@ -69,7 +67,7 @@
                 }
             });
         } else {
-            login();
+            login(location.href);
         }
     }
 

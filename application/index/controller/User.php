@@ -50,4 +50,9 @@ class User extends Base
         ]);
         return json(['token' => $token]);
     }
+
+    public function reg()
+    {
+        return $this->fetch();
+    }
 }

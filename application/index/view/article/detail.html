@@ -1,21 +1,84 @@
 {include file="public/header" /}
-<link rel="stylesheet" href="/static/css/index.css">
-<section class="g-flexview">
-    <header class="m-navbar">
-        <a onclick="history.back()" class="navbar-item"><i class="back-ico"></i></a>
-        <div class="navbar-center"><span class="navbar-title">天源-美丽课堂</span></div>
-    </header>
+<style>
+    #app{padding:0 .2rem 1rem;}
+    #app>h1{
+        font-size: .5rem;
+        margin: .4rem auto;
+        text-align: center;
+        color: #D26;
+    }
+    #app img{max-width:100%;}
+</style>
+<header class="m-navbar navbar-fixed">
+    <a onclick="history.back()" class="navbar-item"><i class="back-ico"></i></a>
+    <div class="navbar-center"><span class="navbar-title">天源-美丽课堂</span></div>
+</header>
+<div class="g-view" id="app">
     <h1>{$article.title}</h1>
     <img src="{$article.image}" alt="">
     <div>{$article.content | raw}</div>
-</section>
+    <go-top></go-top>
+</div>
 
 <script src="/static/js/jquery-3.1.1.min.js"></script>
 <script src="/static/js/ydui.js"></script>
 <script src="/static/js/ydui.flexible.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
-<script>
+<script src="/static/js/vue.min.js"></script>
 
+<script>
+    Vue.component('go-top', {
+        data: function () {
+            return {
+                scroll: false,
+                display_init: true,
+                fadeout: false
+            };
+        },
+        methods: {
+            toTop: function (scrollDuration) {
+                var cosParameter = window.scrollY / 2,
+                    scrollCount = 0,
+                    oldTimestamp = performance.now();
+
+                function step(newTimestamp) {
+                    scrollCount += Math.PI / (scrollDuration / (newTimestamp - oldTimestamp));
+                    if (scrollCount >= Math.PI) window.scrollTo(0, 0);
+                    if (window.scrollY === 0) return;
+                    window.scrollTo(0, Math.round(cosParameter + cosParameter * Math.cos(scrollCount)));
+                    oldTimestamp = newTimestamp;
+                    window.requestAnimationFrame(step);
+                }
+
+                window.requestAnimationFrame(step);
+            }
+        },
+        created: function () {
+            var vmm = this;
+            window.onscroll = function () {
+                if (window.scrollY > 250) {
+                    document.getElementsByClassName('pagetop')[0].style.display = 'block';
+                    vmm.display_init = false;
+                    vmm.fadeout = false;
+                    vmm.scroll = true;
+                } else {
+                    if (!vmm.display_init) {
+                        vmm.fadeout = true;
+                        vmm.scroll && setTimeout(function () {
+                            document.getElementsByClassName('pagetop')[0].style.display = 'none';
+                        }, 300);
+                    }
+                    vmm.scroll = false;
+                }
+            };
+        },
+        template: '<div class="pagetop animated" :class="[{fadeInUp:scroll},{fadeOutDown:fadeout},{dis_none:display_init}]">\n' +
+            '        <a @click="toTop(400)" class="btn_pagetop"><span>TOP</span></a>\n' +
+            '</div>'
+    });
+    var vm = new Vue({
+        el: '#app'
+    });
 </script>
 </body>
 </html>

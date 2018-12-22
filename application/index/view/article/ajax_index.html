@@ -1,11 +1,12 @@
 {volist name="list" id="vo"}
 {if condition="$vo.type eq 0"}
+<!--图文消息-->
 <div class="grid-item" data-id="{$vo.id}">
     <div class="origin-img" onclick="location.href='{:url(\'article/detail\',[\'id\'=>$vo.id])}'">
         <img class="block-img" src="{$vo.image}">
     </div>
     <div class="grid-item-bottom">
-        <h2 class="list-title" onclick="location.href='{:url(\'article/detail\',[\'id\'=>$vo.id])}'">{$vo.title}</h2>
+        <h2 class="list-title">{$vo.title}</h2>
         <div>
             {if condition="$user_id > 0 && $vo.user_id=$user_id"}
             <div class="pull-right red"><i class="icon-like"></i> {$vo.star}</div>
@@ -23,6 +24,7 @@
     </div>
 </div>
 {else /}
+<!--视频-->
 <div class="grid-item" data-id="{$vo.id}">
     <video src="{$vo.content}" controls poster="{$vo.image}" onplay="video_click(this)"></video>
 

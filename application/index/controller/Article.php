@@ -9,7 +9,6 @@
 namespace app\index\controller;
 
 use think\Db;
-use think\facade\Cache;
 
 class Article extends Base
 {
@@ -77,6 +76,13 @@ class Article extends Base
         return json();
     }
 
+    /**
+     * 文章详情
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function detail()
     {
         $id      = input('id/d', 0);

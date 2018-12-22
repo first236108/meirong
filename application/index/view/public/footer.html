@@ -23,6 +23,8 @@
 <script src="/static/js/ydui.flexible.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/js/vue.min.js"></script>
+<script src="/static/js/home.js"></script>
+
 <script>
     var footer_index = {'Index': 0, 'Article': 1, 'User': 2};
     $('.m-tabbar .tabbar-item').eq(footer_index['{:request()->controller()}']).addClass('tabbar-active');
@@ -76,57 +78,4 @@
             '</div>'
     });
 
-    function getCookie(name) {
-        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
-        if (arr = document.cookie.match(reg))
-            return unescape(arr[2]);
-        else
-            return null;
-    }
-
-    function login() {
-        layer.open({
-            type: 1
-            , content: '<div class="m-cell">\n' +
-                '    <div class="cell-item">\n' +
-                '        <div class="cell-left">手机号：</div>\n' +
-                '        <div class="cell-right"><input type="text" name="phone" class="cell-input" placeholder="请输入手机号" autocomplete="off" /></div>\n' +
-                '    </div>\n' +
-                '    <div class="cell-item">\n' +
-                '        <div class="cell-left">密码：</div>\n' +
-                '        <div class="cell-right"><input type="password" name="password" class="cell-input" /></div>\n' +
-                '    </div>\n' +
-                '<button type="button" class="btn-block btn-primary" onclick="check_login()">登录</button>' +
-                '</div>'
-            , anim: 'up'
-            , style: 'position:fixed; top:5rem; left:0; width: 100%; height: 200px; padding:10px 0; border:none;'
-        });
-    }
-
-    function check_login() {
-        var phone = $('input[name="phone"]').val();
-        var pwd = $('input[name="password"]').val();
-        if (!phone || !(/^1[3456789]\d{9}$/.test(phone))) {
-            layer.open({type: 2, content: '手机号错误'});
-            return;
-        }
-        if (!pwd || pwd.length < 6) {
-            layer.open({type: 2, content: '密码长度错误'});
-            return;
-        }
-        var index = layer.open({type: 2, content: '登录中…'});
-        $.ajax({
-            type: 'POST',
-            url: '{:url("user/login")}',
-            data: {phone: phone, password: pwd},
-            success: function (data) {
-                layer.closeAll();
-                layer.open({content: '登录成功', skin: 'msg', time: 1.5});
-            },
-            error: function (xhr, type) {
-                layer.close(index);
-                layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
-            }
-        });
-    }
 </script>

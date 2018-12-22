@@ -253,7 +253,7 @@ function behaviorType($key, $value = null, $get_comment = false)
     $type = [
         'login'       => 0,//登录
         'visit'       => 1,//浏览商品--表名item
-        'faverite'    => 2,//收藏--表名item
+        'favorite'    => 2,//收藏--表名item
         'hate'        => 3,//取消收藏--表名item
         'order'       => 4,//充值|购买--表名order
         'advice'      => 5,//咨询--表名advice
