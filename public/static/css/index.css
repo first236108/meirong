@@ -327,3 +327,69 @@ video {
 .tag {
     margin: 0.2rem 0
 }
+
+
+/**user**/
+.u-header {
+    height: 2.75rem;
+    line-height: .88rem;
+    background: url(../../static/image/user_bg.png) no-repeat #fff;
+    background-size: 100% 100%;
+    color: #fff;
+}
+.u-header .top {
+    padding: 0 .2rem;
+    position: relative;
+    text-align: right;
+}
+.u-header .bottom {
+    height: 1.8rem;
+    padding-left: .2rem;
+    overflow: hidden;
+    margin-bottom: .2rem;
+    width: 100%;
+}
+.u-header .top i{
+    font-size:.5rem;
+}
+.u-header .fl{
+    float:left;
+}
+.u-header .fr{
+    float:right;
+}
+.u-header .rright{
+    margin-right:.2rem;
+}
+.edit,.tel{
+    height:100%;
+}
+.edit{
+    line-height: 1.8rem;
+}
+.edit span{
+    height:.5rem;
+    line-height: .5rem;
+    margin-right:.2rem;
+}
+.edit i{
+    font-size: .4rem;
+    margin-right:.2rem;
+}
+.next-ico:before {
+    content: '\e608';
+}
+.avatar{
+    margin:0.2rem;
+}
+.avatar img{
+    width:1.2rem;
+    height:1.2rem;
+    border-radius: 50%;
+}
+#msgNum{
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+}

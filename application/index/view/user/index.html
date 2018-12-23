@@ -1,5 +1,31 @@
 {include file="public/header" /}
-
+<link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+<div class="u-header">
+    <div class="top clearfix">
+        <a href="{:url('user/message')}" class="msg">
+            <i class="fa fa-envelope"></i>
+            <span id="msgNum" class="badge badge-hollow">2</span>
+        </a>
+    </div>
+    <div class="bottom">
+        <a href="userInfo.html" class="info">
+            <!-- 头像 -->
+            <div class="fl avatar">
+                <img src="http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg">
+            </div>
+            <!-- 名字和电话 -->
+            <div class="tel fl">
+                <p id="username">柏宇娜</p>
+                <span>13007686112</span>
+            </div>
+            <!-- 查看信息 -->
+            <div class="edit fr">
+                <span>个人信息</span>
+                <i class="fa fa-angle-right"></i>
+            </div>
+        </a>
+    </div>
+</div>
 
 
 {include file="public/footer" /}

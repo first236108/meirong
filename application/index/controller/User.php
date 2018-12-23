@@ -20,6 +20,7 @@ class User extends Base
 
     public function login()
     {
+        if ($this->request->isGet()) return view();
         $data   = input('post.');
         $result = $this->validate($data, [
             'phone'    => 'require|mobile',
@@ -54,5 +55,10 @@ class User extends Base
     public function reg()
     {
         return $this->fetch();
+    }
+
+    public function message()
+    {
+        //todo
     }
 }
