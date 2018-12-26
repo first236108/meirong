@@ -8,13 +8,18 @@
 <article class="m-list list-theme1" id="article">
 
 </article>
-<div class="bottom-line">
-    <div class="line">&nbsp;</div>
-    <div class="text">已经到底线了</div>
-    <div class="line">&nbsp;</div>
-    <go-top></go-top>
-</div>
 
+<!--<div class="bottom-line">-->
+<!--<div class="line">&nbsp;</div>-->
+<!--<div class="text">已经到底线了</div>-->
+<!--<div class="line">&nbsp;</div>-->
+<!--<go-top></go-top>-->
+<!--</div>-->
+
+<div id="bottom-line" class="bannerTitle" style="margin-bottom:1.3rem;">
+    <go-top></go-top>
+    <span>已经到底线了</span>
+</div>
 {include file="public/footer" /}
 <script>
     var p = 1, isbool = true, star_arr = [], video_arr = [];
@@ -34,7 +39,7 @@
             },
             error: function (xhr, type) {
                 isbool = false;
-                $('.bottom-line').css('display', 'block');
+                document.getElementById('bottom-line').style.display = 'block';
                 layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
             }
         });

@@ -318,6 +318,13 @@ line {
 .cell-left{
     width: 25%;
 }
+
+#bottom-line{
+    text-align: center;
+    display: none;
+    color:#666;
+}
+
 /**article**/
 video {
     width: 100% !important;

@@ -10,7 +10,7 @@ function login(refer) {
     layer.open({
         type: 1
         , content: '<div class="m-cell">\n' +
-            '    <div class="cell-item cell-center-first">\n'+
+            '    <div class="cell-item cell-center-first">\n' +
             '        <div class="cell-center">会员登录</div>\n' +
             '    </div>\n' +
             '    <div class="cell-item">\n' +
@@ -34,11 +34,11 @@ function check_login(refer) {
     var phone = $('input[name="phone"]').val();
     var pwd = $('input[name="password"]').val();
     if (!phone || !(/^1[3456789]\d{9}$/.test(phone))) {
-        layer.open({type: 2, content: '手机号错误'});
+        layer.open({skin: 'msg', content: '手机号错误',time: 2});
         return;
     }
     if (!pwd || pwd.length < 6) {
-        layer.open({type: 2, content: '密码长度错误'});
+        layer.open({skin: 'msg', content: '密码长度错误',time: 2});
         return;
     }
     var index = layer.open({type: 2, content: '登录中…'});

@@ -1,5 +1,5 @@
 {include file="public/header" /}
-
+<link rel="stylesheet" href="/static/plugins/swiper/swiper.min.css">
 <style>
     .grid-sizer,
     .item {
@@ -14,17 +14,80 @@
     .item img {
         width: 100%;
     }
+
+    #J_List {
+        margin-bottom: 1.3rem;
+    }
+
+    #loading {
+        justify-content: center;
+        align-items: center;
+        display: none;
+    }
+
+    #loading img {
+        width: .6rem;
+    }
+
+    .m-navbar {
+        height: 1.5rem;
+        padding: .1rem 0 .2rem;
+    }
+
+    .m-navbar img {
+        height: 100%;
+        display: inline;
+        -webkit-animation: wavelight 8s infinite linear;
+    }
+
+    .m-navbar .avbar-item {
+        width: 100%;
+        text-align: center;
+    }
+
+    @-webkit-keyframes wavelight {
+        0% {
+            filter: hue-rotate(0deg) drop-shadow(-6px -6px 7px green);
+        }
+        25% {
+            filter: hue-rotate(90deg) drop-shadow(-6px 6px 14px yellow);
+        }
+        50% {
+            filter: hue-rotate(180deg) drop-shadow(6px -6px 14px red);
+        }
+        75% {
+            filter: hue-rotate(270deg) drop-shadow(6px 6px 14px red);
+        }
+        100% {
+            filter: hue-rotate(360deg) drop-shadow(-6px -6px 7px green);
+        }
+    }
+
+    .swiper-wrapper img {
+        width: 100%;
+    }
+
+    .swiper-pagination {
+        text-align: right;
+        padding-right: .55rem;
+        color: #fff;
+    }
 </style>
-<div class="m-slider" id="J_Slider">
-    <div class="slider-wrapper">
-        <div class="slider-item">
-            <a href="#">
-                <img src="http://static.ydcss.com/uploads/ydui/1.jpg">
-            </a>
-        </div>
+
+<header class="m-navbar">
+    <div class="avbar-item">
+        <img src="/static/image/logo_large2.png">
     </div>
-    <div class="slider-pagination"></div><!-- 分页标识 -->
+</header>
+
+<div class="swiper-container">
+    <div class="swiper-wrapper">
+        <div class="swiper-slide"><img src="http://static.ydcss.com/uploads/ydui/1.jpg"></div>
+        <div class="swiper-slide"><img src="http://static.ydcss.com/uploads/ydui/2.jpg"></div>
+    </div>
+    <div class="swiper-pagination"></div>
 </div>
+
 <!--店长推荐-->
 <div class="newModule_bottom">
     <div class="look">
@@ -72,6 +135,10 @@
         <div class="grid-sizer"></div>
         <div class="gutter-sizer"></div>
     </div>
+    <div id="loading"><img src="/static/plugins/blueimp/img/loading.gif"></div>
+    <div id="bottom-line" class="bannerTitle">
+        <span>已经到底线了</span>
+    </div>
 </section>
 <div id="app">
     <go-top></go-top>
@@ -79,9 +146,9 @@
 {include file="public/footer" /}
 
 <script src="/static/js/template.js"></script>
-<script src="/static/plugins/masonary/masonry.js"></script>
 <script src="/static/plugins/imagesloaded/imagesloaded.min.js"></script>
-<!--<script src="/static/plugins/masonary/masonry.pkgd.min.js"></script>-->
+<script src="/static/plugins/masonary/masonry.pkgd.min.js"></script>
+<script src="/static/plugins/swiper/swiper.min.js"></script>
 <script id="J_ListHtml" type="text/html">
     {{each list as data}}
     <div class="item" data-p="{{list.page}}">
@@ -104,78 +171,87 @@
 </script>
 
 <script>
+    new Swiper('.swiper-container', {
+        direction: 'horizontal', // 垂直切换选项
+        loop: true, // 循环模式选项
+        autoplay: {
+            delay: 3500,
+            disableOnInteraction: false//点击操作后重新启动autoplay
+        },
+        effect: 'cube',//cube,fade,filp
+        pagination: {
+            el: '.swiper-pagination',
+            type: 'fraction'//fraction
+        }
+    });
     $('#J_Slider').slider({
         speed: 400,
         autoplay: 4500,
         lazyLoad: true
     });
-
+    loadMore();
     var vm = new Vue({
         el: '#app'
     });
     var grid = $('#J_ListContent'), init = true;
-    var page = 1, pageSize = 2;
+    var page = 1, pageSize = 2, beforeScrollTop = 0, timer;
 
-    $('#J_List').infiniteScroll({
-        pageSize: pageSize,
-        initLoad: true,
-        backposition: true,
-        jumpLink: '.J_Link',
-        loadingHtml: '<img src="/static/plugins/layer/theme/default/loading-1.gif" />',
-        loadListFn: function () {
-            var def = $.Deferred();
-            $.ajax({
-                url: '/',
-                type: 'POST',
-                data: {page: page, pagesize: pageSize},
-                success: function (ret) {
-                    ret.page = page;
-                    var html = template('J_ListHtml', {list: ret});
-                    grid.append($(html)).find('img').lazyLoad({binder: '#J_List'});
+    window.addEventListener('scroll', scrollFunc);
 
-                    if (init) {
-                        grid.masonry({
-                            itemSelector: '.item',
-                            columnWidth: '.grid-sizer',
-                            gutter: '.gutter-sizer',
-                            percentPosition: true,
-                            stagger: 80
-                        }).imagesLoaded().progress(function () {
-                            grid.masonry('layout');
-                        });
-                        init = false;
-                    }
+    function loadMore() {
+        document.getElementById('loading').style.display = 'flex';
+        $.ajax({
+            url: '/',
+            type: 'POST',
+            data: {page: page, pagesize: pageSize},
+            success: function (ret) {
+                ret.page = page;
+                var html = template('J_ListHtml', {list: ret});
+                grid.append($(html)).find('img').lazyLoad({binder: '#J_List'});
+
+                if (init) {
+                    grid.masonry({
+                        itemSelector: '.item',
+                        columnWidth: '.grid-sizer',
+                        gutter: '.gutter-sizer',
+                        percentPosition: true,
+                        stagger: 80
+                    }).imagesLoaded().progress(function () {
+                        grid.masonry('layout');
+                    });
+                    init = false;
+                } else {
                     var ele = grid.find('.item[data-p="' + page + '"]');
                     grid.masonry('appended', ele).imagesLoaded().progress(function () {
                         grid.masonry('layout');
                     });
-
-                    def.resolve(ret, page);
-                    ++page;
-                },
-                error: function (xhr, type) {
-                    layer.open({content: xhr.responseText, skin: 'msg', time: 2});
                 }
-            });
+                ++page;
+                document.getElementById('loading').style.display = 'none';
+            },
+            error: function (xhr, type) {
+                page = false;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('bottom-line').style.display = 'block';
+                window.removeEventListener('scroll', scrollFunc);
+            }
+        });
+    }
 
-            return def.promise();
-        },
-        loadStorageListFn: function (ret, retPage) {
-            var def = $.Deferred();
-            page = retPage;
-
-            var html = '';
-            ret.forEach(function (val) {
-                var list = val.list;
-                list.page = val.page;
-                html += template('J_ListHtml', {list: list});
-            });
-            $('#J_ListContent').append(html);
-            def.resolve();
-
-            return def.promise();
+    function scrollFunc() {
+        var a = document.documentElement.scrollTop || document.body.scrollTop;//滚动条y轴上的距离
+        var b = document.documentElement.clientHeight || document.body.clientHeight;//可视区域的高度
+        var c = document.documentElement.scrollHeight || document.body.scrollHeight;//可视化的高度与溢出的距离（总高度）
+        if (a + b + 80 >= c) {
+            if (a > beforeScrollTop) {
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    loadMore(a);
+                }, 80);
+            }
         }
-    });
+        beforeScrollTop = a;
+    }
 
 </script>
 </body>
