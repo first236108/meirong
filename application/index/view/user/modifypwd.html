@@ -1,0 +1,65 @@
+{include file="public/header" /}
+<link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+<style>
+    body {
+        background-color: #fff;
+    }
+
+    .m-cell:after {
+        border-bottom: none;
+    }
+</style>
+<header class="m-navbar">
+    <a onclick="history.back()" class="navbar-item">
+        <i class="back-ico"></i>
+    </a>
+    <div class="navbar-center">
+        <span class="navbar-title">修改登录密码</span>
+    </div>
+</header>
+
+<div class="m-cell">
+    <div class="cell-item">
+        <div class="cell-right"><input type="password" id="old" class="cell-input" placeholder="请输入旧密码"></div>
+    </div>
+    <div class="cell-item">
+        <div class="cell-right"><input type="password" id="new" class="cell-input" placeholder="新密码"></div>
+    </div>
+    <div class="padding-xs">
+        <button type="button" onclick="checkInput()" class="btn-block btn-danger">确认修改</button>
+    </div>
+</div>
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/js/ydui.js"></script>
+
+<script>
+    function checkInput() {
+        var old = $('#old').val();
+        var newpwd = $('#new').val();
+        if (!old || !newpwd) {
+            YDUI.dialog.toast('请输入密码', 'error', 1500);
+            return;
+        }
+        if (old.length < 6 || newpwd.length < 6) {
+            YDUI.dialog.toast('密码至少6位哦', 'error', 1500);
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/modifypwd")}',
+            data: {password: old, newpwd: newpwd},
+            success: function (data) {
+                YDUI.dialog.toast('密码修改成功', 'success', 1500, function () {
+                    history.back();
+                });
+            },
+            error: function (xhr, type) {
+                YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
+            }
+        });
+    }
+</script>
+</body>
+</html>

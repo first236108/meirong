@@ -1,0 +1,214 @@
+{include file="public/header" /}
+<link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+<style>
+    .avatar img {
+        margin-right: .3rem;
+    }
+
+    .m-cell {
+        margin-bottom: .2rem;
+    }
+
+    .layui-m-layer {
+        z-index: 1500;
+    }
+
+    #avatar {
+        position: absolute;
+        width: 100%;
+        height: 1.6rem;
+        opacity: 0;
+        z-index: 2;
+    }
+</style>
+<header class="m-navbar">
+    <a href="{:url('user/index')}" class="navbar-item">
+        <i class="back-ico"></i>
+    </a>
+    <div class="navbar-center">
+        <span class="navbar-title">修改会员信息</span>
+    </div>
+</header>
+
+<div class="m-cell">
+    <input type="file" id="avatar">
+    <div class="cell-item">
+        <div class="cell-left">更换头像</div>
+        <div class="cell-right avatar cell-arrow"><img src="{$user.avatar ?? 'http://image.igccc.com/FlqnB7TlnbjUbneqwUx7T9vySHGw'}"></div>
+    </div>
+</div>
+
+<div class="m-cell">
+    <div class="cell-item" onclick="openInput()" data-field="nickname">
+        <div class="cell-left">昵称</div>
+        <div class="cell-right cell-arrow">{$user.nickname ? $user.nickname : $user.name}</div>
+    </div>
+    <div class="cell-item" onclick="openInput()" data-field="name">
+        <div class="cell-left">真实姓名</div>
+        <div class="cell-right cell-arrow">{$user.name}</div>
+    </div>
+    <div class="cell-item" onclick="openInput()" data-field="phone">
+        <div class="cell-left">手机号码</div>
+        <div class="cell-right cell-arrow">{$user.phone}</div>
+    </div>
+    <div class="cell-item" onclick="location.href='modifypwd.html'">
+        <div class="cell-left">修改登录密码</div>
+        <div class="cell-right cell-arrow"></div>
+    </div>
+</div>
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/qiniu/qiniu.min.js"></script>
+<script>
+    var token, cdn;
+
+    function openInput() {
+        var obj = $(event.currentTarget);
+        var field = obj.data('field');
+        var right = obj.find('.cell-right').eq(0);
+        layer.open({
+            type: 1,
+            title: ['修改 ' + obj.find('.cell-left').eq(0).text(), 'border-bottom:1px solid #999;'],
+            content: '<div class="m-cell">\n' +
+                '    <div class="cell-item cell-center-first">\n' +
+                '        <div class="cell-center"><input type="text" id="input" data-field="' + field + '" class="cell-input" placeholder="' + right.text() + '" autocomplete="off" /></div>\n' +
+                '    </div>\n' +
+                '    <button type="button" onclick="sub()" class="btn-block btn-primary">保存</button>' +
+                '</div>',
+            anim: 'up',
+            style: ''
+        });
+    }
+
+    function sub() {
+        var obj = $('#input');
+        var field = obj.data('field');
+        var val = obj.val();
+        if (!val.length) {
+            YDUI.dialog.toast('请输入要修改的值', 'error', 1000);
+            return;
+        }
+        if (field == 'phone' && !/(^1[3|4|5|6|7|8][0-9]{9}$)/.test(val)) {
+            YDUI.dialog.toast('手机号码错误', 'error', 1000);
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/userInfo")}',
+            data: {field: field, val: val},
+            success: function (data) {
+                YDUI.dialog.toast('修改成功', 'success', 1000);
+                console.log(field);
+                $('div[data-field="' + field + '"').find('.cell-right').text(val);
+                layer.closeAll();
+            },
+            error: function (xhr, type) {
+                console.log(xhr);
+                YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
+            }
+        });
+    }
+
+    function slectAvatar() {
+        var file = event.currentTarget.files[0]; //获取图片资源
+        var filename = file.name;
+        getUpToken();
+    }
+
+    function getUpToken() {
+        $.ajax({
+            type: 'POST',
+            url: "{:url('admin/ueditor/uploadToken')}",
+            async:false,
+            success: function (data) {
+                token = data.token;
+                cdn = data.cdn;
+            },
+            error: function (e) {
+                YDUI.dialog.toast('获取上传token失败', 'error', 1000);
+            }
+        });
+    }
+
+    var config = {
+        useCdnDomain: true,
+        disableStatisticsReport: false,
+        retryCount: 4,
+        region: qiniu.region.z1,
+        concurrentRequestLimit: 3
+    };
+    var putExtra = {
+        fname: "",
+        params: {},
+        mimeType: ["image/png", "image/jpg", "image/jpeg", "image/gif", "video/mp4"]
+    };
+
+    $("#avatar").unbind("change").bind("change", function () {
+        var file = this.files[0];
+        var finishedAttr = [];
+        var compareChunks = [];
+        var observable;
+        var temp1 = makefilename();
+        if (file) {
+            YDUI.dialog.loading.open('圖片上傳中...');
+            if(!token) getUpToken();
+            var error = function (err) {
+                YDUI.dialog.loading.close();
+                YDUI.dialog.toast(err, 'error', 1000);
+            };
+
+            var complete = function (res) {
+                $.ajax({
+                    type: 'POST',
+                    url: '{:url("user/userInfo")}',
+                    data: {field: 'avatar', val: cdn + res.key},
+                    success: function (data) {
+                        YDUI.dialog.loading.close();
+                        $('img').attr('src',cdn + res.key);
+                    },
+                    error: function (xhr, type) {
+                        YDUI.dialog.loading.close();
+                        YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
+                    }
+                });
+            };
+
+            var next = function (response) {
+                var chunks = response.chunks || [];
+                var total = response.total;
+                // 这里对每个chunk更新进度，并记录已经更新好的避免重复更新，同时对未开始更新的跳过
+                for (var i = 0; i < chunks.length; i++) {
+                    if (chunks[i].percent === 0 || finishedAttr[i]) {
+                        continue;
+                    }
+                    if (compareChunks[i].percent === chunks[i].percent) {
+                        continue;
+                    }
+                    if (chunks[i].percent === 100) {
+                        finishedAttr[i] = true;
+                    }
+                }
+                compareChunks = chunks;
+            };
+
+            var subObject = {
+                next: next,
+                error: error,
+                complete: complete
+            };
+            var subscription;
+            observable = qiniu.upload(file, temp1, token, putExtra, config);
+            subscription = observable.subscribe(subObject);
+        }
+    });
+
+    function makefilename() {
+        var myDate = new Date();
+        return myDate.getFullYear().toString() + myDate.getMonth().toString() + myDate.getDate().toString() + myDate.getTime().toString().substring(5, 10) + Math.random().toString().substring(2, 5);
+    }
+</script>
+</body>
+</html>

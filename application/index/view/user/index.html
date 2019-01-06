@@ -1,5 +1,46 @@
 {include file="public/header" /}
 <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+<style>
+    .order {
+        margin-bottom: .35rem;
+    }
+
+    .order .fa {
+        color: #fb5555;
+        font-size: .65rem !important;
+    }
+
+    .cell-left .fa {
+        color: #fb5555;
+        font-size: .4rem !important;
+    }
+
+    .cell-right {
+        color: #999999;
+    }
+
+    .grids-txt {
+        font-size: .3rem;
+        margin-top: .1rem;
+    }
+    .layui-m-layercont{
+        padding: .5rem .2rem;
+    }
+    .layui-m-layercont h1{
+        width: 50%;
+        display: inline-block;
+        border-bottom: 1px solid #999;
+        margin-bottom:.2rem;
+    }
+    .layui-m-layercont h2{
+        margin-bottom:.2rem;
+        font-weight:normal;
+    }
+    .layui-m-layercont p{
+        font-size:.3rem;
+        color:#666666;
+    }
+</style>
 <div class="u-header">
     <div class="top clearfix">
         <a href="{:url('user/message')}" class="msg">
@@ -11,12 +52,12 @@
         <a href="userInfo.html" class="info">
             <!-- 头像 -->
             <div class="fl avatar">
-                <img src="http://mallscsj.oss-cn-beijing.aliyuncs.com/upload/20180713190757_79241.jpeg">
+                <img src="{$user.avatar}">
             </div>
             <!-- 名字和电话 -->
             <div class="tel fl">
-                <p id="username">柏宇娜</p>
-                <span>13007686112</span>
+                <p id="username">{$user.nickname}</p>
+                <span>{$user.phone}</span>
             </div>
             <!-- 查看信息 -->
             <div class="edit fr">
@@ -26,8 +67,90 @@
         </a>
     </div>
 </div>
+<div class="m-grids-2 order">
+    <a href="{:url('user/order')}" class="grids-item">
+        <div class="grids-icon"><i class="fa fa-delicious"></i></div>
+        <div class="grids-txt"><span>订单</span></div>
+    </a>
+    <a href="{:url('user/appointment')}" class="grids-item">
+        <div class="grids-icon"><i class="fa fa-history"></i></div>
+        <div class="grids-txt"><span>预约</span></div>
+    </a>
+</div>
+<div class="m-cell">
+    <a class="cell-item" href="javascript:;">
+        <div class="cell-left"><i class="fa fa-cny"></i>&nbsp;&nbsp;历史账单</div>
+        <div class="cell-right cell-arrow"></div>
+    </a>
+    <a class="cell-item" href="javascript:;">
+        <div class="cell-left"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;服务评分</div>
+        <div class="cell-right cell-arrow"></div>
+    </a>
+    <a class="cell-item" href="javascript:;">
+        <div class="cell-left"><i class="fa fa-heart"></i>&nbsp;&nbsp;我的收藏</div>
+        <div class="cell-right">{if condition="$favorite"}<span class="badge badge-warning">{$favorite}</span>{/if}</div>
+    </a>
+</div>
 
+<div class="m-cell">
+    <a class="cell-item" href="tel:{$site.service_phone}">
+        <div class="cell-left"><i class="fa fa-phone"></i>&nbsp;&nbsp;联系客服</div>
+        <div class="cell-right">{$site.service_phone}</div>
+    </a>
+    <a class="cell-item" onclick="checkversion()">
+        <div class="cell-left"><i class="fa fa-copyright"></i>&nbsp;&nbsp;检查版本</div>
+        <div class="cell-right cell-arrow"></div>
+    </a>
+    <a class="cell-item" onclick="clearcache()">
+        <div class="cell-left"><i class="fa fa-refresh"></i>&nbsp;&nbsp;清除缓存</div>
+        <div class="cell-right cell-arrow">删除缓存文件,节约空间</div>
+    </a>
+    <a class="cell-item" onclick="logout()">
+        <div class="cell-left"><i class="fa fa-power-off"></i>&nbsp;&nbsp;退出登录</div>
+        <div class="cell-right cell-arrow">更换账号 | 重新登录</div>
+    </a>
+</div>
 
 {include file="public/footer" /}
+<script>
+    function logout() {
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/logout")}',
+            success: function (data) {
+                YDUI.dialog.toast('已退出登錄', 'success', 1000, function () {
+                    location.href = '{:url("user/login")}';
+                });
+            },
+            error: function (xhr, type) {
+                YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
+            }
+        });
+    }
+
+    function clearcache() {
+        YDUI.dialog.loading.open('清除中');
+        setTimeout(function () {
+            YDUI.dialog.loading.close();
+            YDUI.dialog.toast('清除完畢', 'success', 1500);
+        }, 700);
+    }
+
+    function checkversion() {
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/checkversion")}',
+            success: function (data) {
+                layer.open({
+                    content: data,
+                    btn: '知道了'
+                });
+            },
+            error: function (xhr, type) {
+                YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
+            }
+        });
+    }
+</script>
 </body>
 </html>

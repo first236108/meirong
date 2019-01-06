@@ -17,14 +17,14 @@
 <!--</div>-->
 
 <div id="bottom-line" class="bannerTitle" style="margin-bottom:1.3rem;">
-    <go-top></go-top>
     <span>已经到底线了</span>
 </div>
+<div id="gotop"><go-top></go-top></div>
 {include file="public/footer" /}
 <script>
     var p = 1, isbool = true, star_arr = [], video_arr = [];
     var vm = new Vue({
-        el: '.bottom-line'
+        el: '#gotop'
     });
 
     function getData() {

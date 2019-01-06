@@ -1,10 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{$site.site_title} | Login</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
 
+    <link href="/static/css/animate.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/index.css" rel="stylesheet">
+    <style>
+        .middle-box {
+            padding-top: 0;
+        }
+
+        .logo {
+            margin: 0
+        }
+
+        .logo img {
+            width: 70%;
+            -webkit-animation: wavelight 8s infinite linear;
+        }
+
+    </style>
+</head>
+
+<body class="gray-bg">
+
+<div class="middle-box text-center loginscreen animated fadeInDown">
+    <div>
+        <div>
+            <h1 class="logo"><img src="/static/image/logo_2.png"></h1>
+        </div>
+        <h3>郑州天源美容</h3>
+        <p>您的贴身美丽顾问，总店地址：中州大道21世纪社区 琥珀名城.</p>
+        <p>Login in. To enjoy beautiful life.</p>
+        <form class="m-t" role="form" id="form">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="手机号码" name="phone">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" placeholder="密码" name="password" onkeydown="check()">
+            </div>
+            <button type="button" class="btn btn-danger block full-width m-b" onclick="login()">Login</button>
+            <a class="btn btn-warning btn-block m-b" href="{:url('/user/reg')}">注册账号</a>
+            <a href="#">
+                <small>忘记密码?</small>
+            </a>
+        </form>
+        <p class="m-t">
+            <small> &copy; 2018 客服电话：<a href="tel:{$site.service_phone}">{$site.service_phone}</a></small>
+        </p>
+    </div>
+</div>
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+
+<script>
+    var refer = "{$refer}";
+
+    function login() {
+        var phone = $("input[name='phone']");
+        var pwd = $("input[name='password']");
+        if (!/(^1[3|4|5|6|7|8][0-9]{9}$)/.test(phone.val())) {
+            layer.open({content: '手机号码不正确哦!', skin: 'msg', time: 2});
+            phone.focus();
+            return;
+        }
+        if (pwd.val().length < 6) {
+            layer.open({content: '密码错误!', skin: 'msg', time: 2});
+            pwd.focus();
+            return;
+        }
+        var index = layer.open({type: 2, shadeClose: false});
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/login")}',
+            data: $('#form').serialize(),
+            success: function (data) {
+                layer.close(index);
+                localStorage.setItem('token', data.token);
+                if (!refer) refer = "{:url('user/index')}";
+                location.href = refer;
+            },
+            error: function (xhr, type) {
+                layer.close(index);
+                layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
+            }
+        });
+    }
+
+    function check() {
+        if (event.keyCode == 13) login();
+    }
+</script>
 </body>
+
 </html>

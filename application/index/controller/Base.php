@@ -28,7 +28,7 @@ class Base extends Controller
         $needLogin  = [
             'index'   => ['favorite'],
             'article' => [],
-            'user'    => ['message'],
+            'user'    => ['message', 'userinfo', 'modifypwd', 'order', 'appointment'],
         ];
         $controller = strtolower(request()->controller());
         $action     = strtolower(request()->action());
@@ -36,7 +36,7 @@ class Base extends Controller
             if ($this->request->isAjax()) {
                 json(['msg' => '请登录后操作'], 401)->send();
             } else {
-                $this->redirect('user/login', ['refer' => $this->request->url()]);
+                $this->redirect('user/login', ['refer' => $controller . '-' . $action]);
             }
         }
 

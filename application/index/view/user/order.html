@@ -1,0 +1,106 @@
+{include file="public/header" /}
+<link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+<style>
+    .cell-item {
+        padding: .12rem .24rem;
+    }
+
+    .cell-item:after {
+        border-bottom: none !important;
+    }
+
+    .cell-title {
+        display: flex;
+    }
+
+    .cell-left {
+        width: 35%;
+    }
+
+    .cell-left img {
+        width: 100%;
+    }
+</style>
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a href="{:url('user/index')}" class="navbar-item">
+            <i class="back-ico"></i>
+        </a>
+        <div class="navbar-center">
+            <span class="navbar-title">订单记录</span>
+        </div>
+    </header>
+
+    <div class="g-scrollview" id="J_List">
+        <div id="J_ListContent"></div>
+    </div>
+</section>
+
+<script id="J_ListHtml" type="text/html">
+    {{each list as data}}
+    <div class="m-cell">
+        <div class="cell-title">
+            <div class="t-left">{{data.order_sn}}</div>
+            <div class="t-right">{{data.add_time | dateFormat}}</div>
+        </div>
+        {{each data.order_item as item}}
+        <div class="cell-item">
+            <div class="cell-left">
+                <img src="{{item.origin_image}}" data-url="{{item.origin_image}}">
+            </div>
+            <div class="cell-right">
+                {{item.title}}
+            </div>
+        </div>
+        {{/each}}
+        <div class="cell-foot">
+            {{data.order_amount}}
+        </div>
+    </div>
+    {{/each}}
+</script>
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/js/template.js"></script>
+
+<script>
+    template.helper('dateFormat', function (time) {
+        return moment.unix(time).format('YYYY-MM-DD HH:mm:ss');
+    });
+    var page = 1, pageSize = 10;
+
+    $('#J_List').infiniteScroll({
+        binder: '#J_List',
+        pageSize: pageSize,
+        initLoad: true,
+        loadingHtml: '<img src="/static/plugins/layer/theme/default/loading-2.gif" />',
+        loadListFn: function () {
+            var def = $.Deferred();
+
+            $.ajax({
+                url: '{:url("user/order")}',
+                type: 'POST',
+                data: {
+                    page: page,
+                    pageSize: pageSize
+                },
+                success: function (ret) {
+                    var html = template('J_ListHtml', {list: ret});
+                    $('#J_ListContent').append(html).find('img').lazyLoad({binder: '#J_List'});
+                    def.resolve(ret);
+                    ++page;
+                }
+            });
+
+            return def.promise();
+        }
+    });
+
+
+</script>
+</body>
+</html>
