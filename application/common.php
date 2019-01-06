@@ -231,7 +231,7 @@ function user_log($type, $user_id = 0, $link_id = 0, $session_id = '')
     ];
 
     if ($data['type'] == 1) {
-        $item_info       = Db::name('item')->cache(true, 864000)->where('item_id', $link_id)->field('cate_id,cate_id2')->find();
+        $item_info       = Db::name('item')->where('item_id', $link_id)->field('cate_id,cate_id2')->cache(true, 864000)->find();
         $data['cat_id1'] = $item_info['cate_id'];
         $data['cat_id2'] = $item_info['cate_id2'];
     }

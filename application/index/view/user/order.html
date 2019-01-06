@@ -1,16 +1,27 @@
 {include file="public/header" /}
 <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
 <style>
+    .m-cell {
+        color: #666666;
+    }
+
     .cell-item {
         padding: .12rem .24rem;
     }
 
-    .cell-item:after {
-        border-bottom: none !important;
-    }
-
     .cell-title {
         display: flex;
+        font-size: .3rem;
+        justify-content: space-between;
+        padding: .12rem .24rem;
+    }
+
+    .cell-title .t-left {
+
+    }
+
+    .t-right {
+        color: #999999;
     }
 
     .cell-left {
@@ -19,6 +30,53 @@
 
     .cell-left img {
         width: 100%;
+    }
+
+    .cell-right {
+        justify-content: space-between;
+        padding-left: .24rem;
+    }
+
+    .cell-right .info div {
+        margin: .1rem auto;
+        text-align: left;
+    }
+
+    .info .name {
+        font-size: .36rem;
+        font-weight: bold;
+        color: #fb5555;
+    }
+
+    .cell-foot {
+        padding-right: .24rem;
+        text-align: right;
+
+    }
+
+    .cell-foot div {
+        padding: .1rem 0 .2rem;
+    }
+
+    .cell-foot div span {
+        color: #fb5555;
+        font-size: .34rem;
+    }
+
+    .icon-time {
+        font-size: .44rem;
+        color: #fb5555;
+    }
+
+    .theme {
+        background-color: #fb5555;
+        color: #fff;
+        padding: .05rem .1rem;
+        border-radius: .1rem;
+    }
+
+    .cell-radio-icon:after {
+        font-size: .6rem !important;
     }
 </style>
 <section class="g-flexview">
@@ -29,6 +87,7 @@
         <div class="navbar-center">
             <span class="navbar-title">订单记录</span>
         </div>
+        <a onclick="appointment()" class="navbar-item"><i class="icon-time"></i>&nbsp;<span class="theme">预约</span></a>
     </header>
 
     <div class="g-scrollview" id="J_List">
@@ -37,37 +96,68 @@
 </section>
 
 <script id="J_ListHtml" type="text/html">
-    {{each list as data}}
+    <%each list as data%>
     <div class="m-cell">
         <div class="cell-title">
-            <div class="t-left">{{data.order_sn}}</div>
-            <div class="t-right">{{data.add_time | dateFormat}}</div>
+            <div class="t-left">编号:<%data.order_sn%></div>
+            <div class="t-right"><%data.add_time | dateFormat%></div>
         </div>
-        {{each data.order_item as item}}
+        <%each data.order_item as item%>
         <div class="cell-item">
-            <div class="cell-left">
-                <img src="{{item.origin_image}}" data-url="{{item.origin_image}}">
+            <div class="cell-left" onclick="location.href='/index/index/detail/id/<%item.item_id%>.html'">
+                <img src="<%item.origin_image%>" data-url="<%item.origin_image%>">
             </div>
-            <div class="cell-right">
-                {{item.title}}
+            <div class="cell-right item-handle">
+                <label class="cell-right">
+                    <div class="info">
+                        <div class="name"><%item.title%></div>
+                        <div>服务次数:<%item.num%></div>
+                        <div>剩余次数:<%item.dec_num%></div>
+                    </div>
+                    <div class="appointment">
+                        <%if item.dec_num >0 %>
+                        <input type="radio" value="<%item.id%>" name="radio">
+                        <i class="cell-radio-icon"></i>
+                        <%else%>
+                        <span>已消费</span>
+                        <%/if%>
+                    </div>
+                </label>
             </div>
         </div>
-        {{/each}}
+        <%/each%>
         <div class="cell-foot">
-            {{data.order_amount}}
+            <div>应付金额:<span>￥<%data.order_amount%></span></div>
+            <%if data.coupon_amount >0 %>
+            <div>优惠券抵扣:<span>￥<%data.coupon_amount%></span></div>
+            <%/if%>
+            <%if data.points_amount >0 %>
+            <div>积分抵扣:<span>￥<%data.points_amount%></span></div>
+            <%/if%>
+            <%if data.manager_reduce >0 %>
+            <div>掌柜减单:<span>￥<%data.manager_reduce%></span></div>
+            <%/if%>
+            <div>实付金额:<span>￥<%data.pay_amount%></span></div>
         </div>
     </div>
-    {{/each}}
+    <%/each%>
 </script>
+
+<input type="hidden" id="test">
 
 <script src="/static/js/jquery-3.1.1.min.js"></script>
 <script src="/static/js/ydui.flexible.js"></script>
 <script src="/static/js/ydui.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/mdate/iScroll.js"></script>
+<script src="/static/plugins/mdate/Mdate.js"></script>
 <script src="/static/js/template.js"></script>
 
 <script>
+    template.config('openTag', '<%');
+    template.config('closeTag', '%>');
     template.helper('dateFormat', function (time) {
         return moment.unix(time).format('YYYY-MM-DD HH:mm:ss');
     });
@@ -93,6 +183,9 @@
                     $('#J_ListContent').append(html).find('img').lazyLoad({binder: '#J_List'});
                     def.resolve(ret);
                     ++page;
+                    // $('.item-handle').click(function(){
+                    //     $(event.currentTarget).find('input').attr("checked",true);
+                    // });
                 }
             });
 
@@ -100,7 +193,52 @@
         }
     });
 
+    new Mdate("aaa", {
+        acceptId: "test",
+        beginYear: "2002",
+        beginMonth: "10",
+        beginDay: "24",
+        endYear: "2017",
+        endMonth: "1",
+        endDay: "1",
+        format: "-"
+    });
 
+    function appointment(id) {
+        var id = $('input[name="radio"]:checked').val();
+        if (!id) {
+            YDUI.dialog.toast('请选择要预约的项目', 'error', 1500);
+            return;
+        }
+
+
+
+        YDUI.dialog.loading.open('正在预约...');
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/appointment")}',
+            data: {id: id},
+            success: function (data) {
+                YDUI.dialog.loading.close();
+                layer.open({
+                    title: [
+                        '预约完成',
+                        'background-color:#fb5555; color:#fff;'
+                    ]
+                    , anim: 'up'
+                    , content: '已为您预约，可随时至您的预约查看详细信息'
+                    , btn: '确认'
+                    , yes: function (index) {
+                        layer.close(index);
+                    }
+                });
+            },
+            error: function (xhr, type) {
+                YDUI.dialog.loading.close();
+                YDUI.dialog.toast(xhr.responseJSON, 'error', 2000);
+            }
+        });
+    }
 </script>
 </body>
 </html>

@@ -179,6 +179,31 @@ class User extends Base
 
     public function appointment()
     {
+        if ($this->request->isPost()) {
+            $id    = input('post.id/d', 0);
+            $index = input('post.repeat/d', 0);
+            $time  = input('post.time/d', time());
+            $order_item = Db::name('order_item')->lock(true)->where('id', $id)->find();
+            if (!$order_item) return json('您购买的服务不存在', 403);
+            $map     = [
+                'order_id'   => $order_item['order_id'],
+                'item_id'    => $order_item['id'],
+                'confirm_id' => 0,
+                'is_delete'  => 0,
+            ];
+            $consume = Db::name('consumption')->where($map)->order('cid asc')->select();
 
+            if (count($consume) >= $index + 1) {
+                return json($consume[$index]);
+            }
+            if (count($consume) >= $order_item['dec_num']) {
+                return json(end($consume));
+            }
+            if ($order_item['dec_num'] == 0)
+                return json('订单所含[' . $order_item['title'] . ']项目已全部消费',403);
+            $appointment = apponintment($order_item, $this->user_id, $time);
+            user_log('appointment',$this->user_id, $order_item['order_id']);
+            return json($appointment);
+        }
     }
 }
