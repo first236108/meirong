@@ -1,5 +1,6 @@
 {include file="public/header" /}
 <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+<link href="/static/plugins/rolldate/rolldate.css" rel="stylesheet">
 <style>
     .m-cell {
         color: #666666;
@@ -78,6 +79,7 @@
     .cell-radio-icon:after {
         font-size: .6rem !important;
     }
+    * { touch-action: none; }
 </style>
 <section class="g-flexview">
     <header class="m-navbar">
@@ -86,6 +88,7 @@
         </a>
         <div class="navbar-center">
             <span class="navbar-title">订单记录</span>
+            <input type="hidden" id="date1" placeholder="选择日期" readonly>
         </div>
         <a onclick="appointment()" class="navbar-item"><i class="icon-time"></i>&nbsp;<span class="theme">预约</span></a>
     </header>
@@ -151,8 +154,7 @@
 <script src="/static/js/bootstrap.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/moment/moment.min.js"></script>
-<script src="/static/plugins/mdate/iScroll.js"></script>
-<script src="/static/plugins/mdate/Mdate.js"></script>
+<script src="/static/plugins/rolldate/rolldate.min.js"></script>
 <script src="/static/js/template.js"></script>
 
 <script>
@@ -193,52 +195,53 @@
         }
     });
 
-    new Mdate("aaa", {
-        acceptId: "test",
-        beginYear: "2002",
-        beginMonth: "10",
-        beginDay: "24",
-        endYear: "2017",
-        endMonth: "1",
-        endDay: "1",
-        format: "-"
-    });
-
     function appointment(id) {
         var id = $('input[name="radio"]:checked').val();
         if (!id) {
             YDUI.dialog.toast('请选择要预约的项目', 'error', 1500);
             return;
         }
-
-
-
-        YDUI.dialog.loading.open('正在预约...');
-        $.ajax({
-            type: 'POST',
-            url: '{:url("user/appointment")}',
-            data: {id: id},
-            success: function (data) {
-                YDUI.dialog.loading.close();
-                layer.open({
-                    title: [
-                        '预约完成',
-                        'background-color:#fb5555; color:#fff;'
-                    ]
-                    , anim: 'up'
-                    , content: '已为您预约，可随时至您的预约查看详细信息'
-                    , btn: '确认'
-                    , yes: function (index) {
-                        layer.close(index);
-                    }
-                });
-            },
-            error: function (xhr, type) {
-                YDUI.dialog.loading.close();
-                YDUI.dialog.toast(xhr.responseJSON, 'error', 2000);
-            }
-        });
+        $('#date1').trigger('click');
     }
+
+    new rolldate.Date({
+        el: '#date1',
+        format: 'YYYY-MM-DD hh:mm',
+        beginYear: 2019,
+        endYear: 2019,
+        theme: '#fb5555',
+        minStep: 10,
+        value: '2019-01-13 08:50',
+        confirmBefore: function (el, date) {
+            console.log(el);
+            console.log(date);return;
+            YDUI.dialog.loading.open('正在预约...');
+            $.ajax({
+                type: 'POST',
+                url: '{:url("user/appointment")}',
+                data: {id: id},
+                success: function (data) {
+                    YDUI.dialog.loading.close();
+                    layer.open({
+                        title: [
+                            '预约完成',
+                            'background-color:#fb5555; color:#fff;'
+                        ]
+                        , anim: 'up'
+                        , content: '已为您预约，可随时至您的预约查看详细信息'
+                        , btn: '确认'
+                        , yes: function (index) {
+                            layer.close(index);
+                        }
+                    });
+                },
+                error: function (xhr, type) {
+                    YDUI.dialog.loading.close();
+                    YDUI.dialog.toast(xhr.responseJSON, 'error', 2000);
+                }
+            });
+        }
+    });
 </script>
 </body>
 </html>
