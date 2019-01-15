@@ -419,3 +419,13 @@ video {
     right: 0;
     display: none;
 }
+
+#loading {
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+#loading img {
+    width: .6rem;
+}

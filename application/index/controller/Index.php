@@ -30,7 +30,7 @@ class Index extends Base
         if (!$row)
             $this->error('您要查看的页面没找到哦!~');
 
-        $row['img']          = Db::name('item_img')->where('item_id', $id)->order('sort desc')->select();
+        $row['img']         = Db::name('item_img')->where('item_id', $id)->order('sort desc')->select();
         $row['is_favorite'] = 0;
         if ($this->user_id) {
             $map                = [
@@ -70,5 +70,12 @@ class Index extends Base
             Db::name('user_behavior')->insert($newRow);
             return json();
         }
+    }
+
+    public function qrcode()
+    {
+        $content = $this->request->get('content');
+
+        return json(['msg' => 'here is qrcode']);
     }
 }

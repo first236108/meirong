@@ -19,16 +19,6 @@
         margin-bottom: 1.3rem;
     }
 
-    #loading {
-        justify-content: center;
-        align-items: center;
-        display: none;
-    }
-
-    #loading img {
-        width: .6rem;
-    }
-
     .m-navbar {
         height: 1.5rem;
         padding: .1rem 0 .2rem;
@@ -176,11 +166,13 @@
         el: '#app'
     });
     var grid = $('#J_ListContent'), init = true;
-    var page = 1, pageSize = 2, beforeScrollTop = 0, timer;
+    var page = 1, pageSize = 2, beforeScrollTop = 0, before_request;
 
     window.addEventListener('scroll', scrollFunc);
 
     function loadMore() {
+        if (before_request) return;
+        before_request = true;
         document.getElementById('loading').style.display = 'flex';
         $.ajax({
             url: '/',
@@ -210,8 +202,10 @@
                 }
                 ++page;
                 document.getElementById('loading').style.display = 'none';
+                before_request = false;
             },
             error: function (xhr, type) {
+                before_request = false;
                 page = false;
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('bottom-line').style.display = 'block';
@@ -226,10 +220,7 @@
         var c = document.documentElement.scrollHeight || document.body.scrollHeight;//可视化的高度与溢出的距离（总高度）
         if (a + b + 80 >= c) {
             if (a > beforeScrollTop) {
-                clearTimeout(timer);
-                timer = setTimeout(function () {
-                    loadMore(a);
-                }, 80);
+                loadMore(a);
             }
         }
         beforeScrollTop = a;

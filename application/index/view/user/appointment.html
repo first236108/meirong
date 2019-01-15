@@ -4,6 +4,7 @@
 <style>
     .m-cell {
         color: #666666;
+        margin-bottom: .15rem;
     }
 
     .cell-item {
@@ -15,10 +16,6 @@
         font-size: .3rem;
         justify-content: space-between;
         padding: .12rem .24rem;
-    }
-
-    .cell-title .t-left {
-
     }
 
     .t-right {
@@ -50,13 +47,8 @@
     }
 
     .cell-foot {
-        padding-right: .24rem;
+        padding: .24rem;
         text-align: right;
-
-    }
-
-    .cell-foot div {
-        padding: .1rem 0 .2rem;
     }
 
     .cell-foot div span {
@@ -76,21 +68,31 @@
         border-radius: .1rem;
     }
 
-    .cell-radio-icon:after {
-        font-size: .6rem !important;
+    .appointment {
+        display: flex;
+        align-items: center;
+        color: #fb5555;
+        font-weight: bold;
     }
 
-    * {
-        touch-action: none;
+    .description {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
     }
 
-    #date1 {
-        position: absolute;
-        height: .9rem;
-        width: 1.8715rem;
-        right: 0;
-        opacity: 0;
-        z-index: 999;
+    .btn-primary {
+        background-color: #28a745;
+        background-image: linear-gradient(-180deg, #34d058, #28a745 90%);
+    }
+
+    .qrcode {
+        width: 100%;
+    }
+
+    .layui-m-layercont {
+        padding: .5rem;
     }
 </style>
 <section class="g-flexview">
@@ -99,10 +101,8 @@
             <i class="back-ico"></i>
         </a>
         <div class="navbar-center">
-            <span class="navbar-title">订单记录</span>
+            <span class="navbar-title">预约消费记录</span>
         </div>
-        <input type="text" id="date1" placeholder="选择日期" readonly>
-        <a class="navbar-item"><i class="icon-time"></i>&nbsp;<span class="theme">预约</span></a>
     </header>
 
     <div class="g-scrollview" id="J_List">
@@ -118,45 +118,41 @@
     <%each list as data%>
     <div class="m-cell">
         <div class="cell-title">
-            <div class="t-left">编号:<%data.order_sn%></div>
-            <div class="t-right"><%data.add_time | dateFormat%></div>
+            <div class="t-right">预约订单生成时间：<%data.add_time | dateFormat%></div>
         </div>
-        <%each data.order_item as item%>
+
         <div class="cell-item">
-            <div class="cell-left" onclick="location.href='/index/index/detail/id/<%item.item_id%>.html'">
-                <img src="<%item.origin_image%>" data-url="<%item.origin_image%>">
+            <div class="cell-left" onclick="location.href='/index/index/detail/id/<%data.item_id%>.html'">
+                <img src="<%data.origin_image%>" data-url="<%data.origin_image%>">
             </div>
             <div class="cell-right item-handle">
-                <label class="cell-right">
+                <div class="cell-right">
                     <div class="info">
-                        <div class="name"><%item.title%></div>
-                        <div>服务次数:<%item.num%></div>
-                        <div>剩余次数:<%item.dec_num%></div>
+                        <div class="name"><%data.title%></div>
+                        <div class="description"><%data.description%></div>
+                        <div class="appointment">
+                            <%if data.confirm_id >0 %>
+                            <span class="badge badge-radius badge-hollow">已消费</span>
+                            <%else%>
+                            <i class="icon-time"></i>&nbsp;
+                            <%data.schedule | dateFormat%>
+                            <%/if%>
+                        </div>
                     </div>
-                    <div class="appointment">
-                        <%if item.dec_num >0 %>
-                        <input type="radio" value="<%item.id%>" name="radio">
-                        <i class="cell-radio-icon"></i>
-                        <%else%>
-                        <span>已消费</span>
-                        <%/if%>
-                    </div>
-                </label>
+                </div>
             </div>
         </div>
-        <%/each%>
-        <div class="cell-foot">
-            <div>应付金额:<span>￥<%data.order_amount%></span></div>
-            <%if data.coupon_amount >0 %>
-            <div>优惠券抵扣:<span>￥<%data.coupon_amount%></span></div>
+
+        <div class="cell-foot" data-cid="<%data.cid%>" data-item-id="<%data.item_id%>" data-qrcode="<%data.qrcode%>">
+            <%if data.confirm_id >0 %>
+            <%if !data.scroe %>
+            <a class="btn btn-primary" onclick="comment()">评价</a>
             <%/if%>
-            <%if data.points_amount >0 %>
-            <div>积分抵扣:<span>￥<%data.points_amount%></span></div>
+            <a class="btn btn-hollow share">分享</a>
+            <%else%>
+            <a class="btn btn-hollow give">赠送他人</a>
+            <a class="btn btn-danger" onclick="qrcode()">消费码</a>
             <%/if%>
-            <%if data.manager_reduce >0 %>
-            <div>掌柜减单:<span>￥<%data.manager_reduce%></span></div>
-            <%/if%>
-            <div>实付金额:<span>￥<%data.pay_amount%></span></div>
         </div>
     </div>
     <%/each%>
@@ -170,7 +166,7 @@
 <script src="/static/plugins/moment/moment.min.js"></script>
 <script src="/static/plugins/rolldate/rolldate.min.js"></script>
 <script src="/static/js/template.js"></script>
-
+<script src="/static/plugins/clipboard/clipboard.min.js"></script>
 <script>
     template.config('openTag', '<%');
     template.config('closeTag', '%>');
@@ -178,67 +174,17 @@
         return moment.unix(time).format('YYYY-MM-DD HH:mm:ss');
     });
 
-    var page = 1, beforeScrollTop = 0, repeat = 0, before_request;
+    var page = 1, beforeScrollTop = 0, before_request;
     loadMore();
 
     document.getElementById('J_List').addEventListener('scroll', scrollFunc);
-
-    new rolldate.Date({
-        el: '#date1',
-        format: 'YYYY-MM-DD hh:mm',
-        beginYear: 2019,
-        endYear: 2019,
-        theme: '#fb5555',
-        minStep: 10,
-        value: moment().format('YYYY-MM-DD ') + parseInt(moment().hour() + 1) + ':00',
-        tapBefore: function (el) {
-            var id = $('input[name="radio"]:checked').val();
-            if (!id) {
-                YDUI.dialog.toast('请选择要预约的项目', 'error', 1500);
-                return false;
-            }
-        },
-        confirmBefore: function (el, date) {
-            if (date < moment().format('YYYY-MM-DD HH:mm')) {
-                YDUI.dialog.alert('预约时间不对哦,请重新选择');
-                return false;
-            }
-            var id = $('input[name="radio"]:checked').val();
-            YDUI.dialog.loading.open('正在预约...');
-            $.ajax({
-                type: 'POST',
-                url: '{:url("user/appointment")}',
-                data: {id: id, repeat: repeat,time:moment(date).valueOf().toString().substr(0,10)},
-                success: function (data) {
-                    repeat++;
-                    YDUI.dialog.loading.close();
-                    layer.open({
-                        title: [
-                            '预约完成',
-                            'background-color:#fb5555; color:#fff;'
-                        ]
-                        , anim: 'up'
-                        , content: '已为您预约，可随时至您的 <a class="badge badge-radius badge-danger" href="{:url(\'/index/user/appointment\')}">预约</a> 查看详细信息'
-                        , btn: '确认'
-                        , yes: function (index) {
-                            layer.close(index);
-                        }
-                    });
-                },
-                error: function (xhr, type) {
-                    YDUI.dialog.loading.close();
-                    YDUI.dialog.toast(xhr.responseJSON, 'error', 2000);
-                }
-            });
-        }
-    });
 
     function loadMore() {
         if (before_request) return;
         before_request = true;
         document.getElementById('loading').style.display = 'flex';
         $.ajax({
-            url: '{:url("user/order")}',
+            url: '{:url("user/ajaxAppointment")}',
             type: 'POST',
             data: {page: page},
             success: function (ret) {
@@ -269,6 +215,42 @@
         }
         beforeScrollTop = a;
     }
+
+    function comment() {
+
+    }
+
+    function qrcode() {
+        var qrcode = event.currentTarget.parentNode.dataset.qrcode;
+        layer.open({
+            content: '<img class="qrcode" src="' + document.location.protocol + '//' + document.domain + '/qrcode?content=' + qrcode + '"><div>' + qrcode + '</div>',
+            style: 'padding:0'
+        });
+    }
+
+    var give = new ClipboardJS('.give', {
+        text: function (trigger) {
+            return trigger.parentNode.dataset.qrcode;
+        }
+    });
+    give.on('success', function (e) {
+        layer.open({
+            content: '已复制消费码,赶快分享给好友,凭码享受服务吧',
+            btn: '朕知道了'
+        });
+    });
+
+    var share = new ClipboardJS('.share', {
+        text: function (trigger) {
+            return document.location.protocol + '//' + document.domain + '/index/index/detail/' + trigger.parentNode.dataset.itemId;
+        }
+    });
+    share.on('success', function (e) {
+        layer.open({
+            content: '已复制链接地址,分享给好友一起美丽!',
+            btn: '朕知道了'
+        });
+    });
 </script>
 </body>
 </html>
