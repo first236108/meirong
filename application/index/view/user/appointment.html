@@ -91,8 +91,32 @@
         width: 100%;
     }
 
+    div.qr {
+        font-size: .5rem;
+        margin-top: .3rem;
+        color: #fb5555;
+        font-weight: bold;
+        text-shadow: 0 0 30px;
+    }
+
     .layui-m-layercont {
         padding: .5rem;
+    }
+
+    #comment_form {
+        padding: .4rem;
+    }
+
+    #comment_form .btm {
+        text-align: center;
+        margin-top:.5rem;
+    }
+
+    #comment_form .btm button {
+        margin: 0 .2rem;
+    }
+    .layui-m-layersection .layui-m-layerchild{
+        border-radius: 5px;
     }
 </style>
 <section class="g-flexview">
@@ -217,13 +241,60 @@
     }
 
     function comment() {
+        var cid = event.currentTarget.parentNode.dataset.cid;
+        $.ajax({
+            type: 'GET',
+            url: '{:url("user/comment")}',
+            data: {cid: cid},
+            success: function (data) {
+                layer.open({
+                    // title: ['评价'],
+                    type: 1,
+                    content: data,
+                    // btn: ['确定', '取消'],
+                    shadeClose: false,
+                    // yes: function (index) {
+                    //     send_comment();
+                    //     layer.close(index);
+                    // }
+                });
+            },
+            error: function (xhr, type) {
+                layer.open({content: xhr.responseJSON, skin: 'msg', time: 2});
+            }
+        });
+
+    }
+
+    function sendComment() {
+        $.ajax({
+            type: 'POST',
+            url: '{:url("user/comment")}',
+            data: $('#comment_form').serialize(),
+            success: function (data) {
+                layer.open({
+                    type: 1,
+                    shadeClose: false,
+                    end: function () {
+                        layer.closeAll();
+                    }
+                });
+            },
+            error: function (xhr, type) {
+                layer.open({
+                    content: xhr.responseJSON, skin: 'msg', time: 2, end: function (idx) {
+                        layer.close(idx);
+                    }
+                });
+            }
+        });
 
     }
 
     function qrcode() {
         var qrcode = event.currentTarget.parentNode.dataset.qrcode;
         layer.open({
-            content: '<img class="qrcode" src="' + document.location.protocol + '//' + document.domain + '/qrcode?content=' + qrcode + '"><div>' + qrcode + '</div>',
+            content: '<img class="qrcode" src="' + document.location.protocol + '//' + document.domain + '/qrcode?content=' + qrcode + '"><div class="qr">' + qrcode + '</div>',
             style: 'padding:0'
         });
     }
@@ -242,7 +313,7 @@
 
     var share = new ClipboardJS('.share', {
         text: function (trigger) {
-            return document.location.protocol + '//' + document.domain + '/index/index/detail/' + trigger.parentNode.dataset.itemId;
+            return document.location.protocol + '//' + document.domain + '/index/index/detail/id/' + trigger.parentNode.dataset.itemId;
         }
     });
     share.on('success', function (e) {

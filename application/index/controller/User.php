@@ -238,4 +238,25 @@ class User extends Base
         if ($consume) return json($consume);
         return json($consume, 403);
     }
+
+    public function comment()
+    {
+        if ($this->request->isGet()) {
+            $cid = $this->request->get('cid');
+            $this->assign('cid', $cid);
+            return $this->fetch();
+        }
+        $data   = input('post.');
+        $result = $this->validate($data, [
+            'cid'   => 'require',
+            'scroe' => 'require|between:1,5'
+        ], [
+            'cid'   => '参数错误',
+            'scroe' => '请正确打分'
+        ]);
+        if (true !== $result) return json($result, 403);
+        $flag = Db::name('consumption')->update($data);
+        if ($flag) return json();
+        else return json('评价失败,请稍后再试', 404);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace app\index\controller;
 
+use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
 use think\Db;
 
 class Index extends Base
@@ -74,8 +75,10 @@ class Index extends Base
 
     public function qrcode()
     {
-        $content = $this->request->get('content');
+        $content = $this->request->get('content', request()->host());
+        $qrcode  = new BaconQrCodeGenerator;
+        $s       = $qrcode->format('png')->size(600)->backgroundColor(240, 255, 255)->margin(2)->merge('static/image/logo_2.png')->encoding('UTF-8')->generate($content);
 
-        return json(['msg' => 'here is qrcode']);
+        return response($s)->contentType('image/png');
     }
 }
