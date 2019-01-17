@@ -28,7 +28,9 @@ class Base extends Controller
         $needLogin  = [
             'index'   => ['favorite'],
             'article' => [],
-            'user'    => ['message', 'userinfo', 'modifypwd', 'order', 'appointment','ajaxappointment'],
+            'user'    => ['message', 'userinfo', 'modifypwd', 'order', 'appointment', 'ajaxappointment',
+                'comment', 'wallet', 'coupon', 'photoshow', 'favorite'
+            ]
         ];
         $controller = strtolower(request()->controller());
         $action     = strtolower(request()->action());

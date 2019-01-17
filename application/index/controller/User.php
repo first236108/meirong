@@ -18,7 +18,7 @@ class User extends Base
     {
         $site_info = Db::name('config')->where("type='site_info'")->cache(true, 86400)->column('value', 'name');
         if ($this->user_id) {
-            $favorite = Db::name('user_behavior')->where(['user_id' => $this->user_id, 'type' => 2])->count();
+            $favorite = Db::name('user_behavior')->where(['user_id' => $this->user_id, 'type' => 2, 'is_delete' => 0])->count();
             $user     = $this->user;
         } else {
             $favorite         = null;
@@ -27,10 +27,7 @@ class User extends Base
             $user['phone']    = '158****8888';
         }
 
-        $this->assign('user', $user);
-        $this->assign('site', $site_info);
-        $this->assign('favorite', $favorite);
-        return view();
+        return $this->fetch('', ['user' => $user, 'site' => $site_info, 'favorite' => $favorite]);
     }
 
     public function login()
@@ -96,7 +93,7 @@ class User extends Base
 
     public function message()
     {
-        //todo
+        return '用户消息列表，待开发';
     }
 
     public function userInfo()
@@ -256,7 +253,40 @@ class User extends Base
         ]);
         if (true !== $result) return json($result, 403);
         $flag = Db::name('consumption')->update($data);
-        if ($flag) return json();
-        else return json('评价失败,请稍后再试', 404);
+        if (!$flag) return json('评价失败,请稍后再试', 404);
+        $item_id = Db::name('consumption a')
+            ->join('order_item b', 'a.item_id=b.id')
+            ->where('a.cid', $data['cid'])
+            ->value('b.item_id');
+        user_log('comment', $this->user_id, $item_id);
+        return json();
+    }
+
+    public function wallet()
+    {
+        return $this->fetch();
+    }
+
+    public function coupon()
+    {
+        return $this->fetch();
+    }
+
+    public function photoShow()
+    {
+        return $this->fetch();
+    }
+
+    public function favorite()
+    {
+        if ($this->request->isGet()) {
+            $list = Db::name('user_behavior a')
+                ->join('item b', 'a.link_id=b.item_id')
+                ->where(['a.user_id' => $this->user_id, 'a.type' => 2, 'a.is_delete' => 0])
+                ->field('a.*,b.title,b.price,b.origin_image')
+                ->order('a.bid desc')
+                ->select();
+            return $this->fetch('', ['list' => $list]);
+        }
     }
 }

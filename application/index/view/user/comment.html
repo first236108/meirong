@@ -1,14 +1,18 @@
 <form class="" id="comment_form">
     <input type="hidden" name="cid" value="{$cid}">
     <div class="score">
-        
+        <label class="active"><i class="fa fa-sun-o"></i> <input type="radio" name="scroe" value="5" checked>好评</label>
+        <label><i class="fa fa-cloud-download"></i> <input type="radio" name="scroe" value="3">中评</label>
+        <label><i class="fa fa-snowflake-o"></i> <input type="radio" name="scroe" value="1">差评</label>
     </div>
-    <div class="m-celltitle">评价</div>
     <div class="">
-        <textarea class="cell-textarea" placeholder="请输入您的银行卡卡号和密码"></textarea>
+        <textarea name="msg" class="cell-textarea" placeholder="留下您的体验和建议吧，让我们更好为您服务"></textarea>
     </div>
     <div class="btm">
         <button class="btn btn-hollow" type="button" onclick="layer.closeAll()">取消</button>
         <button class="btn btn-danger" type="button" onclick="sendComment()">确定</button>
     </div>
 </form>
+<script>
+
+</script>

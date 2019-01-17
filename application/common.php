@@ -223,14 +223,14 @@ function write_order_log($order_id, $operater, $msg)
 function user_log($type, $user_id = 0, $link_id = 0, $session_id = '')
 {
 
-    $data = [
+    $data      = [
         'user_id'  => $user_id,
         'type'     => behaviorType($type),
         'link_id'  => $link_id,
         'add_time' => time()
     ];
-
-    if ($data['type'] == 1) {
+    $item_type = [1, 2, 3, 12];
+    if (in_array($data['type'], $item_type)) {
         $item_info       = Db::name('item')->where('item_id', $link_id)->field('cate_id,cate_id2')->cache(true, 864000)->find();
         $data['cat_id1'] = $item_info['cate_id'];
         $data['cat_id2'] = $item_info['cate_id2'];
@@ -263,6 +263,7 @@ function behaviorType($key, $value = null, $get_comment = false)
         'share'       => 9,//分享--表名share
         'activity'    => 10,//参加活动--表名activity
         'check_in'    => 11,//到店打卡
+        'comment'     => 12,//评价服务
     ];
     if (!is_null($value))
         return array_flip($type)[$value];
@@ -280,6 +281,7 @@ function behaviorType($key, $value = null, $get_comment = false)
             9  => '分享',
             10 => '参加活动',
             11 => '到店打卡',
+            12 => '评价服务'
         ];
     return $type[$key];
 }
@@ -358,6 +360,7 @@ function create_token($source)
     return $str;
 }
 
-function checkMobile($phone){
-    return preg_match('/(^1[3|4|5|6|7|8][0-9]{9}$)/',$phone);
+function checkMobile($phone)
+{
+    return preg_match('/(^1[3|4|5|6|7|8][0-9]{9}$)/', $phone);
 }

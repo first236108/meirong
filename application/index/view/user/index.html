@@ -1,10 +1,12 @@
 {include file="public/header" /}
 <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
 <style>
-    .order {
-        margin-bottom: .35rem;
+    .order, .m-cell {
+        margin-bottom: .2rem;
     }
-
+    .m-cell:last-of-type{
+        margin-bottom:1.5rem;
+    }
     .order .fa {
         color: #fb5555;
         font-size: .65rem !important;
@@ -23,22 +25,26 @@
         font-size: .3rem;
         margin-top: .1rem;
     }
-    .layui-m-layercont{
+
+    .layui-m-layercont {
         padding: .5rem .2rem;
     }
-    .layui-m-layercont h1{
+
+    .layui-m-layercont h1 {
         width: 50%;
         display: inline-block;
         border-bottom: 1px solid #999;
-        margin-bottom:.2rem;
+        margin-bottom: .2rem;
     }
-    .layui-m-layercont h2{
-        margin-bottom:.2rem;
-        font-weight:normal;
+
+    .layui-m-layercont h2 {
+        margin-bottom: .2rem;
+        font-weight: normal;
     }
-    .layui-m-layercont p{
-        font-size:.3rem;
-        color:#666666;
+
+    .layui-m-layercont p {
+        font-size: .3rem;
+        color: #666666;
     }
 </style>
 <div class="u-header">
@@ -78,17 +84,21 @@
     </a>
 </div>
 <div class="m-cell">
-    <a class="cell-item" href="javascript:;">
-        <div class="cell-left"><i class="fa fa-cny"></i>&nbsp;&nbsp;历史账单</div>
+    <a class="cell-item" href="{:url('user/wallet')}">
+        <div class="cell-left"><i class="fa fa-cny"></i>&nbsp;&nbsp;我的钱包</div>
+        <div class="cell-right cell-arrow">余额 积分</div>
+    </a>
+    <a class="cell-item" href="{:url('user/coupon')}">
+        <div class="cell-left"><i class="fa fa-credit-card"></i>&nbsp;&nbsp;优惠券</div>
         <div class="cell-right cell-arrow"></div>
     </a>
-    <a class="cell-item" href="javascript:;">
-        <div class="cell-left"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;服务评分</div>
-        <div class="cell-right cell-arrow"></div>
+    <a class="cell-item" href="{:url('user/photoShow')}">
+        <div class="cell-left"><i class="fa fa-check-square-o"></i>&nbsp;&nbsp;美拍秀</div>
+        <div class="cell-right cell-arrow">美丽照片 | 玩家秀</div>
     </a>
-    <a class="cell-item" href="javascript:;">
+    <a class="cell-item" href="{:url('user/favorite')}">
         <div class="cell-left"><i class="fa fa-heart"></i>&nbsp;&nbsp;我的收藏</div>
-        <div class="cell-right">{if condition="$favorite"}<span class="badge badge-warning">{$favorite}</span>{/if}</div>
+        <div class="cell-right">{if condition="$favorite"}<span class="badge badge-primary">{$favorite}</span>{/if}</div>
     </a>
 </div>
 
@@ -106,7 +116,7 @@
         <div class="cell-right cell-arrow">删除缓存文件,节约空间</div>
     </a>
     <a class="cell-item" onclick="logout()">
-        <div class="cell-left"><i class="fa fa-power-off"></i>&nbsp;&nbsp;退出登录</div>
+        <div class="cell-left"><i class="fa fa-power-off"></i>&nbsp;&nbsp;安全退出</div>
         <div class="cell-right cell-arrow">更换账号 | 重新登录</div>
     </a>
 </div>
@@ -114,26 +124,36 @@
 {include file="public/footer" /}
 <script>
     function logout() {
-        $.ajax({
-            type: 'POST',
-            url: '{:url("user/logout")}',
-            success: function (data) {
-                YDUI.dialog.toast('已退出登錄', 'success', 1000, function () {
-                    location.href = '{:url("user/login")}';
+        layer.open({
+            content: '确认要退出登录状态吗？'
+            , btn: ['退出', '不要']
+            , yes: function (index) {
+                $.ajax({
+                    type: 'POST',
+                    url: '{:url("user/logout")}',
+                    success: function (data) {
+                        layer.close(index);
+                        YDUI.dialog.toast('已退出登錄', 'success', 1000, function () {
+                            location.href = '{:url("user/login")}';
+                        });
+                    },
+                    error: function (xhr, type) {
+                        YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
+                    }
                 });
-            },
-            error: function (xhr, type) {
-                YDUI.dialog.toast(xhr.responseJSON, 'error', 1500);
             }
         });
+
     }
 
     function clearcache() {
         YDUI.dialog.loading.open('清除中');
+        var time = Math.floor(Math.random() * 10 + 1) * 75;
+        localStorage.clear();
         setTimeout(function () {
             YDUI.dialog.loading.close();
             YDUI.dialog.toast('清除完畢', 'success', 1500);
-        }, 700);
+        }, time);
     }
 
     function checkversion() {

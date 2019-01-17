@@ -1,0 +1,34 @@
+{include file="public/header" /}
+<style>
+    .empty {
+        text-align: center;
+    }
+
+    .empty img {
+        max-width: 90%;
+        margin: 0 auto;
+    }
+
+    .empty div {
+        font-size: .5rem;
+        color: #999;
+    }
+</style>
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a href="{:url('user/index')}" class="navbar-item">
+            <i class="back-ico"></i>
+        </a>
+        <div class="navbar-center">
+            <span class="navbar-title">我的优惠券</span>
+        </div>
+    </header>
+
+    <div class="empty">
+        <img src="/static/image/empty.png">
+        <div>您还没有优惠券哦</div>
+    </div>
+</section>
+
+</body>
+</html>

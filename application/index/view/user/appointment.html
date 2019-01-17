@@ -109,14 +109,47 @@
 
     #comment_form .btm {
         text-align: center;
-        margin-top:.5rem;
+        margin-top: .5rem;
     }
 
     #comment_form .btm button {
         margin: 0 .2rem;
     }
-    .layui-m-layersection .layui-m-layerchild{
+
+    .layui-m-layersection .layui-m-layerchild {
         border-radius: 5px;
+    }
+
+    .score {
+        width: 5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: .3rem;
+        border-bottom: #ccc 1px solid;
+    }
+
+    .score label {
+        margin: 0 .1rem;
+        border-radius: .2rem;
+        padding: .05rem .15rem;
+        border: 1px solid #ccc;
+        font-size: .2rem;
+    }
+
+    .score label i {
+        font-size: .35rem;
+    }
+
+    .active {
+        background-color: #ff0036;
+        border: none;
+        color: #fff;
+        box-shadow: 0 0 10px #ff0036;
+    }
+
+    .score input[type='radio']:checked {
+        color: #ff0036;
     }
 </style>
 <section class="g-flexview">
@@ -183,7 +216,6 @@
 </script>
 
 <script src="/static/js/jquery-3.1.1.min.js"></script>
-<script src="/static/js/ydui.flexible.js"></script>
 <script src="/static/js/ydui.js"></script>
 <script src="/static/js/bootstrap.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
@@ -248,15 +280,14 @@
             data: {cid: cid},
             success: function (data) {
                 layer.open({
-                    // title: ['评价'],
                     type: 1,
                     content: data,
-                    // btn: ['确定', '取消'],
                     shadeClose: false,
-                    // yes: function (index) {
-                    //     send_comment();
-                    //     layer.close(index);
-                    // }
+                    success: function (elem) {
+                        $(elem).find('input[type="radio"]').click(function (e) {
+                            $(e.target).parent().addClass('active').siblings().removeClass('active');
+                        });
+                    }
                 });
             },
             error: function (xhr, type) {
@@ -274,8 +305,12 @@
             success: function (data) {
                 layer.open({
                     type: 1,
-                    shadeClose: false,
+                    content: '评价完成',
+                    skin: 'msg',
+                    time: 1.5,
                     end: function () {
+                        var cid = $('input[name="cid"]').val();
+                        $('.cell-foot[data-cid=' + cid + ']').find('.btn-primary').remove();
                         layer.closeAll();
                     }
                 });

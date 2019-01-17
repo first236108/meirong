@@ -113,14 +113,14 @@ class Member extends Base
         if ($this->request->isGet()) {
             $order_id = input('order_id', 0);
             $this->assign('order_id', $order_id);
-            $user_id  = input('user_id', 0);
+            $user_id = input('user_id', 0);
             $this->assign('user_id', $user_id);
             return view();
         }
 
         $type       = input('type', false);
         $user_id    = input('user_id', 0);
-        $order_id    = input('order_id', 0);
+        $order_id   = input('order_id', 0);
         $is_valid   = input('status', 1);
         $start_time = input('start_time', 0);
         $end_time   = input('end_time', 0);
@@ -558,11 +558,11 @@ class Member extends Base
     public function behavior_detail()
     {
         $bid      = input('bid/d', 0);
-        $behavior = Db::name('user_behavior')->cache(true)->where('bid', $bid)->find();
+        $behavior = Db::name('user_behavior')->where('bid', $bid)->find();
         if (!$behavior)
             $this->error('参数错误');
 
-        $item    = [1, 2, 3];//商品
+        $item    = [1, 2, 3, 12];//商品
         $consume = [6, 7, 8];//预约消费
 
         $this->assign('behavior', $behavior);
@@ -570,8 +570,8 @@ class Member extends Base
         switch ($behavior['type']) {
             case in_array($behavior['type'], $item):
                 $table    = 'item';
-                $info     = Db::name($table)->cache(true, 864000)->where('item_id', $behavior['link_id'])->find();
-                $category = Db::name('item_cate')->cache(true)->where('cate_id', 'IN', [$behavior['cat_id1'], $behavior['cat_id2']])->column('name', 'cate_id');
+                $info     = Db::name($table)->where('item_id', $behavior['link_id'])->find();
+                $category = Db::name('item_cate')->where('cate_id', 'IN', [$behavior['cat_id1'], $behavior['cat_id2']])->column('name', 'cate_id');
                 $this->assign('item', $info);
                 $this->assign('category', $category);
                 return view('behavior_item');

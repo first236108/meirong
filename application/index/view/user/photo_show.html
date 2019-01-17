@@ -1,0 +1,67 @@
+{include file="public/header" /}
+<style>
+    .camera {
+        text-align: center;
+        position: relative;
+    }
+
+    .camera img {
+        max-width: 50%;
+        box-shadow: 0 0 20px #00f3ff;
+        margin: .5rem auto;
+        border-radius: .3rem;
+    }
+
+    .camera div {
+        font-size: .5rem;
+        color: #999;
+    }
+
+    #file {
+        position: absolute;
+        top: .5rem;
+        left: 25%;
+        height: 3.75rem;
+        width: 3.75rem;
+        opacity: 0;
+        z-index: 99;
+    }
+</style>
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a href="{:url('user/index')}" class="navbar-item">
+            <i class="back-ico"></i>
+        </a>
+        <div class="navbar-center">
+            <span class="navbar-title">玩家美拍秀</span>
+        </div>
+    </header>
+
+    <div class="camera">
+        <img src="/static/image/xiangji.png">
+        <input type="file" id="file" onchange="show()">
+        <div>发布一张美拍吧</div>
+    </div>
+
+    <div class="photo">
+
+    </div>
+</section>
+
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script>
+    function show() {
+        layer.open({
+            content: '功能待完善',
+            skin: 'msg',
+            time: 2
+        });
+    }
+</script>
+</body>
+</html>

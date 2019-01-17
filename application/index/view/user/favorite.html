@@ -1,0 +1,17 @@
+{include file="public/header" /}
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a href="{:url('user/index')}" class="navbar-item">
+            <i class="back-ico"></i>
+        </a>
+        <div class="navbar-center">
+            <span class="navbar-title">收藏记录</span>
+        </div>
+    </header>
+    {volist name="list" id="vo"}
+        {$vo.title}
+    {/volist}
+</section>
+
+</body>
+</html>
