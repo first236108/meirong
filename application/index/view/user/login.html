@@ -39,13 +39,13 @@
         <p>Login in. To enjoy beautiful life.</p>
         <form class="m-t" role="form" id="form">
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="手机号码" name="phone">
+                <input type="text" class="form-control" placeholder="手机号码" value="13007686112" name="phone">
             </div>
             <div class="form-group">
-                <input type="password" class="form-control" placeholder="密码" name="password" onkeydown="check()">
+                <input type="password" class="form-control" placeholder="密码" value="123456" name="password" onkeydown="check()">
             </div>
             <button type="button" class="btn btn-danger block full-width m-b" onclick="login()">Login</button>
-            <a class="btn btn-warning btn-block m-b" href="{:url('/user/reg')}">注册账号</a>
+            <a class="btn btn-warning btn-block m-b" href="{:url('index/user/reg')}">注册账号</a>
             <a href="#">
                 <small>忘记密码?</small>
             </a>

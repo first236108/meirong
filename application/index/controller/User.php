@@ -88,7 +88,11 @@ class User extends Base
 
     public function reg()
     {
-        return $this->fetch();
+        if ($this->request->isGet()) {
+            $site_info = Db::name('config')->where("type='site_info'")->cache(true, 86400)->column('value', 'name');
+            return $this->fetch('', ['site' => $site_info]);
+        }
+        dump(input('post.'));
     }
 
     public function message()
