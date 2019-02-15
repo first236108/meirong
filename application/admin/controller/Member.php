@@ -527,7 +527,8 @@ class Member extends Base
             $map      .= 'user_id=(' . $subQuery . ')';
         }
         try {
-            $info    = Db::name('user_behavior')->where($map)->order('bid desc')->select();
+            $info = Db::name('user_behavior')->where($map)->order('bid desc')->select();
+            if (!$info) return json(['user' => [], 'graph_data' => [], 'info' => [], 'type' => []]);//无数据直接返回空
             $user_id = $user_id ? $user_id : $info[0]['user_id'];
             $user    = $this->getUserInfo($user_id)->toArray();
         } catch (Exception $e) {
@@ -646,11 +647,31 @@ class Member extends Base
 
     public function advisory()
     {
-        $list = Db::name('advisory a')
-            ->join('users b', 'a.user_id=b.user_id')
-            ->field('a.*,IFNULL(b.name,b.nickname) AS name,b.avatar,b.sex')
-            ->where('a.status', 0)->select();
-        $this->assign('list', $list);
-        return view();
+        if ($this->request->isPost()) {
+            $page  = input('post.page', 1);
+            $id    = input('post.id/d', 0);
+            $order = 'status ASC,add_time DESC';
+            if ($id) {
+                $order = "locate(a.id,'$id') DESC ," . $order;
+            }
+            //dump($order);die;
+            $list = Db::name('advisory a')
+                ->join('users b', 'a.user_id=b.user_id')
+                ->field('a.*,IFNULL(b.name,b.nickname) AS name,b.avatar,b.sex,b.phone')
+                ->orderRaw($order)
+                ->page($page, 10)
+                ->select();
+
+            return json($list);
+        }
+
+        if ($this->request->isAjax()) {
+            $id = input('id', 0);
+            if (!$id) return json('参数错误');
+            Db::name('advisory')->where('id', $id)->update(['status' => 1]);
+            return json();
+        }
+        return $this->fetch();
+
     }
 }

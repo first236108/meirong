@@ -24,11 +24,43 @@
         </div>
     </header>
 
-    <div class="empty">
-        <img src="/static/image/empty.png">
-        <div>您还没有优惠券哦</div>
+    <div class="g-scrollview" id="app">
+        <div v-if="list.length">
+
+        </div>
+        <div class="empty" v-else>
+            <img src="/static/image/empty.png">
+            <div>您还没有优惠券哦</div>
+        </div>
     </div>
 </section>
 
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            list: []
+        },
+        methods: {},
+        created: function () {
+            var _this = this;
+            $.ajax({
+                type: 'POST',
+                url: "{:url('user/coupon')}",
+                success: function (data) {
+                    _this.list = data;
+                },
+                error: function (xhr, type) {
+                    layer.open({content: xhr.responseJSON, skin: 'msg', time: 1.5});
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

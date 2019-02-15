@@ -64,13 +64,7 @@
 <script src="/static/plugins/masonary/masonry.pkgd.min.js"></script>
 <script src="/static/js/vue.min.js"></script>
 <script>
-    $(function () {
-        $('.grid').masonry({
-            itemSelector: '.grid-item',
-            columnWidth: 300,
-            gutter: 25
-        });
-    });
+    var init = true, grid;
     var vm = new Vue({
         el: '#wrapper',
         data: {
@@ -91,6 +85,20 @@
                 initial(type);
                 $(event.target).removeClass('btn-default').addClass('btn-success active').siblings().removeClass('btn-success active').addClass('btn-default');
             }
+        },
+        updated: function () {
+            setTimeout(function () {
+                if (init) {
+                    grid = $("#box1").masonry({
+                        itemSelector: '.grid-item',
+                        columnWidth: 300,
+                        gutter: 25
+                    });
+                    init = false;
+                } else {
+                    grid.masonry('reloadItems').masonry('layout');
+                }
+            }, 100);
         }
     });
 

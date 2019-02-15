@@ -266,13 +266,28 @@ class User extends Base
         return json();
     }
 
+    /**
+     * 我的钱包 积分、余额
+     * @return mixed
+     */
     public function wallet()
     {
         return $this->fetch();
     }
 
+    /**
+     * 我的优惠券
+     * @return mixed|\think\response\Json
+     */
     public function coupon()
     {
+        if ($this->request->isPost()) {
+            $map  = ['user_id' => $this->user_id, 'a.is_delete' => 0, 'b.is_delete' => 0, 'b.status' => 1];
+            $list = Db::name('coupon_list a')->join('coupon b', 'a.cid=b.id')->where($map)
+                ->field('a.id,a.cid,a.type,a.use_time,a.code,b.name,b.money,b.condition,b.use_start_time,b.use_end_time')
+                ->order('a.use_time asc,a.id desc')->select();
+            return json($list);
+        }
         return $this->fetch();
     }
 
@@ -287,10 +302,33 @@ class User extends Base
             $list = Db::name('user_behavior a')
                 ->join('item b', 'a.link_id=b.item_id')
                 ->where(['a.user_id' => $this->user_id, 'a.type' => 2, 'a.is_delete' => 0])
-                ->field('a.*,b.title,b.price,b.origin_image')
+                ->field('a.*,b.title,b.price,b.origin_image,b.market_price')
                 ->order('a.bid desc')
                 ->select();
             return $this->fetch('', ['list' => $list]);
         }
+    }
+
+    public function advisory()
+    {
+        if ($this->request->isPost()) {
+            $data['content'] = input('post.content', '');
+            if (!$data['content']) return json('请输入咨询建议内容', 403);
+            $data['status']   = 0;
+            $data['user_id']  = $this->user_id;
+            $data['add_time'] = time();
+            Db::name('advisory')->insert($data);
+            return json();
+        }
+        if ($this->request->isAjax()) {
+            $list = Db::name('advisory a')
+                ->join('users b', 'a.user_id=b.user_id')
+                ->where('a.user_id', $this->user_id)
+                ->field('a.*,IFNULL(b.name,b.nickname) AS name,b.sex,b.phone')
+                ->order('add_time desc')
+                ->select();
+            return json($list);
+        }
+        return $this->fetch();
     }
 }

@@ -1,0 +1,102 @@
+{include file="public/header" /}
+<div class="wrapper wrapper-content animated fadeInRight ecommerce tooltip-demo" style="padding-top:10px">
+
+    <div class="row">
+        <div class="col-lg-12 ibox-content table-responsive" id="app">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th class="text-left">状态</th>
+                    <th class="text-left">会员</th>
+                    <th class="text-left">手机号</th>
+                    <th class="text-left">时间</th>
+                    <th class="text-left">内容</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(vo,index) in list" :class="{lineheight:index==0 && start>0}">
+                    <td>
+                        <span class="label label-primary pointer" v-if="vo.status"><i class="fa fa-check"></i> 已处理</span>
+                        <span class="label label-danger pointer" v-else @click="handle(index)"><i class="fa fa-check"></i> 待回复</span>
+                    </td>
+                    <td><a :href="'/admin/member/index/user_id/'+vo.user_id">{{vo.name}}</a></td>
+                    <td>{{vo.phone}}</td>
+                    <td>{{moment.unix(vo.add_time).format('YYYY-MM-DD HH:mm:ss')}}</td>
+                    <td><p class="small" v-html="vo.content"></p></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="text-center" v-if="p">
+                <button class="btn btn-primary" @click="init()">查看更多...</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="/static/js/vue.min.js"></script>
+
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/dataTables/datatables.min.js"></script>
+
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            p: 1,
+            start: -1
+        },
+        methods: {
+            init: function (instance) {
+                var _this = instance ? instance : vm;
+                if (!_this.p) return false;
+                var param = {page: _this.p};
+                if (_this.start > 0) {
+                    param.id = location.pathname.substring(_this.start + 3, location.pathname.indexOf('.html'));
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '{url("/member/advisory")}',
+                    data: param,
+                    success: function (data) {
+                        _this.p++;
+                        if (data.length) {
+                            _this.list = _this.list.concat(data);
+                        } else {
+                            _this.p = false;
+                            layer.open({
+                                content: '没有更多内容了',
+                                skin: 'msg',
+                                time: 2
+                            });
+                        }
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseText);
+                    }
+                });
+            },
+            handle: function (index) {
+                var id = vm.list[index].id;
+                $.ajax({
+                    type: 'GET',
+                    url: '{:url("member/advisory")}',
+                    data: {id: id},
+                    success: function (data) {
+                        vm.list[index].status = 1;
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseText);
+                    }
+                });
+            }
+        },
+        created: function () {
+            this.start = location.pathname.indexOf('id/');
+            this.init(this);
+        }
+    });
+</script>
+{include file="public/footer" /}

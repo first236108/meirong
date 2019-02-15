@@ -29,7 +29,7 @@ class Base extends Controller
             'index'   => ['favorite'],
             'article' => [],
             'user'    => ['message', 'userinfo', 'modifypwd', 'order', 'appointment', 'ajaxappointment',
-                'comment', 'wallet', 'coupon', 'photoshow', 'favorite'
+                'comment', 'wallet', 'coupon', 'photoshow', 'favorite', 'advisory'
             ]
         ];
         $controller = strtolower(request()->controller());

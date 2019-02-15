@@ -429,3 +429,13 @@ video {
 #loading img {
     width: .6rem;
 }
+#m-list .list-item{
+    align-items: center;
+}
+#m-list .list-item .list-img{
+    display: flex;
+    align-items: center;
+}
+#m-list .list-item .list-img img{
+    margin-top:0;
+}

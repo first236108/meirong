@@ -1,0 +1,133 @@
+{include file="public/header" /}
+<style>
+    footer div {
+        padding: 0 .2rem;
+    }
+
+    footer button.btn-block {
+        margin: 0;
+        height: .6rem;
+        line-height: .6rem;
+    }
+
+    .item {
+        background-color: #fff;
+        padding: .2rem;
+        font-size: .25rem;
+        border-radius: .2rem .2rem 0 .2rem;
+        margin: .1rem;
+    }
+
+    .item .foot {
+        display: flex;
+        color: #999;
+        margin-top: .2rem;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    #msgbox {
+        padding: .2rem;
+    }
+
+    #msgbox textarea {
+        width: 5rem;
+        height: 2rem;
+        border-radius: .1rem;
+        padding: .1rem;
+    }
+
+    #msgbox button {
+        margin-top: .2rem;
+        height: .6rem;
+        line-height: .6rem;
+    }
+</style>
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a href="{:url('user/index')}" class="navbar-item">
+            <i class="back-ico"></i>
+        </a>
+        <div class="navbar-center">
+            <span class="navbar-title">您的咨询建议</span>
+        </div>
+    </header>
+
+    <div class="g-scrollview" id="app">
+
+        <div class="item" v-for="(vo,index) in list">
+            <div class="content">{{vo.content}}</div>
+            <div class="foot">
+                <span class="badge badge-radius badge-primary" v-if="vo.status">已回复</span>
+                <span class="badge badge-radius badge-danger" v-else>待确认</span>
+                <span>{{moment.unix(vo.add_time).format('YYYY-MM-DD HH:mm:ss')}}</span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="m-tabbar">
+        <div class="tabbar-item tabbar-active">
+            <button class="btn-block btn-danger btn-s" onclick="message();">留言咨询</button>
+        </div>
+    </footer>
+</section>
+
+
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            list: []
+        },
+        methods: {},
+        created: function () {
+            var _this = this;
+            $.ajax({
+                type: 'GET',
+                url: "{:url('user/advisory')}",
+                success: function (data) {
+                    _this.list = data;
+                },
+                error: function (xhr, type) {
+                    layer.open({content: xhr.responseText, skin: 'msg', time: 2});
+                }
+            });
+        }
+    });
+
+    function message() {
+        layer.open({
+            type: 1
+            , content: '<div id="msgbox"><textarea id="adv" placeholder="请提出您的疑问，或留下您的宝贵意见"></textarea><button class="btn-block btn-danger" onclick="checkAdvisory()">提交</button></div>'
+            , anim: 'up'
+        });
+    }
+
+    function checkAdvisory() {
+        var val = $('#adv').val();
+        if (val) {
+            $.ajax({
+                type: 'POST',
+                url: "{:url('user/advisory')}",
+                data: {content: val},
+                success: function (data) {
+                    layer.closeAll();
+                    location.reload();
+                },
+                error: function (xhr, type) {
+                    layer.open({content: xhr.responseJSON, skin: 'msg', time: 1.5});
+                }
+            });
+        } else {
+            layer.open({content: '请输入咨询建议内容', skin: 'msg', time: 2});
+        }
+    }
+</script>
+</body>
+</html>

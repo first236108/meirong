@@ -103,6 +103,10 @@
 </div>
 
 <div class="m-cell">
+    <a class="cell-item" href="{:url('index/user/advisory')}">
+        <div class="cell-left"><i class="fa fa-comment"></i>&nbsp;&nbsp;咨询建议</div>
+        <div class="cell-right cell-arrow"></div>
+    </a>
     <a class="cell-item" href="tel:{$site.service_phone}">
         <div class="cell-left"><i class="fa fa-phone"></i>&nbsp;&nbsp;联系客服</div>
         <div class="cell-right">{$site.service_phone}</div>
@@ -143,7 +147,6 @@
                 });
             }
         });
-
     }
 
     function clearcache() {
