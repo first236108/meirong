@@ -54,8 +54,9 @@
 
 <div class="swiper-container">
     <div class="swiper-wrapper">
-        <div class="swiper-slide"><img src="http://image.igccc.com/20190651012922"></div>
-        <div class="swiper-slide"><img src="http://image.igccc.com/20190651072565"></div>
+        {volist name="carousel" id="vc"}
+        <div class="swiper-slide"><a href="{$vc.link}"></a><img src="{$vc.img}"></div>
+        {/volist}
     </div>
     <div class="swiper-pagination"></div>
 </div>
@@ -154,13 +155,14 @@
         pagination: {
             el: '.swiper-pagination',
             type: 'fraction'//fraction
+        },
+        on: {
+            click: function () {
+                location.href = this.slides[this.activeIndex].firstElementChild.href;
+            }
         }
     });
-    $('#J_Slider').slider({
-        speed: 400,
-        autoplay: 4500,
-        lazyLoad: true
-    });
+
     loadMore();
     var vm = new Vue({
         el: '#app'

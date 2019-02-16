@@ -56,9 +56,13 @@ function changeTableVal(table, id_name, id_value, field, event, text) {
 }
 
 // 修改指定表的指定字段值 input
-function changeTableVal2(table, id_name, id_value, field, obj) {
-    val = $.trim($(obj).val());
-    if (!val) return false;
+function changeTableVal2(table, id_name, id_value, field, obj, value, callback) {
+    if (value) {
+        val = value;
+    } else {
+        val = $.trim($(obj).val());
+        if (!val) return false;
+    }
     $.ajax({
         url: "/admin/index/changeTableVal.html",
         data: {
@@ -70,10 +74,14 @@ function changeTableVal2(table, id_name, id_value, field, obj) {
         },
         type: 'POST',
         success: function (data) {
-            if (data)
-                toastr.success('更新成功');
-            else
-                toastr.warning('修改失败...');
+            if (typeof callback == 'function') {
+                callback(data);
+            } else {
+                if (data)
+                    toastr.success('更新成功');
+                else
+                    toastr.warning('修改失败...');
+            }
         },
         error: function (e) {
             toastr.error('网络错误，请稍后再试 !');
@@ -163,8 +171,8 @@ function dateparse(timestamp, getDate, getTime) {
  * @param obj
  * @returns {Array}
  */
-function objToArray(obj){
-    var result=[];
+function objToArray(obj) {
+    var result = [];
     for (var i in obj) {
         result.push(obj[i]);
     }
@@ -175,18 +183,18 @@ function objToArray(obj){
  * 生成随机文件名
  * @returns {string}
  */
-function makefilename(){
+function makefilename() {
     var myDate = new Date();
-    return myDate.getFullYear().toString()+myDate.getMonth().toString()+myDate.getDate().toString()+myDate.getTime().toString().substring(5,10)+Math.random().toString().substring(2,5);
+    return myDate.getFullYear().toString() + myDate.getMonth().toString() + myDate.getDate().toString() + myDate.getTime().toString().substring(5, 10) + Math.random().toString().substring(2, 5);
 }
 
-function putb64(token,base64_data,callback) {
+function putb64(token, base64_data, callback) {
     pic = base64_data.replace(/^.*?,/, '');
     var url = "http://upload-z1.qiniup.com/putb64/-1/";
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status === 200) {
-            eval(callback+'("'+JSON.parse(xhr.responseText).key+'")');
+            eval(callback + '("' + JSON.parse(xhr.responseText).key + '")');
         }
     };
     xhr.open("POST", url, false);//true异步，false同步

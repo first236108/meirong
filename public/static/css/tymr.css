@@ -50,6 +50,7 @@ textarea.form-control {
     cursor: auto !important;
     font-weight: normal !important;
 }
+
 .dd-handle .chat-avatar {
 
     margin-top: -5px
@@ -79,7 +80,7 @@ textarea.form-control {
     max-width: 8rem;
 }
 
-#addItemForm .file, #editItemForm .file{
+#addItemForm .file, #editItemForm .file {
     border-radius: 4px;
     position: relative;
     display: inline-block;
@@ -184,30 +185,39 @@ textarea.form-control {
     height: 2.3335rem;
     line-height: 2rem;
 }
-.vertical-span{
-    vertical-align:middle;
+
+.vertical-span {
+    vertical-align: middle;
     line-height: 34px;
 }
-.product-imitation{
-    margin:0 auto;
+
+.product-imitation {
+    margin: 0 auto;
 }
-.dt-buttons a:last-child{
+
+.dt-buttons a:last-child {
     color: #E91E63 !important;
 }
+
 /* 单元格连续纯字母数字强制换行显示 */
-.wordwrap{
+.wordwrap {
     word-wrap: break-word;
     word-break: break-all;
     overflow: hidden;
 }
+
 /* 超长文字单元格省略号显示 */
-.ellipsis{
+.ellipsis {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     -o-text-overflow: ellipsis;
 }
-#completed li:hover{cursor:auto;}
+
+#completed li:hover {
+    cursor: auto;
+}
+
 .grid .ibox {
     margin-bottom: 0;
 }
@@ -216,24 +226,30 @@ textarea.form-control {
     margin-bottom: 25px;
     width: 300px;
 }
-.grid-item-width2{
+
+.grid-item-width2 {
     width: 800px;
 }
-.text-md{
-    font-size:1.8rem;
+
+.text-md {
+    font-size: 1.8rem;
 }
-.pointer{
+
+.pointer {
     cursor: pointer;
 }
-.relative{
-    position:relative;
+
+.relative {
+    position: relative;
 }
-.absolue{
+
+.absolue {
     position: absolute;
     left: 0;
-    top:0;
+    top: 0;
 }
-#select2,#select1{
+
+#select2, #select1 {
     width: 7rem;
     display: inline;
     height: 3rem;
@@ -243,6 +259,14 @@ textarea.form-control {
     z-index: 100;
     opacity: 0;
 }
+
 table .lineheight{
-    background-color: rgba(255,52,102,.1);
+    background-color: rgba(255, 52, 102, .1);
+}
+.table-hover>tbody>tr.lineheight:hover {
+    background-color: rgba(255, 52, 102, .1);
+}
+table .operate{
+    display: flex;
+    align-items:center;
 }

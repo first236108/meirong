@@ -1,0 +1,336 @@
+{include file="public/header" /}
+<link href="/static/plugins/datapicker/datepicker3.css" rel="stylesheet">
+<link href="/static/plugins/switchery/switchery.css" rel="stylesheet">
+<div class="wrapper wrapper-content animated fadeInRight ecommerce tooltip-demo" style="padding-top:0;background-color: #fff;">
+    <div class="row">
+        <div class="col-lg-12" id="app">
+            <div class="tabs-container">
+                <ul class="nav nav-tabs" id="nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#tab-1"> 列表</a></li>
+                    <li class=""><a data-toggle="tab" href="#tab-2"> 详情</a></li>
+                </ul>
+                <div class="tab-content p-h-lg white-bg">
+                    <div class="tab-pane active fade in" id="tab-1">
+                        <div class="ibox-title" style="border:none;display: flex;align-items: center;">
+                            <h5 class="title-h5">优惠券</h5>
+                            <div>
+                                <span class="btn btn-success btn-xs self-m-l" data-toggle="modal" data-target="#coupon-modal" data-tip="tooltip" data-placement="top" data-original-title="添加优惠券"><i class="fa fa-plus"></i>&nbsp;新增</span>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th class="text-left">名称</th>
+                                    <th class="text-left">类型</th>
+                                    <th class="text-left">面额</th>
+                                    <th class="text-left">使用需满金额</th>
+                                    <th class="text-left">发放总量</th>
+                                    <th class="text-left">已发放</th>
+                                    <th class="text-left">已使用</th>
+                                    <th class="text-left">发放时间</th>
+                                    <th class="text-left">有效期限</th>
+                                    <th class="text-left">描述</th>
+                                    <th class="text-left">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(vo,index) in list" :class="vo.class">
+                                    <td>{{vo.name}}</td>
+                                    <td>{{types[vo.type]}}</td>
+                                    <td>{{vo.money}}</td>
+                                    <td>{{vo.condition}}</a></td>
+                                    <td>{{vo.createnum}}</a></td>
+                                    <td>{{vo.send_num}}</a></td>
+                                    <td>{{vo.use_num}}</a></td>
+                                    <td>{{moment.unix(vo.send_start_time).format('YYYY-MM-DD')}} 至 {{moment.unix(vo.send_end_time).format('YYYY-MM-DD')}}</td>
+                                    <td>{{moment.unix(vo.use_end_time).format('YYYY-MM-DD')}}</td>
+                                    <td>{{vo.coupon_info}}</td>
+                                    <td class="operate">
+                                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs" @click="couponDetail(index)">
+                                            <i class="fa fa-info-circle"></i><p>详情</p>
+                                        </span>
+                                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs" data-toggle="modal" data-target="#send-modal">
+                                            <i class="fa fa-paper-plane-o"></i><p>发放</p>
+                                        </span>
+                                        <span class="text-center btn btn-xs btn-outline btn-warning m-r-xs" @click="addEdit(index)">
+                                            <i class="fa fa-edit"></i><p>编辑</p>
+                                        </span>
+                                        <span class="text-center btn btn-xs btn-outline btn-danger" @click="del(index)">
+                                            <i class="fa fa-times"></i><p>删除</p>
+                                        </span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-2">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th class="text-left">名称</th>
+                                    <th class="text-left">类型</th>
+                                    <th class="text-left">订单ID</th>
+                                    <th class="text-left">会员</th>
+                                    <th class="text-left">使用时间</th>
+                                    <th class="text-left">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(row,idx) in detail">
+                                    <td>{{item.name}}</td>
+                                    <td>{{types[item.type]}}</td>
+                                    <td>{{row.order_id}}</td>
+                                    <td>{{row.name || row.nickname}}</td>
+                                    <td>{{format_time(row.use_time)}}</td>
+                                    <td><span class="text-center btn btn-xs btn-outline btn-danger" @click="del(idx,'coupon_list')">
+                                            <i class="fa fa-times"></i><p>删除</p>
+                                        </span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal inmodal" id="coupon-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content animated fadeIn">
+                        <div class="modal-header">
+                            <button type="button" class="close" onclick="closeModal();"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                            <h5 class="modal-title">添加/编辑优惠券</h5>
+                        </div>
+                        <form id="addEditCoupon">
+                            <div class="modal-body">
+                                <div class="form-group"><label>优惠券名称<span class="text-danger">*</span></label>
+                                    <input type="text" name="name" v-model="edit.name" placeholder="整数元 例: 20元优惠券" class="form-control">
+                                </div>
+                                <div class="form-group"><label>描述<span class="text-danger">*</span></label>
+                                    <input type="text" name="coupon_info" v-model="edit.coupon_info" placeholder="例: 会员注册赠送优惠券" class="form-control">
+                                </div>
+                                <div class="form-group"><label>面额<span class="text-danger">*</span></label>
+                                    <input type="number" name="money" v-model="edit.money" placeholder="整数元,例:20" class="form-control">
+                                </div>
+                                <div class="form-group"><label>使用条件：消费金额满？可使用<span class="text-danger">*</span></label>
+                                    <input type="number" name="condition" v-model="edit.condition" placeholder="订单需满足的最低消费金额(必需为整数)才能使用" class="form-control">
+                                </div>
+                                <div class="form-group"><label>优惠券发行数量<span class="text-danger">*</span></label>
+                                    <input type="number" name="createnum" v-model="edit.createnum" placeholder="优惠券发行数量" class="form-control">
+                                </div>
+                                <div class="form-group"><label class="" for="type">优惠券类型</label>
+                                    <select class="form-control m-b" name="type" v-model="edit.type" id="type">
+                                        <option v-for="(tv,key) in types" :value="key">{{tv}}</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group"><label>发放/领取时间<span class="text-danger">*</span></label>
+                                    <div class="input-daterange input-group datepicker">
+                                        <input type="text" class="input-sm form-control" name="send_start_time" id="send_start" :value="calc_time(item.send_start_time,'start')"/>
+                                        <span class="input-group-addon">to</span>
+                                        <input type="text" class="input-sm form-control" name="send_end_time" id="send_end" :value="calc_time(item.send_end_time,'end')"/>
+                                    </div>
+                                </div>
+                                <div class="form-group"><label>优惠券使用有效期限<span class="text-danger">*</span></label>
+                                    <div class="input-daterange input-group datepicker">
+                                        <input type="text" class="input-sm form-control" name="use_start_time" id="use_start" :value="calc_time(item.use_start_time,'start')"/>
+                                        <span class="input-group-addon">to</span>
+                                        <input type="text" class="input-sm form-control" name="use_end_time" id="use_end" :value="calc_time(item.use_end_time,'end')"/>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <input type="hidden" name="id" v-model="edit.id">
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-white" onclick="closeModal();">关 闭</button>
+                                <button type="button" class="btn btn-primary" @click="save">保 存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal inmodal fade" id="send-modal" tabindex="9999" role="dialog" aria-hidden="true" data-backdrop="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                            <h5 class="modal-title">发送优惠券</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-group m-b-md">
+                                <input type="text" class="form-control" id="phone" placeholder="请输入会员手机号码" autofocus="autofocus">
+                                <span class="input-group-btn">
+                            <button type="button" class="ladda-button btn btn-primary" data-style="slide-right" id="search-btn">搜索</button>
+                        </span>
+                            </div>
+                            <div class="contact-box hidden animated fadeInUp" id="result">
+
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-white" data-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
+<script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
+<script src="/static/plugins/switchery/switchery.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            item: {},
+            detail: [],
+            edit: {},
+            types: []
+        },
+        methods: {
+            format_time: function (ts) {
+                if (ts) return moment.unix(ts).format('YYYY-MM-DD HH:mm:ss');
+                return 'N';
+            },
+            init: function (instance) {
+                var _this = instance ? instance : vm;
+                $.ajax({
+                    type: 'GET',
+                    url: '{url("advertising/coupon")}',
+                    success: function (data) {
+                        _this.list = data.list;
+                        _this.types = data.types;
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseJSON);
+                    }
+                });
+            },
+            save: function () {
+                var msg;
+                if (!$('#use_end').val() || !$('#use_start').val()) msg = '请选择使用有效期限';
+                if (!$('#send_end').val() || !$('#send_start').val()) msg = '请选择优惠券发放/领取期限';
+                if (!$('input[name="createnum"]').val()) msg = '请填写发行数量';
+                if (!$('input[name="condition"]').val()) msg = '请填写使用条件（金额）';
+                if (!$('input[name="money"]').val()) msg = '请填写优惠券面额';
+                if (!$('input[name="coupon_info"]').val()) msg = '请填写描述';
+                if (!$('input[name="name"]').val()) msg = '请填写优惠券名称';
+                if (msg) {
+                    err(msg);
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '{:url("advertising/coupon")}',
+                    data: $('#addEditCoupon').serialize(),
+                    success: function (data) {
+                        layer.open({
+                            content: '保存成功',
+                            skin: 'msg',
+                            time: 1.5,
+                            end: function (elem) {
+                                location.reload();
+                            }
+                        });
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseJSON);
+                    }
+                });
+            },
+            couponDetail: function (index) {
+                this.item = this.list[index];
+                this.list.forEach(function (item, idx) {
+                    if (idx == index) {
+                        vm.$set(vm.list[idx], 'class', 'lineheight');
+                    } else {
+                        vm.$set(vm.list[idx], 'class', '');
+                    }
+                });
+                $.ajax({
+                    type: 'GET',
+                    url: '{url("advertising/coupon")}',
+                    data: {id: vm.item.id, action: 'detail'},
+                    success: function (data) {
+                        vm.detail = data;
+                        $('#nav-tabs li:eq(1) a').tab('show');
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseJSON);
+                    }
+                });
+            },
+            del: function (index, table) {
+                swal({
+                    title: "确认删除?",
+                    text: "删除后，会员无法再看到该优惠券哦",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    cancelButtonText: "取消",
+                    confirmButtonText: "删除!"
+                }, function () {
+                    var item;
+                    if (table) {
+                        item = vm.detail[index].id;
+                    } else {
+                        item = vm.list[index].id;
+                        table = 'coupon';
+                    }
+                    changeTableVal2(table, 'id', item, 'is_delete', '', moment().unix(), function (res) {
+                        if (res) {
+                            if (table == 'coupon') vm.list.splice(index, 1);
+                            else vm.detail.splice(index, 1);
+                            toastr.warning('已删除');
+                        } else {
+                            toastr.warning('删除失败...');
+                        }
+                    });
+                });
+            },
+            calc_time: function (value, flag) {
+                if (value) return moment.unix(value).format('YYYY-MM-DD');
+                if (flag == 'start') return moment().format('YYYY-MM-DD');
+                else return moment().add(3, 'month').format('YYYY-MM-DD');
+            },
+            addEdit: function (index) {
+                this.edit = Object.assign({}, this.edit, this.list[index]);
+                $('#coupon-modal').modal('show');
+            }
+        },
+        created: function () {
+            this.init(this);
+        }
+    });
+
+    function closeModal() {
+        vm.edit = {};
+        $("#coupon-modal").modal('hide');
+    }
+
+    $('.datepicker').datepicker({
+        language: 'zh-CN',
+        format: 'yyyy-mm-dd',
+        keyboardNavigation: false,
+        forceParse: false,
+        autoclose: true,
+        todayHighlight: true,
+        todayBtn: 'linked',
+        endDate: '0d'
+    });
+
+</script>
+{include file="public/footer" /}

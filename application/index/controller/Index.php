@@ -10,9 +10,10 @@ class Index extends Base
     public function index()
     {
         if (request()->isGet()) {
+            $time      = time();
             $recommend = Db::name('item')->where("is_recommend=1 AND is_delete=0 AND on_sale=1")->field('detail', true)->order('sort desc')->select();
-            $this->assign('recommend', $recommend);
-            return view();
+            $carousel  = Db::name('carousel')->where([['is_delete', '=', 0], ['start_time', '<', $time], ['end_time', '>', $time]])->order('sort desc')->field('id,link,img')->select();
+            return $this->fetch('', ['recommend' => $recommend, 'carousel' => $carousel]);
         }
 
         $page   = input('page/d', 1);

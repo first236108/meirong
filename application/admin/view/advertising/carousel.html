@@ -1,38 +1,113 @@
 {include file="public/header" /}
 <link href="/static/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+<link href="/static/plugins/datapicker/datepicker3.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/plugins/webuploader/webuploader.css">
+<style>
+    #app .ibox-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding-bottom: 5px;
+    }
+
+    @media (max-width: 769px) {
+        #app .ibox-content {
+            padding-left: 0;
+            padding-right: 0
+        }
+
+        #app .ibox-content .box {
+            width: 50%
+        }
+
+        #app .ibox-content img {
+            width: 100%
+        }
+    }
+
+    .del {
+        padding: 4px;
+    }
+
+    #carousel-modal img {
+        max-width: 100%
+    }
+</style>
 <div class="wrapper wrapper-content animated fadeInRight ecommerce tooltip-demo" style="padding-top:0;background-color: #fff;">
     <div class="ibox-title" style="border:none;display: flex;align-items: center;">
         <h5 class="title-h5">轮播图</h5>
         <div>
-            <span class="btn btn-success btn-xs pull-left self-m-l" type="button" onclick="addmodal();" data-tip="tooltip" data-placement="top" title="" data-original-title="添加服务项目"><i class="fa fa-plus"></i>&nbsp;添加</span>
+            <span class="btn btn-success btn-xs self-m-l" data-toggle="modal" data-target="#carousel-modal" data-tip="tooltip" data-placement="top" data-original-title="添加轮播图"><i class="fa fa-plus"></i>&nbsp;添加</span>
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-12 ibox-content table-responsive" id="app" style="background-color: rgba(0,0,0,0);">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th class="text-left">ID</th>
-                    <th class="text-left">名称</th>
-                    <th class="text-left">图片</th>
-                    <th class="text-left">链接</th>
-                    <th class="text-left">开始时间</th>
-                    <th class="text-left">结束时间</th>
-                    <th class="text-left">排序</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(vo,index) in list">
-                    <td>{{vo.id}}</td>
-                    <td>{{vo.name}}</td>
-                    <td><img class="feed-photo" :src="vo.img" :alt="vo.name" ></td>
-                    <td><a :href="vo.link" target="_blank">{{vo.link}}</a></td>
-                    <td>{{moment.unix(vo.start_time).format('YYYY-MM-DD HH:mm:ss')}}</td>
-                    <td>{{moment.unix(vo.end_time).format('YYYY-MM-DD HH:mm:ss')}}</td>
-                    <td>{{vo.sort}}</td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="col-lg-12" id="app">
+            <div class="ibox" v-for="(vo,index) in list" :data-index="index" :id="vo.id">
+                <div class="ibox-title"><h5><i class="fa fa-hand-o-up"></i> 按下鼠标拖动排序</h5></div>
+                <div class="ibox-content">
+                    <div class="hidden-xs">{{vo.id}}</div>
+                    <div>{{vo.name}}</div>
+                    <div class="box"><img class="feed-photo" :src="vo.img" :alt="vo.name"></div>
+                    <div class="hidden-xs"><a :href="vo.link" target="_blank">{{vo.link}}</a></div>
+                    <div class="hidden-xs">{{moment.unix(vo.start_time).format('YYYY-MM-DD')}}</div>
+                    <div class="hidden-xs">{{moment.unix(vo.end_time).format('YYYY-MM-DD')}}</div>
+                    <div class="del" @click="edit(index)" data-toggle="modal" data-target="#carousel-modal"><i class="fa fa-edit"></i></div>
+                    <div class="del" @click="del(index)"><i class="fa fa-times"></i></div>
+                </div>
+            </div>
+
+
+            <div class="modal inmodal" id="carousel-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content animated fadeIn">
+                        <div class="modal-header">
+                            <button type="button" class="close" onclick="closeModal();"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                            <h5 class="modal-title">添加/修改轮播图</h5>
+                        </div>
+                        <form id="addEditCarousel">
+                            <div class="modal-body">
+                                <div class="form-group"><label>轮播图标题<span class="text-danger">*</span></label>
+                                    <input type="text" name="name" v-model="item.name" placeholder="标题描述" class="form-control">
+                                </div>
+                                <div class="form-group"><label>链接地址<span class="text-danger">*</span></label>
+                                    <input type="text" name="link" v-model="item.link" placeholder="图片链接的页面" class="form-control">
+                                </div>
+                                <div class="form-group"><label>有效时间<span class="text-danger">*</span></label>
+                                    <div class="input-daterange input-group" id="datepicker">
+                                        <input type="text" class="input-sm form-control" name="start_time" id="start" :value="calc_time(item.start_time,'start')"/>
+                                        <span class="input-group-addon">to</span>
+                                        <input type="text" class="input-sm form-control" name="end_time" id="end" :value="calc_time(item.end_time,'end')"/>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <fieldset>
+                                        <legend>图片<span class="c-red">*</span></legend>
+                                        <div class="col-md-6">
+                                            <div class="am-margin-top-sm am-link-muted">建议尺寸1024*418显示效果最佳</div>
+                                            <div id="uploader-demo">
+                                                <div id="fileList" class="uploader-list"></div>
+                                                <div id="filePicker">选择图片</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" v-if="item.img">
+                                            <img :src="item.img" id="carousel_img">
+                                        </div>
+                                    </fieldset>
+                                    <input type="hidden" name="img" id="image" :value="item.img">
+                                    <input type="hidden" name="type" value="0">
+                                    <input type="hidden" name="id" v-model="item.id">
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-white" onclick="closeModal();">关 闭</button>
+                                <button type="button" class="btn btn-primary" @click="handle">保 存</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -42,11 +117,15 @@
 <script src="/static/plugins/moment/moment.min.js"></script>
 <script src="/static/plugins/jquery-ui/jquery-ui.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
+<script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
+<script src="/static/plugins/webuploader/webuploader.js"></script>
 <script>
     var vm = new Vue({
         el: '#app',
         data: {
-            list: []
+            list: [],
+            item: {}
         },
         methods: {
             init: function (instance) {
@@ -55,39 +134,213 @@
                     type: 'GET',
                     url: '{url("advertising/carousel")}',
                     success: function (data) {
-                        if (data.length) {
-                            _this.list = _this.list.concat(data);
-                        } else {
-                            layer.open({
-                                content: '没有更多内容了',
-                                skin: 'msg',
-                                time: 2
-                            });
-                        }
+                        _this.list = data;
+                        var element = "#app";
+                        var handle = ".ibox-title";
+                        $(element).sortable(
+                            {
+                                handle: handle,
+                                items: '.ibox',
+                                revert: true,
+                                scroll: false,
+                                tolerance: 'pointer',
+                                forcePlaceholderSize: true,
+                                opacity: 0.8,
+                                update: function (event, ui) {
+                                    var ids = $(element).sortable('toArray').join(',');
+                                    console.log(ids);
+                                    $.ajax({
+                                        type: 'GET',
+                                        url: "{:url('advertising/carousel')}",
+                                        data: {ids: ids, action: 'sort'},
+                                        success: function (data) {
+                                            //
+                                        },
+                                        error: function (xhr, type) {
+                                            err('排序错误');
+                                        }
+                                    });
+                                }
+                            }).disableSelection();
                     },
                     error: function (xhr, type) {
                         err(xhr.responseJSON);
                     }
                 });
             },
-            handle: function (index) {
-                var id = vm.list[index].id;
+            handle: function () {
+                var msg;
+                if(!$('#image').val()) msg='请上传图片';
+                if(!$('#start').val()) msg='请选择开始有效的时间';
+                if(!$('#end').val()) msg='请选择结束有效的时间';
+                if(!$('input[name="link"]').val()) msg='请填写点击广告跳转的地址';
+                if(!$('input[name="name"]').val()) msg='请填写轮播广告名称';
+                if(msg){
+                    err(msg);
+                    return;
+                }
                 $.ajax({
                     type: 'POST',
                     url: '{:url("advertising/carousel")}',
-                    data: {id: id},
+                    data: $('#addEditCarousel').serialize(),
                     success: function (data) {
-                        vm.list[index].status = 1;
+                        layer.open({
+                            content: '保存成功',
+                            skin: 'msg',
+                            time: 1.5,
+                            end: function (elem) {
+                                location.reload();
+                            }
+                        });
                     },
                     error: function (xhr, type) {
                         err(xhr.responseJSON);
                     }
                 });
+            },
+            edit: function (index) {
+                this.item = this.list[index];
+            },
+            del: function (index) {
+                var item = this.list[index];
+                $.ajax({
+                    type: 'POST',
+                    url: '{:url("advertising/carousel")}',
+                    data: {id: item.id, action: 'del'},
+                    success: function (data) {
+                        vm.list.splice(index, 1);
+                    },
+                    error: function (xhr, type) {
+                        err('操作失败');
+                    }
+                });
+            },
+            calc_time: function (value, flag) {
+                if (value) return moment.unix(value).format('YYYY-MM-DD');
+                if (flag == 'start') return moment().format('YYYY-MM-DD');
+                else return moment().add(1, 'years').format('YYYY-MM-DD');
             }
         },
         created: function () {
             this.init(this);
         }
+    });
+
+    function closeModal() {
+        vm.item = {};
+        $("#carousel-modal").modal('hide');
+    }
+
+    $('#datepicker').datepicker({
+        language: 'zh-CN',
+        format: 'yyyy-mm-dd',
+        keyboardNavigation: false,
+        forceParse: false,
+        autoclose: true,
+        todayHighlight: true,
+        todayBtn: 'linked',
+        endDate: '0d'
+    });
+
+    var cdn, token, uploader = WebUploader.create({
+        // 选完文件后，是否自动上传。
+        auto: true,
+        // 文件接收服务端。
+        server: 'https://upload-z1.qiniup.com',
+
+        swf: '/static/plugins/webuploader/Uploader.swf',
+
+        pick: '#filePicker',
+        // 只允许选择图片文件。
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/jpg,image/png,image/gif,image/jpeg'
+        },
+        fileNumLimit: 1,
+        formData: {
+            token: ''
+        }
+    });
+
+    uploader.on('fileQueued', function (file) {
+        var $li = $(
+            '<div id="' + file.id + '" class="file-item thumbnail">' +
+            '<img>' +
+            '<div class="info">' + file.name + '</div>' +
+            '</div>'
+            ),
+            $img = $li.find('img');
+
+        $('#fileList').append($li);
+
+        // 创建缩略图
+        uploader.makeThumb(file, function (error, src) {
+            if (error) {
+                $img.replaceWith('<span>不能预览</span>');
+                return;
+            }
+
+            $img.attr('src', src);
+        }, 100, 100);
+    });
+
+    uploader.on('uploadProgress', function (file, percentage) {
+        var $li = $('#' + file.id),
+            $percent = $li.find('.progress span');
+
+        // 避免重复创建
+        if (!$percent.length) {
+            $percent = $('<p class="progress"><span></span></p>')
+                .appendTo($li)
+                .find('span');
+        }
+
+        $percent.css('width', percentage * 100 + '%');
+    });
+
+    // 文件上传成功，给item添加成功class, 用样式标记上传成功。
+    uploader.on('uploadSuccess', function (file, response) {
+        $('#' + file.id).addClass('upload-state-done');
+        if (response.state != 'SUCCESS')
+            toastr.warning(response.msg);
+        else
+            $('#image').val(cdn + response.key);
+    });
+
+    uploader.on('uploadStart', function (file) {
+        if (!token) {
+            $.ajax({
+                type: 'POST',
+                url: "{:url('admin/ueditor/uploadToken')}",
+                async: false,
+                success: function (data) {
+                    cdn = data.cdn;
+                    token = data.token;
+                },
+                error: function (xhr, type) {
+                    err(xhr.responseText);
+                }
+            });
+        }
+        uploader.options.formData.token = token;
+    });
+    // 文件上传失败，显示上传出错。
+    uploader.on('uploadError', function (file) {
+        var $li = $('#' + file.id),
+            $error = $li.find('div.error');
+
+        // 避免重复创建
+        if (!$error.length) {
+            $error = $('<div class="error"></div>').appendTo($li);
+        }
+
+        $error.text('上传失败');
+    });
+
+    // 完成上传完了，成功或者失败，先删除进度条。
+    uploader.on('uploadComplete', function (file) {
+        $('#' + file.id).find('.progress').remove();
     });
 </script>
 {include file="public/footer" /}
