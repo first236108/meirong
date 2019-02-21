@@ -116,10 +116,36 @@ class Advertising extends Base
                     ->join('users b', 'a.user_id=b.user_id')
                     ->where(['a.cid' => input('id'), 'a.is_delete' => 0])
                     ->field('a.*,b.user_id,b.name,b.nickname')
+                    ->order('a.id desc')
                     ->select();
                 return json($coupon_list);
             }
-
+            if (input('action') == 'send') {
+                //发放优惠券
+                $id      = input('id/d', 0);
+                $user_id = input('user_id/d', 0);
+                if (!$id || !$user_id) return json('参数错误', 403);
+                $coupon = Db::name('coupon')->where('id', $id)->find();
+                if (!$coupon) return json('优惠券不存在', 403);
+                if ($coupon['send_num'] >= $coupon['createnum']) return json('【' . $coupon['name'] . '】发放数量已满', 403);
+                if ($coupon['type'] == 1) {
+                    if (Db::name('coupon_list')->where(['user_id' => $user_id, 'is_delete' => 0])->count()) return json('免费领取类型的优惠券，每人仅可领取一张', 403);
+                }
+                $row       = [
+                    'cid'       => $coupon['id'],
+                    'user_id'   => $user_id,
+                    'order_id'  => 0,
+                    'use_time'  => 0,
+                    'send_time' => time(),
+                    'code'      => getCouponCode()
+                ];
+                $row['id'] = Db::name('coupon_list')->insertGetId($row);
+                Db::name('coupon')->where('id', $id)->setInc('send_num');
+                $row['coupon_info'] = $coupon['coupon_info'];
+                $row['money']       = $coupon['money'];
+                $row['order_id']    = 0;
+                return json($row);
+            }
             $list = Db::name('coupon')->where('is_delete', 0)->order('id desc')->select();
             return json(['list' => $list, 'types' => ['面额模板', '免费领取']]);
         }

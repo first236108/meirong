@@ -80,7 +80,7 @@ class Item extends Base
                     $img[$index]['image']   = $image;
                     $img[$index]['sort']    = $sort[$index];
                 }
-                if (count($img)) {
+                if (isset($img) && count($img)) {
                     Db::name('item_img')->where('item_id', $id)->delete();
                     Db::name('item_img')->insertAll($img);
                 }

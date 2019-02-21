@@ -1,4 +1,6 @@
 {include file="public/header" /}
+<link href="/static/css/style.css" rel="stylesheet">
+<link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
 <style>
     .empty {
         text-align: center;
@@ -8,6 +10,36 @@
         font-size: .5rem;
         color: #999;
     }
+
+    .wellet {
+        display: flex;
+        align-items: center;
+        height: 1.5rem;
+        background: linear-gradient(to right, #fb5555 0%, #e91e63 100%);
+        color: #fff;
+    }
+
+    .wellet div {
+        width: 50%;
+        text-align: center;
+        font-size: .3rem;
+    }
+
+    .wellet div span {
+        display: block;
+    }
+
+    #balanc {
+        border-right: 1px solid #fff;
+    }
+
+    #balanc strong {
+        font-size: .4rem;
+    }
+
+    #vertical-timeline strong {
+        font-size: .35rem;
+    }
 </style>
 <section class="g-flexview">
     <header class="m-navbar">
@@ -15,13 +47,56 @@
             <i class="back-ico"></i>
         </a>
         <div class="navbar-center">
-            <span class="navbar-title">积分 | 余额</span>
+            <span class="navbar-title">我的钱包</span>
         </div>
     </header>
-
-    <div class="empty">
-        <div>功能待完善</div>
+    <div class="wellet">
+        <div id="balanc">
+            <span>余额</span>
+            <span>￥<strong>{$wallet.money}</strong>元</span>
+        </div>
+        <div id="points">
+            <span>积分</span>
+            <span>{$wallet.points}</span>
+        </div>
     </div>
+    <div class="g-scrollview">
+        <div id="vertical-timeline" class="vertical-container light-timeline">
+            {volist name="list" id="vo"}
+            <div class="vertical-timeline-block">
+                {if ($vo.user_money>0) OR ($vo.pay_points>0)}
+                <div class="vertical-timeline-icon navy-bg">
+                    <i class="fa fa-plus"></i>
+                </div>
+                {else /}
+                <div class="vertical-timeline-icon yellow-bg">
+                    <i class="fa fa-minus"></i>
+                </div>
+                {/if}
+                <div class="vertical-timeline-content">
+                    <h2>{$vo.desc}</h2>
+                    {neq name="vo.user_money" value="0"}
+                    <p>余额 <strong>{$vo.user_money}</strong></p>
+                    {/neq}
+                    {neq name="vo.pay_points" value="0"}
+                    <p>积分 <strong>{$vo.pay_points}</strong></p>
+                    {/neq}
+                    <span class="vertical-date">
+                        {$vo.gaptime}前 <br>
+                        <small>{$vo.change_time | date='Y-m-d H:i:s'}</small>
+                    </span>
+                </div>
+            </div>
+            {/volist}
+        </div>
+
+        {if !$list}
+        <div class="empty">
+            <div>没有交易记录</div>
+        </div>
+        {/if}
+    </div>
+
 </section>
 
 </body>

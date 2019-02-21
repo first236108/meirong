@@ -146,7 +146,10 @@
         </div>
         <%/each%>
         <div class="cell-foot">
-            <div>应付金额:<span>￥<%data.order_amount%></span></div>
+            <div>订单金额:<span>￥<%data.total_amount%></span></div>
+            <%if data.order_prom_amount >0 %>
+            <div>活动减免:<span>￥<%data.order_prom_amount%></span></div>
+            <%/if%>
             <%if data.coupon_amount >0 %>
             <div>优惠券抵扣:<span>￥<%data.coupon_amount%></span></div>
             <%/if%>
@@ -155,6 +158,9 @@
             <%/if%>
             <%if data.manager_reduce >0 %>
             <div>掌柜减单:<span>￥<%data.manager_reduce%></span></div>
+            <%/if%>
+            <%if data.use_money >0 %>
+            <div>余额支付:<span>￥<%data.use_money%></span></div>
             <%/if%>
             <div>实付金额:<span>￥<%data.pay_amount%></span></div>
         </div>

@@ -68,6 +68,14 @@ class Member extends Base
 
         $level         = Db::name('user_level')->cache(true)->column('level_name', 'level_id');
         $user['level'] = $level[$user['level']];
+        if (input('getcoupon')) {
+            $list                = Db::name('coupon_list a')
+                ->join('coupon b', 'a.cid=b.id')
+                ->where(['a.user_id' => $user['user_id'], 'a.is_delete' => 0, 'b.is_delete' => 0])
+                ->field('a.id,a.send_time,a.use_time,a.order_id,a.code,b.money,b.coupon_info')
+                ->select();
+            $user['coupon_list'] = $list;
+        }
         if ($user_id)
             return $user;
         return json($user);
@@ -115,6 +123,8 @@ class Member extends Base
             $this->assign('order_id', $order_id);
             $user_id = input('user_id', 0);
             $this->assign('user_id', $user_id);
+            $points_ratio = Db::name('config')->where('name', 'points_ratio')->cache(true)->value('value');
+            $this->assign('points_ratio', $points_ratio);
             return view();
         }
 
@@ -181,9 +191,9 @@ class Member extends Base
 
             $admin = Db::name('admin')->cache(true)->column('name,nickname', 'id');
         } catch (\Exception $e) {
-            $this->error($e->getMessage());
+            return json($e->getMessage(), 404);
         }
-        $this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'confirm_id' => session('admin.id'), 'total_amount' => $total_amount, 'type' => $type, 'order' => $order]));
+        //$this->assign('data', json_encode(['list' => $list, 'admin' => $admin, 'confirm_id' => session('admin.id'), 'total_amount' => $total_amount, 'type' => $type, 'order' => $order]));
         return json(['data' => $list, 'total' => $count, 'admin' => $admin]);
     }
 
@@ -208,30 +218,64 @@ class Member extends Base
             return json('赠送服务项目错误', 401);
         }
 
-        unset($data['item'], $data['serice_count'], $data['give'], $data['give_count'], $data['phone'], $data['total_amount']);
+        unset($data['item'], $data['serice_count'], $data['give'], $data['give_count'], $data['phone']);
+        $items_info    = Db::name('item')->where('item_id', 'in', $items)->column('item_id,cate_id,cate_id2,title,price,market_price,cost,give_integral', 'item_id');
+        $give_integral = 0;//赠送积分
+        $order_amount  = 0;//检查应付金额
+        if ($items_info)
+            $order_amount = array_sum(array_column($items_info, 'price'));
+        #检验前端计算订单金额和后端计算订单金额
+        if ($data['total_amount'] && $data['total_amount'] != $order_amount) {
+            return json('订单金额计算不符', 403);
+        }
 
-        $result = $data['pay_amount'];
-        isset($data['manager_reduce']) && $result += floatval($data['manager_reduce']);
-
+        $pay_amount = $data['pay_amount'];
+        #检查店长调价
+        if (isset($data['manager_reduce'])) {
+            $order_amount -= floatval($data['manager_reduce']);
+            $pay_amount   += floatval($data['manager_reduce']);
+        }
+        $time = time();
         #检查余额
         if (isset($data['use_money'])) {
             $money = Db::name('users')->where('user_id', $data['user_id'])->value('money');
             if ($data['use_money'] > $money)
                 return json('会员余额不足', 401);
-            $result += floatval($data['use_money']);
+            $order_amount -= floatval($data['use_money']);
+            $pay_amount   += floatval($data['use_money']);
         }
-
+        #检查优惠券
+        if (isset($data['coupon'])) {
+            $map  = [
+                'a.user_id'   => $data['user_id'],
+                'a.code'      => $data['coupon'],
+                'a.is_delete' => 0,
+                'b.is_delete' => 0
+            ];
+            $info = Db::name('coupon_list a')->join('coupon b', 'a.cid=b.id')->where($map)
+                ->field('a.id,a.use_time,a.send_time,a.order_id,a.cid,b.money,b.condition,b.name,b.coupon_info,b.use_start_time,b.use_end_time')
+                ->find();
+            if (!$info) return json('优惠券不存在', 403);
+            if ($info['order_id'] > 0) return json('此优惠券已使用', 403);
+            if ($info['use_start_time'] > $time || $info['use_end_time'] < $time) return json('优惠券使用期限为:' . date('Y-m-d H:i:s', $info['use_start_time']) . '至' . date('Y-m-d H:i:s', $info['use_end_time']), 403);
+            if ($data['total_amount'] < $info['condition']) return json('使用此优惠券订单需满足￥' . $info['condition'] . '元', 403);
+            $data['coupon_amount'] = $info['money'];
+            $data['coupon_id']     = $info['id'];
+            $order_amount          -= $data['coupon_amount'];
+            $pay_amount            += $data['coupon_amount'];
+        }
         #检查积分
         if (isset($data['use_points'])) {
             $points = Db::name('users')->where('user_id', $data['user_id'])->value('points');
             if ($data['use_points'] > $points)
                 return json('会员积分不足', 401);
-            $ratio                 = Db::name('config')->cache('config')->where("`name`='points_ratio'")->value('value');
-            $data['points_amount'] = intval($data['use_points']) * intval($ratio);
-            $result                += $data['points_amount'];
+            $ratio                 = Db::name('config')->where('name', 'points_ratio')->cache(true)->value('value');
+            $data['points_amount'] = round(intval($data['use_points']) / intval($ratio), 2);
+            $order_amount          -= $data['points_amount'];
+            $pay_amount            += $data['points_amount'];
         }
-        if ($data['order_amount'] > $result) {
-            return json('订单金额不符', 401);
+        if ($order_amount != $data['order_amount'] || $data['total_amount'] > $pay_amount) {
+            return json('订单金额不符', 401);//总金额 > 实付金额 + 店长调价 + 余额支付 + 优惠券金额 + 积分抵扣，返回异常
         }
 
         #是否包含赠送项目
@@ -248,24 +292,23 @@ class Member extends Base
             #插入订单
             $order_id = Db::name('order')->insertGetId($data);
 
-            #扣除余额
-            if (isset($data['use_money'])) {
-                Db::name('users')->where('user_id', $data['user_id'])->setDec('points', $data['use_money']);
+            #扣除余额和积分
+            if (isset($data['use_money']) || isset($data['use_points'])) {
+                $balance    = $data['use_money'] ?? 0;
+                $use_points = $data['use_points'] ?? 0;
+                account_log($data['user_id'], -1 * $balance, -1 * $use_points, '下单消费抵扣');
             }
-            #扣除积分
-            if (isset($data['use_points'])) {
-                Db::name('users')->where('user_id', $data['user_id'])->setDec('points', $data['use_points']);
-            }
-            #如果付款金额大于充值项目，写入用户余额
-            if ($data['order_amount'] < $result) {
-                Db::name('users')->where('user_id', $data['user_id'])->setInc('money', $result - $data['order_amount']);
+            #优惠券抵扣
+            if (isset($data['coupon']) && isset($info)) {
+                Db::name('coupon_list')->where('id', $info['id'])->update(['order_id' => $order_id, 'use_time' => $time]);
+                Db::name('coupon')->where('id', $info['cid'])->setInc('use_num');
             }
 
             #充值项目
-            $items_info = Db::name('item')->where('item_id', 'in', $items)->column('item_id,cate_id,cate_id2,title,price,market_price,cost,give_integral', 'item_id');
-            $item_data  = [];
+            $item_data = [];
             foreach ($items as $index => $item) {
-                $item_data[] = [
+                $give_integral += $items_info[$item]['give_integral'];
+                $item_data[]   = [
                     'order_id'      => $order_id,
                     'item_id'       => $item,
                     'cate_id'       => $items_info[$item]['cate_id'],
@@ -279,6 +322,13 @@ class Member extends Base
                     'give_integral' => $items_info[$item]['give_integral'],
                     'is_give'       => 0
                 ];
+            }
+
+            #如果付款金额大于充值项目，增加用户余额，赠送积分
+            if ($pay_amount > $data['total_amount'] || $give_integral > 0) {
+                $gap = $pay_amount - $data['total_amount'];
+                account_log($data['user_id'], $gap, $give_integral, '余额充值/赠送积分');
+                //checkActive();//TODO 检查充值活动
             }
 
             #赠送项目
@@ -306,7 +356,7 @@ class Member extends Base
 
             write_order_log($order_id, session('admin.name') . '-' . session('admin.nickname'), '新增充值订单');//订单日志
             user_log('order', $data['user_id'], $order_id);//记录用户行为
-            Db::name('users')->where('user_id', $data['user_id'])->update(['last_come' => time(), 'total_recharge' => $data['pay_amount']]);
+            Db::name('users')->where('user_id', $data['user_id'])->update(['last_come' => $time, 'total_recharge' => Db::raw('total_recharge+' . $data['pay_amount'])]);
             Db::commit();
             return json('ok');
         } catch (Exception $e) {

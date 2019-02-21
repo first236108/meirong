@@ -364,3 +364,46 @@ function checkMobile($phone)
 {
     return preg_match('/(^1[3|4|5|6|7|8][0-9]{9}$)/', $phone);
 }
+
+/**
+ * 获取唯一优惠券代码
+ * @return string
+ */
+function getCouponCode()
+{
+    while (true) {
+        $str = get_rand_str(8, 'c');
+        if (Db::name('coupon_list')->where('code', $str)->count())
+            continue;
+        break;
+    }
+    return $str;
+}
+
+function account_log($user_id, $money = 0, $pay_points = 0, $desc = '', $order_id = 0, $order_sn = '')
+{
+    Db::name('users')->where('user_id', $user_id)->update(['money' => Db::raw('money+' . $money), 'points' => Db::raw('points+' . $pay_points)]);
+    $row = [
+        'user_id'     => $user_id,
+        'user_money'  => $money,
+        'pay_points'  => $pay_points,
+        'change_time' => time(),
+        'desc'        => $desc,
+        'order_id'    => $order_id,
+        'order_sn'    => $order_sn
+    ];
+    return Db::name('account_log')->insertGetId($row);
+}
+
+function fixDate($timestamp)
+{
+    $now = time();
+    $gap = intval($now - $timestamp);
+    if ($gap > 86400) {
+        return intval($gap / 86400) . '天';
+    } elseif ($gap > 3600) {
+        return intval($gap / 3600) . '小时';
+    } else {
+        return intval($gap / 60) . '分钟';
+    }
+}

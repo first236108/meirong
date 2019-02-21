@@ -83,16 +83,8 @@ class Base extends Controller
                 ->field('a.*,IFNULL(b.name,b.nickname) AS name,b.avatar,b.sex')
                 ->where('a.status', 0)->select();
             $list = defaultAvatar($list);
-            $now  = time();
             foreach ($list as $index => $item) {
-                $gap = intval($now - $item['add_time']);
-                if ($gap > 86400) {
-                    $list[$index]['gaptime'] = intval($gap / 86400) . '天';
-                } elseif ($gap > 3600) {
-                    $list[$index]['gaptime'] = intval($gap / 3600) . '小时';
-                } else {
-                    $list[$index]['gaptime'] = intval($gap / 60) . '分钟';
-                }
+                $list[$index]['gaptime'] = fixDate($item['add_time']);
             }
         }
 

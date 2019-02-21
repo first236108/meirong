@@ -82,4 +82,22 @@ class Index extends Base
 
         return response($s)->contentType('image/png');
     }
+
+    public function couponInfo()
+    {
+        $idorcode = input('idorcode');
+        $map      = [
+            'a.is_delete' => 0,
+            'b.is_delete' => 0
+        ];
+        if (is_numeric($idorcode))
+            $map['a.id'] = $idorcode;
+        else
+            $map['a.code'] = $idorcode;
+        $info = Db::name('coupon_list a')->join('coupon b', 'a.cid=b.id')->where($map)
+            ->field('a.id,a.use_time,a.send_time,a.order_id,a.cid,b.money,b.condition,b.name,b.coupon_info,b.use_start_time,b.use_end_time')
+            ->find();
+        if ($info) return json($info);
+        return json('优惠券不存在', 403);
+    }
 }

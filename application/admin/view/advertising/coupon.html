@@ -1,13 +1,14 @@
 {include file="public/header" /}
 <link href="/static/plugins/datapicker/datepicker3.css" rel="stylesheet">
 <link href="/static/plugins/switchery/switchery.css" rel="stylesheet">
+<link href="/static/plugins/ladda/ladda-themeless.min.css" rel="stylesheet">
 <div class="wrapper wrapper-content animated fadeInRight ecommerce tooltip-demo" style="padding-top:0;background-color: #fff;">
     <div class="row">
         <div class="col-lg-12" id="app">
             <div class="tabs-container">
                 <ul class="nav nav-tabs" id="nav-tabs">
-                    <li class="active"><a data-toggle="tab" href="#tab-1"> 列表</a></li>
-                    <li class=""><a data-toggle="tab" href="#tab-2"> 详情</a></li>
+                    <li class="active"><a data-toggle="tab" href="#tab-1">列表</a></li>
+                    <li class=""><a data-toggle="tab" href="#tab-2">发放详情</a></li>
                 </ul>
                 <div class="tab-content p-h-lg white-bg">
                     <div class="tab-pane active fade in" id="tab-1">
@@ -50,7 +51,7 @@
                                         <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs" @click="couponDetail(index)">
                                             <i class="fa fa-info-circle"></i><p>详情</p>
                                         </span>
-                                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs" data-toggle="modal" data-target="#send-modal">
+                                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs" @click="checkSend(index)">
                                             <i class="fa fa-paper-plane-o"></i><p>发放</p>
                                         </span>
                                         <span class="text-center btn btn-xs btn-outline btn-warning m-r-xs" @click="addEdit(index)">
@@ -84,11 +85,12 @@
                                     <td>{{item.name}}</td>
                                     <td>{{types[item.type]}}</td>
                                     <td>{{row.order_id}}</td>
-                                    <td>{{row.name || row.nickname}}</td>
+                                    <td><a @click="jumpMember(row.user_id)">{{row.name || row.nickname}}</a></td>
                                     <td>{{format_time(row.use_time)}}</td>
                                     <td><span class="text-center btn btn-xs btn-outline btn-danger" @click="del(idx,'coupon_list')">
                                             <i class="fa fa-times"></i><p>删除</p>
-                                        </span></td>
+                                        </span>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -121,7 +123,7 @@
                                 <div class="form-group"><label>优惠券发行数量<span class="text-danger">*</span></label>
                                     <input type="number" name="createnum" v-model="edit.createnum" placeholder="优惠券发行数量" class="form-control">
                                 </div>
-                                <div class="form-group"><label class="" for="type">优惠券类型</label>
+                                <div class="form-group"><label class="" for="type">优惠券类型(免费领取类型，每人仅可领取一张)</label>
                                     <select class="form-control m-b" name="type" v-model="edit.type" id="type">
                                         <option v-for="(tv,key) in types" :value="key">{{tv}}</option>
                                     </select>
@@ -162,17 +164,62 @@
                         </div>
                         <div class="modal-body">
                             <div class="input-group m-b-md">
-                                <input type="text" class="form-control" id="phone" placeholder="请输入会员手机号码" autofocus="autofocus">
+                                <input type="text" class="form-control" id="phone" placeholder="请输入会员姓名或 手机号码" autofocus="autofocus" @keydown.enter="search">
                                 <span class="input-group-btn">
-                            <button type="button" class="ladda-button btn btn-primary" data-style="slide-right" id="search-btn">搜索</button>
-                        </span>
+                                    <button class="ladda-button btn btn-primary" data-style="slide-right" id="search" @click="search">搜索</button>
+                                </span>
                             </div>
                             <div class="contact-box hidden animated fadeInUp" id="result">
-
+                                <div class="contact-box">
+                                    <a>
+                                        <div class="col-sm-4">
+                                            <div class="text-center">
+                                                <img :alt="user.name" class="img-circle m-t-xs img-responsive" :src="user.avatar">
+                                                <div class="m-t-xs font-bold">{{user.level}}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <h3><strong>{{user.name || user.nickname}}</strong></h3>
+                                            <p><i class="fa fa-map-marker"></i> 地址</p>
+                                            <address>
+                                                {{user.address}}<br>
+                                                <abbr title="手机号码">P:</abbr> {{user.phone}}
+                                            </address>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </a>
+                                    <div class="p-m table-responsive" v-if="user.coupon_list && user.coupon_list.length">
+                                        <h3 class="text-center text-success">{{user.name || user.nickname}}的优惠券</h3>
+                                        <table class="table table-hover m-b-xs">
+                                            <thead>
+                                            <tr>
+                                                <th class="text-left">面额</th>
+                                                <th class="text-left">描述</th>
+                                                <th class="text-left">发放时间</th>
+                                                <th class="text-left">使用时间</th>
+                                                <th class="text-left">操作</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr v-for="(vc,index) in user.coupon_list">
+                                                <td>￥<strong>{{vc.money}}</strong></td>
+                                                <td>{{vc.coupon_info}}</td>
+                                                <td>{{moment.unix(vc.send_time).format('YYYY-MM-DD HH:mm:ss')}}</td>
+                                                <td>
+                                                    <span v-if="vc.use_time">{{moment.unix(vc.use_time).format('YYYY-MM-DD HH:mm:ss')}}</span>
+                                                    <span class="label label-warning" v-else>未使用</span>
+                                                </td>
+                                                <td><a class="btn btn-xs btn-outline btn-danger"><i class="fa fa-times"></i> 删除</a></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-white" data-dismiss="modal">关闭</button>
+                            <button class="ladda-button btn btn-primary" id="save" v-if="user.user_id" @click="sendCoupon">发放</button>
                         </div>
                     </div>
                 </div>
@@ -190,7 +237,11 @@
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
 <script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
 <script src="/static/plugins/switchery/switchery.js"></script>
+<script src="/static/plugins/ladda/spin.min.js"></script>
+<script src="/static/plugins/ladda/ladda.min.js"></script>
+<script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
 <script>
+    var btn, save;
     var vm = new Vue({
         el: '#app',
         data: {
@@ -198,7 +249,9 @@
             item: {},
             detail: [],
             edit: {},
-            types: []
+            types: [],
+            send: 0,//发放优惠券的id
+            user: {}
         },
         methods: {
             format_time: function (ts) {
@@ -276,7 +329,7 @@
             del: function (index, table) {
                 swal({
                     title: "确认删除?",
-                    text: "删除后，会员无法再看到该优惠券哦",
+                    text: "删除后，所有会员无法再看到该优惠券哦",
                     type: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#DD6B55",
@@ -309,6 +362,66 @@
             addEdit: function (index) {
                 this.edit = Object.assign({}, this.edit, this.list[index]);
                 $('#coupon-modal').modal('show');
+            },
+            jumpMember: function (user_id) {
+                location.href = "{:url('/admin/member/index')}" + '?user_id=' + user_id;
+            },
+            checkSend: function (index) {
+                this.user = {};
+                var coupon = this.list[index], timestamp = moment().unix();
+                if (timestamp < coupon.send_start_time || timestamp > coupon.send_end_time) {
+                    err('现在不是优惠券发放时间哦!~');
+                    return;
+                }
+                if (coupon.send_num >= coupon.createnum) {
+                    err('【' + coupon.name + '】优惠券已全部发放!~');
+                    return;
+                }
+                this.send = coupon.id;
+                document.getElementById('result').classList.add('hidden');
+                $('#send-modal').modal('show');
+            },
+            search: function () {
+                var nameorphone = document.getElementById('phone').value;
+                if (!nameorphone) {
+                    err('手机号错误');
+                    return;
+                }
+                btn.ladda('start');
+                $.ajax({
+                    type: 'POST',
+                    url: "{:url('admin/member/getUserInfo')}",
+                    data: {nameorphone: nameorphone, getcoupon: true},
+                    success: function (data) {
+                        document.getElementById('result').classList.remove('hidden');
+                        btn.ladda('stop');
+                        vm.user = data;
+                    },
+                    error: function (xhr, type) {
+                        btn.ladda('stop');
+                        err(xhr.responseJSON);
+                    }
+                });
+            },
+            sendCoupon: function () {
+                if (!vm.user.user_id || !vm.send) {
+                    err('操作错误');
+                    return;
+                }
+                save.ladda('start');
+                $.ajax({
+                    type: 'GET',
+                    url: '{url("advertising/coupon")}',
+                    data: {id: vm.send, user_id: vm.user.user_id, action: 'send'},
+                    success: function (data) {
+                        vm.user.coupon_list.unshift(data);
+                        save.ladda('stop');
+                    },
+                    error: function (xhr, type) {
+                        save.ladda('start');
+                        err(xhr.responseJSON);
+                    }
+                });
             }
         },
         created: function () {
@@ -321,16 +434,21 @@
         $("#coupon-modal").modal('hide');
     }
 
-    $('.datepicker').datepicker({
-        language: 'zh-CN',
-        format: 'yyyy-mm-dd',
-        keyboardNavigation: false,
-        forceParse: false,
-        autoclose: true,
-        todayHighlight: true,
-        todayBtn: 'linked',
-        endDate: '0d'
+    $(document).ready(function () {
+        btn = $("#search").ladda();
+        save = $("#save").ladda();
+        $('.datepicker').datepicker({
+            language: 'zh-CN',
+            format: 'yyyy-mm-dd',
+            keyboardNavigation: false,
+            forceParse: false,
+            autoclose: true,
+            todayHighlight: true,
+            todayBtn: 'linked',
+            startDate: '0d'
+        });
     });
+
 
 </script>
 {include file="public/footer" /}

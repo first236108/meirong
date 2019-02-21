@@ -1,5 +1,9 @@
 {include file="public/header" /}
 <style>
+    [v-cloak] {
+        display: none;
+    }
+
     .empty {
         text-align: center;
     }
@@ -13,6 +17,72 @@
         font-size: .5rem;
         color: #999;
     }
+
+    .content {
+        padding: 0 0.2rem;
+    }
+
+    .item {
+        margin-top: 0.2rem;
+        width: 7.1rem;
+        height: 2.5rem;
+        background: url(/static/image/coupon1.png) no-repeat center center;
+        background-size: cover;
+    }
+
+    .content .bg2 {
+        background: url(/static/image/coupon2.png) no-repeat center center;
+        background-size: cover;
+    }
+
+    .item .top .left {
+        float: left;
+        margin-left: 0.2rem;
+    }
+
+    .item .top .right {
+        float: left;
+        margin-left: 0.85rem;
+    }
+
+    .item .top .left span {
+        display: block;
+        float: left;
+        height: 1.95rem;
+        line-height: 1.95rem;
+        color: #222;
+        font-size: 0.32rem;
+    }
+
+    .item .top .left span:nth-of-type(2) {
+        font-size: 0.6rem;
+    }
+
+    .item .top .right span {
+        display: block;
+    }
+
+    .item .top .right span:nth-of-type(1) {
+        margin-top: 0.5rem;
+        font-size: 0.3rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .item .top .right span:nth-of-type(2) {
+        margin-top: 0.3rem;
+        font-size: 0.22rem;
+        color: #333;
+    }
+
+    .item p {
+        padding-left: 0.2rem;
+        font-size: 0.24rem;
+    }
+
+    .clearfix {
+        clear: both;
+    }
 </style>
 <section class="g-flexview">
     <header class="m-navbar">
@@ -24,9 +94,25 @@
         </div>
     </header>
 
-    <div class="g-scrollview" id="app">
-        <div v-if="list.length">
+    <div class="g-scrollview" id="app" v-cloak>
+        <div class="content" v-if="list.length">
+            <div :class="['item',item.order_id > 0 ? 'bg2' : '']" v-for="item in list" :key="item.id">
+                <div class="top">
+                    <div class="left">
+                        <span>￥</span>
+                        <span>{{Math.round(item.money)}}</span>
+                    </div>
 
+                    <div class="right">
+                        <span>满{{item.condition}}元使用</span>
+                        <span v-if="item.order_id > 0">{{moment.unix(item.use_time).format('YYYY-MM-DD HH:mm:ss')}}&nbsp;&nbsp;&nbsp;&nbsp;已使用</span>
+                        <span v-else-if="item.use_end_time<now">{{moment.unix(item.use_end_time).format('YYYY-MM-DD')}}&nbsp;&nbsp;&nbsp;&nbsp;已过期</span>
+                        <span v-else>有效期：{{moment.unix(item.use_start_time).format('YYYY-MM-DD')}} ~ {{moment.unix(item.use_end_time).format('YYYY-MM-DD')}}</span>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+                <p>{{item.coupon_info}}</p>
+            </div>
         </div>
         <div class="empty" v-else>
             <img src="/static/image/empty.png">
@@ -44,13 +130,14 @@
     var vm = new Vue({
         el: '#app',
         data: {
-            list: []
+            list: [],
+            now: moment().unix()
         },
         methods: {},
         created: function () {
             var _this = this;
             $.ajax({
-                type: 'POST',
+                type: 'GET',
                 url: "{:url('user/coupon')}",
                 success: function (data) {
                     _this.list = data;

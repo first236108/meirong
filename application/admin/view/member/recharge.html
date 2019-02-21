@@ -140,11 +140,27 @@
                         <div class="form-group"><label class="col-sm-2 control-label">使用余额</label>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    <div class="col-sm-2 col-xs-4">
+                                    <div class="col-sm-2 col-xs-3">
                                         <input type="checkbox" class="js-switch form-control" v-model="use_money"/>
                                     </div>
-                                    <div class="col-sm-4 col-xs-6">
+                                    <div class="col-sm-4 col-xs-5">
                                         <input type="number" class="form-control " name="use_money" v-if="use_money" v-model="use_money_num" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group"><label class="col-sm-2 control-label">用优惠券</label>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    <div class="col-sm-2 col-xs-3">
+                                        <input type="checkbox" class="js-switch1 form-control" v-model="use_coupon"/>
+                                    </div>
+                                    <div class="col-sm-4 col-xs-5">
+                                        <input type="text" class="form-control" name="coupon" id="coupon" autocomplete="off" v-if="use_coupon" @keyup="checkCoupon">
+                                    </div>
+                                    <div class="col-sm-6 col-xs-4" v-if="use_coupon && use_coupon_num>0">
+                                        抵扣<strong class="text-danger">￥{{use_coupon_num}}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -153,11 +169,14 @@
                         <div class="form-group"><label class="col-sm-2 control-label">使用积分</label>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    <div class="col-sm-2 col-xs-4">
+                                    <div class="col-sm-2 col-xs-3">
                                         <input type="checkbox" class="js-switch2 form-control" v-model="use_points"/>
                                     </div>
-                                    <div class="col-sm-4 col-xs-6">
+                                    <div class="col-sm-4 col-xs-5">
                                         <input type="number" class="form-control " name="use_points" v-if="use_points" v-model="use_points_num" min="0">
+                                    </div>
+                                    <div class="col-sm-6 col-xs-4" v-if="use_points && use_points_num>0">
+                                        抵扣<strong class="text-danger">￥{{(use_points_num/points_ratio).toFixed(2)}}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -166,10 +185,10 @@
                         <div class="form-group"><label class="col-sm-2 control-label">店长调价</label>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    <div class="col-sm-2 col-xs-4">
+                                    <div class="col-sm-2 col-xs-3">
                                         <input type="checkbox" class="js-switch3 form-control" v-model="manager_reduce"/>
                                     </div>
-                                    <div class="col-sm-4 col-xs-6">
+                                    <div class="col-sm-4 col-xs-5">
                                         <input type="number" class="form-control " name="manager_reduce" v-if="manager_reduce" v-model="manager_reduce_num">
                                     </div>
                                 </div>
@@ -177,7 +196,7 @@
                         </div>
 
                         <div class="form-group"><label class="col-sm-2 control-label">实付金额</label>
-                            <div class="col-sm-10"><input type="number" class="form-control text-success" name="pay_amount" v-model="pay_amount"></div>
+                            <div class="col-sm-6"><input type="number" class="form-control text-success" name="pay_amount" v-model="pay_amount"></div>
                             <input type="hidden" name="order_amount" v-model="order_amount" id="order_amount">
                         </div>
 
@@ -212,7 +231,8 @@
                                 <dt>支付时间</dt>
                                 <dd>{{order_detail.order.pay_time}}</dd>
                                 <dt>服务项目合计金额</dt>
-                                <dd>￥ {{order_detail.order.order_amount}}</dd>
+                                <dd>￥ {{order_detail.order.total_amount}}</dd>
+
                                 <dt v-if="order_detail.order.order_prom_amount>0">订单活动减免</dt>
                                 <dd v-if="order_detail.order.order_prom_amount>0">￥ {{order_detail.order.order_prom_amount}}</dd>
 
@@ -224,6 +244,9 @@
 
                                 <dt v-if="order_detail.order.points_amount>0">积分抵扣</dt>
                                 <dd v-if="order_detail.order.points_amount>0">￥ {{order_detail.order.points_amount}}</dd>
+
+                                <dt v-if="order_detail.order.use_money>0">余额支付</dt>
+                                <dd v-if="order_detail.order.use_money>0">￥ {{order_detail.order.use_money}}</dd>
                                 <dt>实付金额</dt>
                                 <dd class="text-danger">￥ {{order_detail.order.pay_amount}}</dd>
                             </dl>
@@ -380,7 +403,7 @@
                     },
                     error: function (xhr, type) {
                         search_btn.ladda('stop');
-                        err(xhr.responseText);
+                        err(xhr.responseJSON);
                     }
                 });
             },
@@ -409,7 +432,7 @@
                     }
                 },
                 {data: "pay_amount", title: "付款金额"},
-                {data: "order_amount", title: "订单金额"},
+                {data: "total_amount", title: "订单金额"},
                 {
                     data: "confirm_id",
                     title: "跟单",
@@ -440,6 +463,9 @@
 
         var elem = document.querySelector('.js-switch');
         switchery = new Switchery(elem, {color: '#1AB394', size: 'small'});
+
+        var elem2 = document.querySelector('.js-switch1');
+        switchery2 = new Switchery(elem2, {color: '#358EFF', size: 'small'});
 
         var elem2 = document.querySelector('.js-switch2');
         switchery2 = new Switchery(elem2, {color: '#f8ac59', size: 'small'});
@@ -496,6 +522,7 @@
                     number: true,
                     min: 0
                 },
+                confirm_id:'required',
                 use_points: 'digits',
                 manager_reduce: {
                     number: true,
@@ -508,7 +535,9 @@
                 total_amount: '订单金额错误',
                 use_money: '余额输入错误',
                 use_points: '积分必须是整数哦',
-                manager_reduce: '店长调价金额错误'
+                manager_reduce: '店长调价金额错误',
+                order_amount: '请填写实付金额',
+                confirm_id:'请选择跟单美容师'
             },
             submitHandler: function (form) {
                 if (!document.getElementById('name').value && !document.getElementById('nickname').value) {
@@ -518,6 +547,11 @@
                 var reg = /(^1[3|4|5|7|8][0-9]{9}$)/;
                 if (!reg.test(document.getElementById('phone').value)) {
                     layer.open({content: '手机号码格式错误', skin: 'msg', time: 1.5});
+                    return false;
+                }
+
+                if (vm.use_coupon && document.getElementById('coupon').value.length < 8) {
+                    layer.open({content: '优惠券号码错误', skin: 'msg', time: 1.5});
                     return false;
                 }
 
@@ -584,11 +618,11 @@
     Vue.component('selected-item', {
         props: ['item_id', 'title', 'price', 'market_price', 'service_count', 'unit'],
         template: '<div class="form-group item-select"><label class="col-sm-2 control-label">已选项目</label><div class="col-sm-10"><div class="row">' +
-            '<div class="col-sm-4 col-xs-5"><span class="label label-primary vertical-span">{{title}}</span><input type="hidden" :name="\'item[\'+item_id+\']\'" v-model="item_id"> </div>' +
-            '<div class="col-sm-3 col-xs-3"><input type="text" class="form-control" v-model="service_count" :name="\'serice_count[\'+item_id+\']\'"></div>' +
-            '<div class="col-sm-2 col-xs-2"><span class="label label-default vertical-span">{{unit}}</span></div>' +
-            '<div class="col-sm-1 col-xs-1"><a class="close-link vertical-span text-danger" :data-id="item_id" v-on:click="$emit(\'delselect\',$event.target)"><i class="fa fa-times" :data-id="item_id"></i></a></div>' +
-            '</div></div></div>',
+        '<div class="col-sm-4 col-xs-5"><span class="label label-primary vertical-span">{{title}}</span><input type="hidden" :name="\'item[\'+item_id+\']\'" v-model="item_id"> </div>' +
+        '<div class="col-sm-3 col-xs-3"><input type="text" class="form-control" v-model="service_count" :name="\'serice_count[\'+item_id+\']\'"></div>' +
+        '<div class="col-sm-2 col-xs-2"><span class="label label-default vertical-span">{{unit}}</span></div>' +
+        '<div class="col-sm-1 col-xs-1"><a class="close-link vertical-span text-danger" :data-id="item_id" v-on:click="$emit(\'delselect\',$event.target)"><i class="fa fa-times" :data-id="item_id"></i></a></div>' +
+        '</div></div></div>',
         watch: {
             service_count: function (val) {
                 this.$emit("seletchange", val, this.item_id);
@@ -599,11 +633,11 @@
     Vue.component('give-item', {
         props: ['item_id', 'title', 'price', 'market_price', 'service_count', 'unit'],
         template: '<div class="form-group item-select"><label class="col-sm-2 control-label">赠送项目</label><div class="col-sm-10"><div class="row">' +
-            '<div class="col-sm-4 col-xs-5"><span class="label label-success vertical-span">{{title}}</span><input type="hidden" :name="\'give[\'+item_id+\']\'" v-model="item_id"></div>' +
-            '<div class="col-sm-3 col-xs-3"><input type="text" class="form-control" v-model="service_count" :name="\'give_count[\'+item_id+\']\'"></div>' +
-            '<div class="col-sm-2 col-xs-2"><span class="label label-default vertical-span">{{unit}}</span></div>' +
-            '<div class="col-sm-1 col-xs-1"><a class="close-link vertical-span text-danger" :data-id="item_id" v-on:click="$emit(\'delselect\',$event.target)"><i class="fa fa-times" :data-id="item_id"></i></a></div>' +
-            '</div></div></div>',
+        '<div class="col-sm-4 col-xs-5"><span class="label label-success vertical-span">{{title}}</span><input type="hidden" :name="\'give[\'+item_id+\']\'" v-model="item_id"></div>' +
+        '<div class="col-sm-3 col-xs-3"><input type="text" class="form-control" v-model="service_count" :name="\'give_count[\'+item_id+\']\'"></div>' +
+        '<div class="col-sm-2 col-xs-2"><span class="label label-default vertical-span">{{unit}}</span></div>' +
+        '<div class="col-sm-1 col-xs-1"><a class="close-link vertical-span text-danger" :data-id="item_id" v-on:click="$emit(\'delselect\',$event.target)"><i class="fa fa-times" :data-id="item_id"></i></a></div>' +
+        '</div></div></div>',
         watch: {
             service_count: function (val) {
                 this.$emit("givechange", val, this.item_id);
@@ -627,11 +661,14 @@
             use_money_num: 0,
             use_points: false,
             use_points_num: 0,
+            use_coupon: false,
+            use_coupon_num: 0,
             manager_reduce: false,
             manager_reduce_num: 0,
-            points_ratio: 1,
+            points_ratio: parseInt('{$points_ratio}'),
             pay_amount: null,
-            order_detail: {}
+            order_detail: {},
+            before_request: false
         },
         computed: {
             calc_price: function () {
@@ -646,15 +683,32 @@
                 var temp = 0;
                 var that = this;
                 for (item in that.selected) {
-                    temp += Number(vm.selected[item].market_price);
+                    temp += Number(vm.selected[item].market_price-vm.selected[item].price);
                 }
-                return temp;
+                return temp.toFixed(2);
             },
             order_amount: function () {
-                return this.calc_price - this.use_money * this.use_money_num - this.use_points * this.use_points_num * this.points_ratio - this.manager_reduce * this.manager_reduce_num;
+                return this.calc_price - this.use_money * this.use_money_num - this.use_coupon * this.use_coupon_num - parseFloat((this.use_points * this.use_points_num / this.points_ratio).toFixed(2)) - this.manager_reduce * this.manager_reduce_num;
             },
             amount_valid: function () {
-                return Number(this.pay_amount) > this.order_amount;
+                return Number(this.pay_amount) >= this.order_amount;
+            }
+        },
+        watch: {
+            use_coupon: function (newValue, oldValue) {
+                if (!newValue) {
+                    vm.use_coupon_num = 0;
+                }
+            },
+            use_money: function (newValue, oldValue) {
+                if (!newValue) {
+                    vm.use_money_num = 0;
+                }
+            },
+            use_points: function (newValue, oldValue) {
+                if (!newValue) {
+                    vm.use_points_num = 0;
+                }
             }
         },
         methods: {
@@ -743,6 +797,26 @@
                         vm.selected[key].service_count = val;
                         return;
                     }
+                }
+            },
+            checkCoupon: function () {
+                var val = document.getElementById('coupon').value;
+                if (val.length == 8) {
+                    if (vm.before_request) return;
+                    vm.before_request = true;
+                    $.ajax({
+                        type: 'POST',
+                        url: "{:url('index/index/couponInfo')}",
+                        data: {idorcode: val},
+                        success: function (data) {
+                            vm.before_request = false;
+                            vm.use_coupon_num = data.money;
+                        },
+                        error: function (xhr, type) {
+                            vm.before_request = false;
+                            err(xhr.responseJSON);
+                        }
+                    });
                 }
             }
         },

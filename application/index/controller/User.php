@@ -163,7 +163,7 @@ class User extends Base
         $map   = [
             'user_id' => $this->user_id
         ];
-        $list  = Orders::where($map)->order('add_time desc')->page($p, $limit)->column('order_id,status,pay_amount,order_sn,add_time,pay_time,pay_status,order_amount,points_amount,coupon_amount,manager_reduce', 'order_id');
+        $list  = Orders::where($map)->order('add_time desc')->page($p, $limit)->column('order_id,status,pay_amount,order_sn,add_time,pay_time,pay_status,total_amount,order_amount,points_amount,coupon_amount,manager_reduce', 'order_id');
         if ($list) {
             $order_item = Db::name('order_item a')
                 ->join('item b', 'a.item_id=b.item_id')
@@ -272,7 +272,12 @@ class User extends Base
      */
     public function wallet()
     {
-        return $this->fetch();
+        $wallet = Db::name('users')->where('user_id', $this->user_id)->field('money,points')->find();
+        $list   = Db::name('account_log')->where('user_id', $this->user_id)->order('log_id desc')->select();
+        foreach ($list as $index => $item) {
+            $list[$index]['gaptime'] = fixDate($item['change_time']);
+        }
+        return $this->fetch('', ['wallet' => $wallet, 'list' => $list]);
     }
 
     /**
@@ -281,10 +286,10 @@ class User extends Base
      */
     public function coupon()
     {
-        if ($this->request->isPost()) {
-            $map  = ['user_id' => $this->user_id, 'a.is_delete' => 0, 'b.is_delete' => 0, 'b.status' => 1];
+        if ($this->request->isAjax()) {
+            $map  = ['user_id' => $this->user_id, 'a.is_delete' => 0, 'b.is_delete' => 0];
             $list = Db::name('coupon_list a')->join('coupon b', 'a.cid=b.id')->where($map)
-                ->field('a.id,a.cid,a.type,a.use_time,a.code,b.name,b.money,b.condition,b.use_start_time,b.use_end_time')
+                ->field('a.id,a.cid,a.use_time,a.order_id,a.code,a.send_time,b.name,b.money,b.condition,b.use_start_time,b.use_end_time,b.coupon_info')
                 ->order('a.use_time asc,a.id desc')->select();
             return json($list);
         }

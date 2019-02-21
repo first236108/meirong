@@ -15,7 +15,7 @@ class Item extends Validate
     protected $rule = [
         'user_id'        => 'require|gt:0',
         'phone'          => 'mobile',
-        //'total_amount'   => 'require|gt:0',//FIXME 注释掉，支持充值余额
+        'total_amount'   => 'require',//|gt:0 FIXME 注释掉，支持充值余额
         'use_money'      => 'gt:0',
         'use_points'     => 'gt:0',
         'manager_reduce' => 'gt:0',

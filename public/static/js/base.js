@@ -106,7 +106,7 @@ function getDataForModal(url) {
     });
 }
 
-function delItem(url, val, callback = '', index) {
+function delItem(url, val, callback, index) {
     swal({
         title: "确定要删除吗?",
         type: "warning",
@@ -124,7 +124,7 @@ function delItem(url, val, callback = '', index) {
                 swal.close();
                 if (res.succ == 0) {
                     toastr.success(res.msg);
-                    if (callback) {
+                    if (typeof callback == 'function') {
                         eval(callback + '(' + index + ')');
                     } else {
                         vm.init_data.list.splice(index, 1);
@@ -214,4 +214,8 @@ function clearCache() {
             err(xhr.responseText);
         }
     });
+}
+
+function checkMobile(phone) {
+    return /(^1[3|4|5|6|7|8|9][0-9]{9}$)/.test(phone);
 }
