@@ -1,0 +1,282 @@
+{include file="public/header" /}
+<link href="/static/plugins/ladda/ladda-themeless.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/plugins/webuploader/webuploader.css">
+<link href="/static/plugins/switchery/switchery.css" rel="stylesheet">
+<link href="/static/plugins/datapicker/datepicker3.css" rel="stylesheet">
+<style>
+    #picker div:nth-child(2) {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    #theList li {
+        list-style: none;
+        width: 50%;
+    }
+
+    #theList li span {
+        margin: 0 5px;
+    }
+
+    #imgbox img {
+        max-width: 100%;
+    }
+
+    .team-members img {
+        max-width: 100%;
+    }
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row tooltip-demo">
+        <div class="col-lg-12">
+            <div class="ibox m-b-none">
+                <div class="ibox-title">
+                    {if (input('?is_delete'))}
+                    <a class="btn btn-xs btn-primary" href="{:url('advertising/salepage')}"><i class="fa fa-arrow-left"></i> 返回</a>
+                    {else /}
+                    <button class="btn btn-xs btn-success" data-toggle="modal" data-target="#promote-modal" data-tip="tooltip" data-placement="top" data-original-title="添加活动"><i class="fa fa-plus"></i> 添加</button>
+                    <a href="{:url('advertising/salepage','is_delete=1')}" data-tip="tooltip" data-placement="top" data-original-title="历史删除项目" class="btn btn-default btn-xs pull-right self-m-l"><i class="fa fa-refresh"></i>&nbsp;历史</a>
+                    {/if}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="table-responsive white-bg">
+                <div class="sk-spinner sk-spinner-double-bounce">
+                    <div class="sk-double-bounce1"></div>
+                    <div class="sk-double-bounce2"></div>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th class="text-left">标题</th>
+                        <th class="text-left">活动类型</th>
+                        <th class="text-left">活动条件</th>
+                        <th class="text-left">开始时间</th>
+                        <th class="text-left">结束时间</th>
+                        <th class="text-left">浏览次数</th>
+                        <th class="text-left">参与次数</th>
+                        <th class="text-left">修改时间</th>
+                        <th class="text-left">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {volist name="list" id="vo"}
+                    <tr>
+                        <td><a href="{:url('/index/index/prom',['id'=>$vo.id])}" target="_blank">{$vo.title}</a></td>
+                        <td>{$type[$vo.type]}</td>
+                        <td>{$vo.condition}</td>
+                        <td>{$vo.start_time | date='Y-m-d H:i:s'}</td>
+                        <td>{$vo.end_time | date='Y-m-d H:i:s'}</td>
+                        <td>{$vo.view_count}</td>
+                        <td>{$vo.click_count}</td>
+                        <td>{$vo.add_time | date='Y-m-d H:i:s'}</td>
+                        <td>
+                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs copy-handle" data-link="{:url('index/index/prom',['id'=>$vo.id],'.html',true)}">
+                            <i class="fa fa-copy"></i><p>复制链接</p>
+                        </span>
+                            <span class="text-center btn btn-xs btn-outline btn-warning m-r-xs" onclick="addEdit('{$vo.id}');">
+                            <i class="fa fa-edit"></i><p>编辑</p>
+                        </span>
+                            <span class="text-center btn btn-xs btn-outline btn-danger" onclick="del('{$vo.id}');">
+                            <i class="fa fa-times"></i><p>删除</p>
+                        </span>
+                        </td>
+                    </tr>
+                    {/volist}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal inmodal" id="promote-modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content animated fadeIn">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeM(this);"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">添加/修改 促销页面</h5>
+                </div>
+                <form action="" id="form1">
+                    <div class="modal-body">
+                        <fieldset class="form-horizontal">
+                            <div class="form-group"><label class="col-sm-2 control-label">标题:</label>
+                                <div class="col-sm-10"><input type="text" name="title" id="title" class="form-control" placeholder="优惠活动标题"></div>
+                            </div>
+                            <div class="form-group"><label class="col-sm-2 control-label">活动类型</label>
+                                <div class="col-sm-10">
+                                    <select name="type" class="form-control" id="type">
+                                        <option value="-1">请选择</option>
+                                        {volist name="type" id="vo"}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group"><label class="col-sm-2 control-label">活动时间</label>
+                                <div class="col-sm-10">
+                                    <div class="input-daterange input-group" id="datepicker">
+                                        <input type="text" class="input-sm form-control" name="start_time" id="start" value=""/>
+                                        <span class="input-group-addon">to</span>
+                                        <input type="text" class="input-sm form-control" name="end_time" id="end" value=""/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group"><label class="col-sm-2 control-label">内容:</label>
+                                <div class="col-sm-10">
+                                    <script id="container" name="content" type="text/plain"></script>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-white" onclick="closeM(this);">关 闭</button>
+                        <button type="button" class="ladda-button btn btn-primary" data-style="zoom-in" id="ladda-btn">保 存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="/static/plugins/ueditor/ueditor.config.js"></script>
+<script src="/static/plugins/ueditor/ueditor.all.js"></script>
+<script src="/static/plugins/ladda/spin.min.js"></script>
+<script src="/static/plugins/ladda/ladda.min.js"></script>
+<script src="/static/plugins/ladda/ladda.jquery.min.js"></script>
+<script src="/static/plugins/switchery/switchery.js"></script>
+<script src="/static/plugins/clipboard/clipboard.min.js"></script>
+<script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
+<script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
+<script src="/static/plugins/moment/moment.min.js"></script>
+<script>
+    var ue, edit = {};
+    var btn = $("#ladda-btn").ladda();
+
+    //提交按钮
+    btn.click(function () {
+        btn.ladda('start');
+        subForm();
+    });
+    ue = UE.getEditor('container', {
+        toolbars: [[
+            'fullscreen', 'source', '|', 'undo', 'redo', '|',
+            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'pasteplain', '|', 'forecolor', 'backcolor',
+            'insertorderedlist', 'insertunorderedlist', 'cleardoc', '|', 'lineheight', 'indent', 'horizontal', '|', 'fontfamily', 'fontsize', '|',
+            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'link', '|',
+            'simpleupload', 'insertimage', 'emotion', 'insertvideo', 'music', 'attachment', 'map', 'pagebreak', 'background', '|', 'inserttable', 'deletetable',
+            'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols'
+        ]]
+    });
+
+    function subForm() {
+        edit.title = $("#title").val();
+        edit.type = $("#type").val();
+        edit.start_time = moment($("#start").val()).unix();
+        edit.end_time = moment($("#end").val()).unix();
+        edit.content = ue.getContent();
+        var errmsg = '';
+        if (!edit.title) errmsg = '请输入标题';
+        if (!edit.type) errmsg = '请选择活动类型';
+        if (!edit.start_time || !edit.end_time) errmsg = '请选择活动时间';
+        if (!edit.content) errmsg = '活动页面内容必不可少哦';
+
+        if (errmsg) {
+            btn.ladda('stop');
+            err(errmsg);
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: "{:url('/admin/advertising/salepage')}",
+            data: edit,
+            success: function (data) {
+                btn.ladda('stop');
+                location.reload();
+            },
+            error: function (xhr, type) {
+                btn.ladda('stop');
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    function showinfo() {
+        $("#start").val(moment.unix(edit.start_time).format('YYYY-MM-DD HH:mm:ss'));
+        $("#end").val(moment.unix(edit.end_time).format('YYYY-MM-DD HH:mm:ss'));
+        $("#title").val(edit.title);
+        $("#type").val(edit.type);
+        ue.setContent(edit.content);
+    }
+
+    function addEdit(id) {
+        if (!id)
+            return;
+        $('.table-responsive').toggleClass('sk-loading');
+        $.ajax({
+            type: 'GET',
+            url: "{:url('/admin/advertising/salepage')}",
+            data: {id: id},
+            success: function (data) {
+                edit = data;
+                showinfo();
+                $('#promote-modal').modal('show');
+                $('.table-responsive').toggleClass('sk-loading');
+            },
+            error: function (xhr, type) {
+                $('.table-responsive').toggleClass('sk-loading');
+                err(xhr.responseText);
+            }
+        });
+    }
+
+    function del(id) {
+        var instance = event.currentTarget;
+        $.ajax({
+            type: 'POST',
+            url: "{:url('advertising/salepage')}",
+            data: {action: 'del', id: id},
+            success: function (data) {
+                $(instance).parent().parent().fadeOut('fast', function () {
+                    $(instance).remove();
+                });
+            },
+            error: function (xhr, type) {
+                err(xhr.responseJSON);
+            }
+        });
+    }
+
+    function closeM(obj) {
+        edit = {};
+        document.getElementById('form1').reset();
+        ue.setContent('');
+        closeModalComm(obj);
+    }
+
+    var copy = new ClipboardJS('.copy-handle', {
+        text: function (trigger) {
+            return trigger.dataset.link;
+        }
+    });
+    copy.on('success', function (e) {
+        $(e.trigger).tooltip({placement: 'left', title: 'Copied!', delay: {show: 500, hide: 100}});
+        $(e.trigger).tooltip('show');
+        setTimeout(function () {
+            $(e.trigger).tooltip('destroy');
+        }, 1500);
+    });
+
+    $('#datepicker').datepicker({
+        language: 'zh-CN',
+        format: 'yyyy-mm-dd',
+        keyboardNavigation: false,
+        forceParse: false,
+        autoclose: true,
+        todayHighlight: true,
+        todayBtn: 'linked',
+//        endDate: '0d'
+    });
+</script>
+{include file="public/footer" /}

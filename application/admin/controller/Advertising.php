@@ -151,4 +151,51 @@ class Advertising extends Base
         }
         return $this->fetch();
     }
+
+    public function salepage()
+    {
+        if ($this->request->isPost()) {
+            if (input('post.action') == 'del') {
+                $id = input('post.id');
+                Db::name('promote')->where('id', $id)->update(['is_delete' => time()]);
+                return json();
+            }
+
+            $data   = input('post.');
+            $result = $this->validate($data, [
+                'title'      => 'require',
+                'type'       => 'require',
+                'start_time' => 'require|length:10',
+                'end_time'   => 'require|length:10',
+                'content'    => 'require',
+            ], [
+                'title'      => '活动标题必填',
+                'type'       => '请选择活动类型',
+                'start_time' => '请选择活动开始时间',
+                'end_time'   => '请选择活动结束时间',
+                'content'    => '请填写活动页面内容',
+            ]);
+            if (true !== $result) {
+                return json($result, 403);
+            }
+            $data['add_time'] = time();
+            if (isset($data['id']))
+                $flag = Db::name('promote')->update($data);
+            else
+                $flag = Db::name('promote')->insert($data);
+            if ($flag) return json();
+            return json('保存失败', 403);
+        }
+
+        if ($id = input('get.id/d', 0)) {
+            $salepage = Db::name('promote')->where('id', $id)->find();
+            if ($salepage) return json($salepage);
+            return json('活动页面不存在', 403);
+        }
+        $map = 'is_delete=0';
+        if (input('get.is_delete')) $map = 'is_delete>0';
+        $list = Db::name('promote')->where($map)->select();
+        $type = ['优惠券领取', '订单/项目类优惠', '分享转发/到店打卡奖励'];
+        return $this->fetch('', ['list' => $list, 'type' => $type]);
+    }
 }

@@ -23829,7 +23829,7 @@ UE.plugin.register('autoupload', function (){
         if (!token) {
             $.ajax({
                 type: 'POST',
-                url: '/admin/index/uploadToken',
+                url: '/admin/ueditor/uploadToken',
                 async: false,//注意此处一定同步
                 success: function (res) {
                     token = res.token;
@@ -24591,7 +24591,7 @@ UE.plugin.register('simpleupload', function (){
                 if (!token) {
                     $.ajax({
                         type: 'POST',
-                        url: '/admin/index/uploadToken',
+                        url: '/admin/ueditor/uploadToken',
                         async: false,//注意此处一定同步
                         success: function (res) {
                             token = res.token;

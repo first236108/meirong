@@ -100,4 +100,9 @@ class Index extends Base
         if ($info) return json($info);
         return json('优惠券不存在', 403);
     }
+
+    public function prom()
+    {
+        dump(input('id'));die;
+    }
 }
