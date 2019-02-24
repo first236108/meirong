@@ -34,19 +34,20 @@ function check_login(refer) {
     var phone = $('input[name="phone"]').val();
     var pwd = $('input[name="password"]').val();
     if (!phone || !(/^1[3456789]\d{9}$/.test(phone))) {
-        layer.open({skin: 'msg', content: '手机号错误',time: 2});
+        layer.open({skin: 'msg', content: '手机号错误', time: 2});
         return;
     }
     if (!pwd || pwd.length < 6) {
-        layer.open({skin: 'msg', content: '密码长度错误',time: 2});
+        layer.open({skin: 'msg', content: '密码长度错误', time: 2});
         return;
     }
     var index = layer.open({type: 2, content: '登录中…'});
     $.ajax({
         type: 'POST',
-        url: '{:url("user/login")}',
+        url: '/index/user/login',
         data: {phone: phone, password: pwd},
         success: function (data) {
+            localStorage.setItem('token', data.token);
             layer.closeAll();
             layer.open({
                 content: '登录成功', skin: 'msg', time: 1.5, end: function () {

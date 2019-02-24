@@ -4,9 +4,11 @@
     .order, .m-cell {
         margin-bottom: .2rem;
     }
-    .m-cell:last-of-type{
-        margin-bottom:1.5rem;
+
+    .m-cell:last-of-type {
+        margin-bottom: 1.5rem;
     }
+
     .order .fa {
         color: #fb5555;
         font-size: .65rem !important;
@@ -136,6 +138,7 @@
                     type: 'POST',
                     url: '{:url("user/logout")}',
                     success: function (data) {
+                        localStorage.removeItem('token');
                         layer.close(index);
                         YDUI.dialog.toast('已退出登錄', 'success', 1000, function () {
                             location.href = '{:url("user/login")}';

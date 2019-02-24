@@ -35,6 +35,7 @@
                     <a class="btn btn-xs btn-primary" href="{:url('advertising/salepage')}"><i class="fa fa-arrow-left"></i> 返回</a>
                     {else /}
                     <button class="btn btn-xs btn-success" data-toggle="modal" data-target="#promote-modal" data-tip="tooltip" data-placement="top" data-original-title="添加活动"><i class="fa fa-plus"></i> 添加</button>
+                    <button class="btn btn-xs btn-primary m-l" onclick="signIn()">会员打卡</button>
                     <a href="{:url('advertising/salepage','is_delete=1')}" data-tip="tooltip" data-placement="top" data-original-title="历史删除项目" class="btn btn-default btn-xs pull-right self-m-l"><i class="fa fa-refresh"></i>&nbsp;历史</a>
                     {/if}
                 </div>
@@ -72,7 +73,7 @@
                         <td>{$vo.click_count}</td>
                         <td>{$vo.add_time | date='Y-m-d H:i:s'}</td>
                         <td>
-                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs copy-handle" data-link="{:url('index/index/prom',['id'=>$vo.id],'.html',true)}">
+                        <span class="text-center btn btn-xs btn-outline btn-primary m-r-xs copy-handle" data-link="{:url('index/index/prom',['id'=>$vo.id])}">
                             <i class="fa fa-copy"></i><p>复制链接</p>
                         </span>
                             <span class="text-center btn btn-xs btn-outline btn-warning m-r-xs" onclick="addEdit('{$vo.id}');">
@@ -113,6 +114,17 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="form-group" v-if="type==0"><label class="col-sm-2 control-label">选择优惠券</label>
+                                <div class="col-sm-10">
+                                    <select name="condition" class="form-control" v-model="condition">
+                                        <option value="0">请选择</option>
+                                        <option v-for="(vo,index) in list" :value="vo.id">{{vo.name}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" v-if="type==3"><label class="col-sm-2 control-label">打卡次数:</label>
+                                <div class="col-sm-10"><input type="number" name="condition" v-model="condition" class="form-control" placeholder="满足打卡次数，获取奖励"></div>
+                            </div>
                             <div class="form-group"><label class="col-sm-2 control-label">活动时间</label>
                                 <div class="col-sm-10">
                                     <div class="input-daterange input-group" id="datepicker">
@@ -138,6 +150,31 @@
         </div>
     </div>
 
+    <div class="modal inmodal" id="sign-in" tabindex="-2" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">会员打卡</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group m-b-md">
+                        <input type="text" class="form-control" id="qrcode" placeholder="请扫描打卡码" autofocus="autofocus">
+                        <span class="input-group-btn">
+                            <button type="button" class="ladda-button btn btn-success" data-style="slide-right" id="sign-btn">Go!</button>
+                        </span>
+                    </div>
+                    <div class="contact-box hidden animated fadeInUp" id="result">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-white" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script src="/static/plugins/ueditor/ueditor.config.js"></script>
@@ -150,15 +187,33 @@
 <script src="/static/plugins/datapicker/bootstrap-datepicker.js"></script>
 <script src="/static/plugins/datapicker/datetimepicker.zh-CN.js"></script>
 <script src="/static/plugins/moment/moment.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
 <script>
-    var ue, edit = {};
-    var btn = $("#ladda-btn").ladda();
-
-    //提交按钮
-    btn.click(function () {
-        btn.ladda('start');
-        subForm();
+    var ue, btn, signBtn, edit = {};
+    var vm = new Vue({
+        el: '#form1',
+        data: {
+            list: [],
+            type_text: [],
+            type: -1,
+            condition: ''
+        },
+        methods: {
+            getCouponList: function () {
+                $.ajax({
+                    type: 'GET',
+                    url: "{:url('admin/advertising/coupon')}",
+                    success: function (data) {
+                        vm.list = data.list;
+                    },
+                    error: function (xhr, type) {
+                        err(xhr.responseJSON);
+                    }
+                });
+            }
+        }
     });
+
     ue = UE.getEditor('container', {
         toolbars: [[
             'fullscreen', 'source', '|', 'undo', 'redo', '|',
@@ -170,18 +225,65 @@
         ]]
     });
 
+    function signIn() {
+        $('#sign-in').modal('show');
+    }
+
+    function sign() {
+        var code = $('#qrcode').val();
+        if (code.length != 10) {
+            signBtn.ladda('stop');
+            err('请扫描或输入打卡码');
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: "{:url('advertising/signIn')}",
+            data: {code: code},
+            success: function (data, ts, xhr) {
+                signBtn.ladda('stop');
+                var obj = {
+                    title: "打卡成功",
+                    text: data,
+                };
+                if (xhr.status == 202) {
+                    //完成打卡任务
+                    obj.title = '完成打卡任务';
+                    obj.type = 'success';
+                }
+                swal(obj, function () {
+                    $('#qrcode').val('');
+                    //回调关闭modal;
+                });
+            },
+            error: function (xhr, type) {
+                signBtn.ladda('stop');
+                err(xhr.responseJSON);
+            }
+        });
+    }
+
     function subForm() {
         edit.title = $("#title").val();
         edit.type = $("#type").val();
         edit.start_time = moment($("#start").val()).unix();
         edit.end_time = moment($("#end").val()).unix();
         edit.content = ue.getContent();
+        edit.condition = 0;
         var errmsg = '';
+
         if (!edit.title) errmsg = '请输入标题';
         if (!edit.type) errmsg = '请选择活动类型';
+        if (edit.type == 0 && (edit.condition = vm.condition) <= 0) {
+            errmsg = '请选择优惠券';
+        }
+        if (edit.type == 3 && (edit.condition = vm.condition) <= 0) {
+            errmsg = '请填写打卡次数';
+        }
         if (!edit.start_time || !edit.end_time) errmsg = '请选择活动时间';
         if (!edit.content) errmsg = '活动页面内容必不可少哦';
 
+        //edit.type
         if (errmsg) {
             btn.ladda('stop');
             err(errmsg);
@@ -207,6 +309,8 @@
         $("#end").val(moment.unix(edit.end_time).format('YYYY-MM-DD HH:mm:ss'));
         $("#title").val(edit.title);
         $("#type").val(edit.type);
+        $("#type").trigger('change');
+        vm.type = edit.type;
         ue.setContent(edit.content);
     }
 
@@ -219,6 +323,12 @@
             url: "{:url('/admin/advertising/salepage')}",
             data: {id: id},
             success: function (data) {
+                if (data.type == 0) {
+                    vm.getCouponList();
+                }
+                if (data.type == 0 || data.type == 3) {
+                    vm.condition = data.condition;
+                }
                 edit = data;
                 showinfo();
                 $('#promote-modal').modal('show');
@@ -250,6 +360,9 @@
 
     function closeM(obj) {
         edit = {};
+        vm.list = [];
+        vm.type = -1;
+        vm.condition = '';
         document.getElementById('form1').reset();
         ue.setContent('');
         closeModalComm(obj);
@@ -277,6 +390,23 @@
         todayHighlight: true,
         todayBtn: 'linked',
 //        endDate: '0d'
+    });
+
+    $(function () {
+        $('#type').change(function (obj) {
+            vm.type = this.value;
+        });
+        //提交按钮
+        btn = $("#ladda-btn").ladda();
+        btn.click(function () {
+            btn.ladda('start');
+            subForm();
+        });
+        signBtn = $('#sign-btn').ladda();
+        signBtn.click(function () {
+            signBtn.ladda('start');
+            sign();
+        });
     });
 </script>
 {include file="public/footer" /}

@@ -9,9 +9,25 @@ class Index extends Base
 {
     public function index()
     {
-        //dump([session('admin'),session('auth'),session('adminGroup')]);
-        $this->assign('show_small_chat');
-        return view();
+        $str        = '-6 day';
+        $end_time   = time();
+        $start_time = strtotime(date('Y-m-d', strtotime($str)));
+
+        $data    = [
+            'date' => [],
+            'num'  => []
+        ];
+        $service = Db::name('consumption')->whereBetween('confirm_time', [$start_time, $end_time])
+            ->field('FROM_UNIXTIME(confirm_time, "%Y-%m-%d") as days,COUNT(cid) as num')
+            ->group('days')
+            ->select();
+
+        if ($service) {
+            $data['date'] = array_column($service, 'days');
+            $data['num']  = array_column($service, 'num');
+        }
+
+        return $this->fetch('', $data);
     }
 
     public function systemInfo()
@@ -169,7 +185,7 @@ class Index extends Base
                     }
                 }
             }
-            $planList = array_diff($planList, ['Login', 'Base','Ueditor']);
+            $planList = array_diff($planList, ['Login', 'Base', 'Ueditor']);
 
             $list = Db::name('auth_rule')
                 ->field('id,name,title,CASE cate WHEN 1 THEN "系统设置" WHEN 2 THEN "运营管理" ELSE "内容维护" END AS cate')

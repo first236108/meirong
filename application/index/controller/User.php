@@ -68,7 +68,7 @@ class User extends Base
             return json(['msg' => '密码错误,请重试'], 403);
         $token = create_token('h5');
         unset($user['password']);
-        Cache::set($token, $user);
+        Cache::connect(config('spec_cache'))->set($token, $user);
         cookie('token', $token);
         Db::name('users')->where('phone', $data['phone'])->update(['token' => $token, 'last_login_time' => time()]);
         Db::name('user_behavior')->insert([
@@ -82,7 +82,7 @@ class User extends Base
     public function logout()
     {
         if (!$this->token) return json('您还沒有登录哦', 403);
-        Cache::rm($this->token);
+        Cache::connect(config('spec_cache'))->rm($this->token);
         return json();
     }
 

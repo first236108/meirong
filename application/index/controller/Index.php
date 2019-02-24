@@ -3,7 +3,9 @@
 namespace app\index\controller;
 
 use SimpleSoftwareIO\QrCode\BaconQrCodeGenerator;
+use think\facade\Cache;
 use think\Db;
+use think\Exception;
 
 class Index extends Base
 {
@@ -50,8 +52,8 @@ class Index extends Base
     public function favorite()
     {
         $id   = input('post.item_id/d');
-        $item = Db::name('item')->cache(true, 864000)->where('item_id', $id)->field('cate_id,cate_id2')->find();
-        if (!$item) return json(['msg' => '参数错误']);
+        $item = Db::name('item')->where('item_id', $id)->field('cate_id,cate_id2')->cache(true, 864000)->find();
+        if (!$item) return json('参数错误');
         $row    = Db::name('user_behavior')->where(['user_id' => $this->user_id, 'type' => 2, 'link_id' => $id, 'is_delete' => 0])->find();
         $time   = time();
         $newRow = [
@@ -103,6 +105,115 @@ class Index extends Base
 
     public function prom()
     {
-        dump(input('id'));die;
+        $time = time();
+        $map  = [
+            ['id', '=', input('id')],
+            ['is_delete', '=', 0],
+            ['start_time', '<', $time],
+            ['end_time', '>', $time]
+        ];
+
+        $prom = Db::name('promote')->where($map)->find();
+
+        if (!$prom) $this->error('活动暂未开放');
+        $type_btn    = ['领取优惠券', '参与活动', '立即转发', '立即打卡'];
+        $prom['btn'] = $type_btn[$prom['type']];
+        return $this->fetch('', ['prom' => $prom]);
+    }
+
+    //促销活动奖励
+    public function reward()
+    {
+        $time = time();
+        $map  = [
+            ['id', '=', input('id')],
+            ['is_delete', '=', 0],
+            ['start_time', '<', $time],
+            ['end_time', '>', $time],
+            ['is_delete', '=', 0]
+        ];
+
+        $prom = Db::name('promote')->where($map)->find();
+
+        if (!$prom) return json('活动不存在', 404);
+        Db::name('promote')->where('id', $prom['id'])->setInc('view_count');
+        switch ($prom['type']) {
+            case 0:
+                $this->sendCoupon($prom);
+                break;
+            case 3:
+                $this->signIn($prom);
+                break;
+            default:
+                return json('活动类型错误,请联系客服!', 403);
+        }
+    }
+
+    private function sendCoupon($prom)
+    {
+        $time   = time();
+        $map    = [
+            ['id', '=', $prom['condition']],
+            ['send_start_time', '<', $time],
+            ['send_end_time', '>', $time],
+            ['is_delete', '=', 0],
+        ];
+        $coupon = Db::name('coupon')->where($map)->find();
+        if (!$coupon) exit(json('优惠券领取时间未开放!', 403)->send());
+        $map   = [
+            'user_id'   => $this->user_id,
+            'cid'       => $coupon['id'],
+            'is_delete' => 0
+        ];
+        $check = Db::name('coupon_list')->where($map)->count();
+        if ($check) exit(json('您已经领过优惠券了哦,请在会员中心查看', 403)->send());
+        if ($coupon['send_num'] >= $coupon['createnum']) exit(json('您来晚了,' . $coupon['createnum'] . '张优惠券已领取完毕!', 403)->send());
+        try {
+            //数据加锁、启用事务回滚,预防并发刷券;
+            $count = 0;
+            do {
+                if (!Cache::connect(config('spec_cache'))->get('send_coupon_' . $coupon['id'])) break;
+                usleep(200000);
+                $count++;
+                if ($count > 5) throw new Exception('并发超时,请稍后再试');
+            } while (true);
+            Cache::connect(config('spec_cache'))->set('send_coupon_' . $coupon['id'], true);
+            Db::startTrans();
+            Db::name('coupon')->where('id', $coupon['id'])->setInc('send_num');
+            $row  = [
+                'cid'       => $coupon['id'],
+                'user_id'   => $this->user_id,
+                'order_id'  => 0,
+                'use_time'  => 0,
+                'code'      => getCouponCode(),
+                'send_time' => $time,
+                'is_delete' => 0
+            ];
+            $flag = Db::name('coupon_list')->insertGetId($row);
+            Db::commit();
+            Cache::connect(config('spec_cache'))->rm('send_coupon_' . $coupon['id']);
+            if ($flag) exit(json($coupon['money'] . '元优惠券领取成功!请到会员中心查看'));
+            exit(json('优惠券领取失败', 403)->send());
+        } catch (Exception $e) {
+            Db::rollback();
+            exit(json($e->getMessage(), 403)->send());
+        }
+
+    }
+
+    private function signIn($prom)
+    {
+        $map   = [
+            ['user_id', '=', $this->user_id],
+            ['type', '=', 11],
+            ['add_time', 'between', [$prom['start_time'], $prom['end_time']]]
+        ];
+        $count = Db::name('user_behavior')->where($map)->count();
+        if ($count >= $prom['condition']) {
+            exit(json('恭喜您完成持续打卡任务,不要忘记索取奖励', 403)->send());
+        }
+        $code = get_rand_str(6, 'sign_');//10位打卡随机字符串
+        Cache::connect(config('spec_cache'))->set($code, $prom['id'] . '-' . $this->user_id, 3600);
+        exit(json($code, 405)->send());
     }
 }

@@ -22,12 +22,12 @@ class Base extends Controller
         $this->token = $this->request->header('token');
         if (!$this->token)
             $this->token = cookie('token');
-        $this->user = Cache::get($this->token);
+        $this->user = Cache::connect(config('spec_cache'))->get($this->token);
         if ($this->user)
             $this->user_id = $this->user['user_id'];
         $needLogin  = [
-            'index'   => ['favorite'],
-            'article' => [],
+            'index'   => ['favorite', 'reward'],
+            'article' => ['star'],
             'user'    => ['message', 'userinfo', 'modifypwd', 'order', 'appointment', 'ajaxappointment',
                 'comment', 'wallet', 'coupon', 'photoshow', 'favorite', 'advisory'
             ]
@@ -36,7 +36,7 @@ class Base extends Controller
         $action     = strtolower(request()->action());
         if (in_array($action, $needLogin[$controller]) && !$this->user_id) {
             if ($this->request->isAjax()) {
-                json(['msg' => '请登录后操作'], 401)->send();
+                json(['msg' => '请登录后操作'],401)->send();exit;
             } else {
                 $this->redirect('user/login', ['refer' => $controller . '-' . $action]);
             }

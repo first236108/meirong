@@ -9,6 +9,7 @@
 namespace app\admin\controller;
 
 use think\Db;
+use think\facade\Cache;
 
 class Advertising extends Base
 {
@@ -97,6 +98,13 @@ class Advertising extends Base
             ]);
             if (true !== $result) {
                 return json($result, 403);
+            }
+            if ($data['type'] == 0) {
+                if (!isset($data['condition']) || $data['condition'] <= 0) return json('请选择优惠券!', 403);
+            } elseif ($data['type'] == 3) {
+                if (!isset($data['condition']) || $data['condition'] <= 0) return json('请填写需要满足奖励的打卡次数!', 403);
+            } else {
+                $data['condition'] = 0;
             }
             $data['send_start_time'] = strtotime($data['send_start_time']);
             $data['send_end_time']   = strtotime($data['send_end_time']);
@@ -192,10 +200,34 @@ class Advertising extends Base
             if ($salepage) return json($salepage);
             return json('活动页面不存在', 403);
         }
-        $map = 'is_delete=0';
-        if (input('get.is_delete')) $map = 'is_delete>0';
+        $map = [['is_delete', '=', 0]];
+        if (input('is_delete')) $map = [['is_delete', '>', 0]];
         $list = Db::name('promote')->where($map)->select();
-        $type = ['优惠券领取', '订单/项目类优惠', '分享转发/到店打卡奖励'];
+        $type = ['优惠券领取', '订单/项目类优惠', '分享转发', '到店打卡奖励'];
         return $this->fetch('', ['list' => $list, 'type' => $type]);
+    }
+
+    public function signIn()
+    {
+        $code = input('post.code');
+        if (strlen($code) != 10 || !strpos($code, '_')) {
+            return json('二维码错误', 403);
+        }
+        $content = Cache::connect(config('spec_cache'))->pull($code);
+        if (!$content || !strpos($content, '-')) return json('打卡码已失效,请重新生成', 403);
+        list($prom_id, $user_id) = explode('-', $content);
+        user_log('check_in', $user_id, $prom_id);
+        $prom  = Db::name('promote')->where(['id' => $prom_id, 'is_delete' => 0])->find();
+        $map   = [
+            ['user_id', '=', $user_id],
+            ['type', '=', 11],
+            ['add_time', 'between', [$prom['start_time'], $prom['end_time']]]
+        ];
+        $count = Db::name('user_behavior')->where($map)->count();//活动期间打卡次数
+        Db::name('promote')->where('id', $prom_id)->setInc('click_count');
+        if ($count >= $prom['condition']) {
+            return json('该会员已完成打卡共[' . $count . ']次，请发放奖励', 202);
+        }
+        return json('活动期间第[' . $count . ']次打卡');
     }
 }

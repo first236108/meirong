@@ -17,7 +17,7 @@ return [
     // 应用名称
     'app_name'               => '天源美容',
     // 应用地址
-    'app_host'               => 'igccc.com',
+    'app_host'               => 'spa.igccc.com',
     // 应用调试模式
     'app_debug'              => true,
     // 应用Trace
@@ -150,4 +150,14 @@ return [
     'qiniu_secret' => 'AfBET_M_ujStFrTzXmB7U2dUQBHootAWmdPkGwBp',
     'qiniu_bucket' => 'tymr',
     'qiniu_cdn'    => 'http://image.igccc.com/',
+    'spec_cache' => [
+        // 缓存类型为File
+        'type'  =>  'File',
+        // 缓存有效期为永久有效
+        'expire'=>  0,
+        //缓存前缀
+        'prefix'=>  'think',
+        // 指定缓存目录
+        'path'  =>  '../runtime/user_cache/',
+    ]
 ];

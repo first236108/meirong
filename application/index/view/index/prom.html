@@ -1,0 +1,201 @@
+{include file="public/header" /}
+<style>
+    h3 {
+        font-size: .35rem;
+        text-align: center;
+        margin-bottom: .2rem;
+    }
+
+    .g-scrollview {
+        padding: .2rem;
+    }
+
+    img {
+        max-width: 100%
+    }
+
+    #footer button {
+        margin-top: 0;
+    }
+
+    .layui-m-layermain h3 {
+        height: 40px;
+        font-size: .5rem;
+        font-weight: bold;
+    }
+
+    .layui-m-layercont {
+        padding: 10px 20px;
+    }
+</style>
+<section class="g-flexview">
+    <header class="m-navbar">
+        <a onclick="history.back()" class="navbar-item"><i class="back-ico"></i></a>
+        <div class="navbar-center"><span class="navbar-title">{$prom.title}</span></div>
+    </header>
+
+    <div class="g-scrollview">
+        <h3>
+            {$prom.title}
+        </h3>
+        <div class="d-detail">
+            {$prom.content | raw}
+        </div>
+    </div>
+
+    <footer class="m-tabbar" id="footer">
+        <button class="btn-block btn-danger" onclick="action('{$prom.type}','{$prom.id}')">{$prom.btn}</button>
+        <go-top></go-top>
+    </footer>
+</section>
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ydui.js"></script>
+<script src="/static/js/ydui.flexible.js"></script>
+<script src="/static/plugins/layer/mobile/layer.js"></script>
+<script src="/static/plugins/clipboard/clipboard.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script src="/static/js/home.js"></script>
+<script>
+
+    Vue.component('go-top', {
+        data: function () {
+            return {
+                scroll: false,
+                display_init: true,
+                fadeout: false
+            };
+        },
+        methods: {
+            toTop: function (scrollDuration) {
+                var cosParameter = window.scrollY / 2,
+                    scrollCount = 0,
+                    oldTimestamp = performance.now();
+
+                function step(newTimestamp) {
+                    scrollCount += Math.PI / (scrollDuration / (newTimestamp - oldTimestamp));
+                    if (scrollCount >= Math.PI) window.scrollTo(0, 0);
+                    if (window.scrollY === 0) return;
+                    window.scrollTo(0, Math.round(cosParameter + cosParameter * Math.cos(scrollCount)));
+                    oldTimestamp = newTimestamp;
+                    window.requestAnimationFrame(step);
+                }
+
+                window.requestAnimationFrame(step);
+            }
+        },
+        created: function () {
+            var vmm = this;
+            window.onscroll = function () {
+                if (window.scrollY > 250) {
+                    document.getElementsByClassName('pagetop')[0].style.display = 'block';
+                    vmm.display_init = false;
+                    vmm.fadeout = false;
+                    vmm.scroll = true;
+                } else {
+                    if (!vmm.display_init) {
+                        vmm.fadeout = true;
+                        vmm.scroll && setTimeout(function () {
+                            document.getElementsByClassName('pagetop')[0].style.display = 'none';
+                        }, 300);
+                    }
+                    vmm.scroll = false;
+                }
+            };
+        },
+        template: '<div class="pagetop animated" :class="[{fadeInUp:scroll},{fadeOutDown:fadeout},{dis_none:display_init}]">\n' +
+            '        <a @click="toTop(400)" class="btn_pagetop"><span>TOP</span></a>\n' +
+            '</div>'
+    });
+    var vm = new Vue({
+        el: '#footer'
+    });
+
+    function action(type, id) {
+        switch (type) {
+            case '0':
+                //领取优惠券
+                reward(id);
+                break;
+            case '3':
+                //到店打卡
+                reward(id);
+                break;
+            case '1':
+                //店内促销活动
+                layer.open({
+                    content: '亲，本活动仅支持到店优惠哦!~',
+                    btn: '朕知道了'
+                });
+                break;
+            case '2':
+                //分享转发
+                if (!localStorage.getItem('token')) {
+                    layer.open({
+                        content: '本活动需要登录后参与？'
+                        , btn: ['去登录', '取消']
+                        , yes: function (index) {
+                            login(location.href);
+                        }
+                    });
+                }
+                new ClipboardJS('#share', {
+                    text: function (trigger) {
+                        return location.href;
+                    }
+                }).on('success', function (e) {
+                    layer.open({
+                        content: '已经复制网址,请粘贴分享给好友吧!~',
+                        time: 2,
+                        skin: 'msg'
+                    });
+                });
+                break;
+            default:
+                layer.open({content: '活动出错，请联系客服!~', skin: 'msg', time: 2});
+        }
+    }
+
+    function reward(id) {
+        var token = localStorage.getItem('token');
+        if (!token) {
+            layer.open({
+                content: '本活动需要登录后参与？'
+                , btn: ['去登录', '取消']
+                , yes: function (index) {
+                    login(location.href);
+                }
+            });
+        }
+        YDUI.dialog.loading.open('加载中...');
+        $.ajax({
+            type: 'POST',
+            url: '{:url("index/reward")}',
+            data: {id: id},
+            headers: {token: token},
+            success: function (data) {
+                YDUI.dialog.loading.close();
+                layer.open({content: data, btn: '朕知道了'});
+            },
+            error: function (xhr, type) {
+                YDUI.dialog.loading.close();
+                if (xhr.status == 401) {
+                    login(location.href);
+                } else if (xhr.status == 405) {
+                    layer.open({
+                        title: '打卡二维码',
+                        content: '<img class="qrcode" src="' + document.location.protocol + '//' + document.domain + '/qrcode?content=' + xhr.responseJSON + '">' +
+                            '<div class="qr">' + xhr.responseJSON + '</div>' +
+                            '<div class="foot">请向店内客服出示二维码完成打卡任务,有效期1小时</div>',
+                        style: 'padding:0',
+                        shadeClose: false,
+                        btn: '朕知道了'
+                    });
+                } else {
+                    layer.open({content: xhr.responseJSON, time: 2, skin: 'msg'});
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

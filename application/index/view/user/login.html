@@ -82,8 +82,8 @@
             url: '{:url("user/login")}',
             data: $('#form').serialize(),
             success: function (data) {
-                layer.close(index);
                 localStorage.setItem('token', data.token);
+                layer.close(index);
                 if (!refer) refer = "{:url('user/index')}";
                 location.href = refer;
             },
