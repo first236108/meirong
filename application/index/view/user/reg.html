@@ -35,26 +35,26 @@
         <div>
             <h1 class="logo"><img src="/static/image/logo_2.png"></h1>
         </div>
-        <h3>郑州天源美容</h3>
+        <h3>{$site.site_title}</h3>
         <p>您的贴身美丽顾问，总店地址：中州大道21世纪社区 琥珀名城.</p>
         <p>Login in. To enjoy beautiful life.</p>
-        <form class="m-t" role="form" id="form" autocomplete="off">
+        <form class="m-t" role="form" id="regform" autocomplete="off">
             <div class="form-group">
                 <input type="text" class="form-control" placeholder="手机号码" name="phone" autocomplete="new-password">
             </div>
             <div class="form-group">
-                <input type="password" class="form-control" placeholder="请设置密码" name="password" onkeydown="check()" autocomplete="new-password">
-            </div>
-            <div class="form-group">
                 <input type="text" class="form-control" placeholder="昵称" name="nickname" autocomplete="new-password">
             </div>
-            <div class="i-checks">
-                <label> <input type="radio" name="sex" value="" checked=""> <i></i> 名媛涉女 </label>
+            <div class="form-group">
+                <input type="password" class="form-control" placeholder="请设置密码" name="password" autocomplete="new-password">
             </div>
             <div class="i-checks">
-                <label> <input type="radio" name="sex" value=""> <i></i> 低调绅士 </label>
+                <label> <input type="radio" name="sex" value="0" checked=""> <i></i> 名媛涉女 </label>
             </div>
-            <a class="btn btn-warning btn-block m-b" href="{:url('/user/reg')}">注册</a>
+            <div class="i-checks">
+                <label> <input type="radio" name="sex" value="1"> <i></i> 低调绅士 </label>
+            </div>
+            <button type="submit" class="btn btn-warning btn-block m-b">注册</button>
             <a href="{:url('index/user/login')}">
                 <small>已有账号? 点这里登录</small>
             </a>
@@ -69,48 +69,86 @@
 <script src="/static/js/bootstrap.min.js"></script>
 <script src="/static/plugins/layer/mobile/layer.js"></script>
 <script src="/static/plugins/iCheck/icheck.min.js"></script>
-
+<script src="/static/plugins/validate/jquery.validate.min.js"></script>
 <script>
+    jQuery.validator.addMethod("isMobile", function (value, element) {
+        var tel = /(^1[3|4|5|6|7|8|9][0-9]{9}$)/;
+        return this.optional(element) || (tel.test(value));
+    }, "手机号码错误");
+
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for (var i = 0; i < strs.length; i++) {
+                theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+
     $(document).ready(function () {
         $('.i-checks').iCheck({
             checkboxClass: 'icheckbox_square-green',
-            radioClass: 'iradio_square-green',
+            radioClass: 'iradio_square-green'
         });
-    });
-    function login() {
-        var phone = $("input[name='phone']");
-        var pwd = $("input[name='password']");
-        if (!/(^1[3|4|5|6|7|8][0-9]{9}$)/.test(phone.val())) {
-            layer.open({content: '手机号码不正确哦!', skin: 'msg', time: 2});
-            phone.focus();
-            return;
-        }
-        if (pwd.val().length < 6) {
-            layer.open({content: '密码错误!', skin: 'msg', time: 2});
-            pwd.focus();
-            return;
-        }
-        var index = layer.open({type: 2, shadeClose: false});
-        $.ajax({
-            type: 'POST',
-            url: '{:url("user/login")}',
-            data: $('#form').serialize(),
-            success: function (data) {
-                layer.close(index);
-                localStorage.setItem('token', data.token);
-                if (!refer) refer = "{:url('user/index')}";
-                location.href = refer;
+
+        $("#regform").validate({
+            rules: {
+                phone: {
+                    required: true,
+                    isMobile: true
+                },
+                nickname: 'required',
+                password: {
+                    required: true,
+                    minlength: 6
+                }
             },
-            error: function (xhr, type) {
-                layer.close(index);
-                layer.open({content: xhr.responseJSON.msg, skin: 'msg', time: 2});
+            messages: {
+                phone: {
+                    require: "手机号必填",
+                    isMobile: '手机号格式错误'
+                },
+                nickname: "请填写昵称",
+                password: {
+                    required: "密码不写怎么行呢",
+                    minlength: "密码最少6位哦"
+                }
+            },
+            submitHandler: function (form) {
+                var count = $("#error_count");
+                if (count.val() < 1 && !$("#verify").val()) {
+                    layer.open({content: xhr.responseJSON, skin: '请输入验证码', time: 1.5});
+                    return;
+                }
+                var index = layer.open({
+                    type: 2
+                    , content: '加载中...',
+                    shadeClose: false
+                });
+                $.ajax({
+                    type: 'POST',
+                    url: "{:url('index/user/reg')}",
+                    data: $(form).serialize(),
+                    success: function (data) {
+                        localStorage.setItem('token', data);
+                        layer.close(index);
+                        var refer = GetRequest().refer;
+                        if (!refer) refer = "{:url('index/user/index')}";
+                        location.href = refer;
+                    },
+                    error: function (xhr, type) {
+                        layer.close(index);
+                        layer.open({content: xhr.responseJSON, skin: 'msg', time: 2});
+                    }
+                });
             }
         });
-    }
+    });
 
-    function check() {
-        if (event.keyCode == 13) login();
-    }
 </script>
 </body>
 

@@ -71,11 +71,7 @@ class User extends Base
         Cache::connect(config('spec_cache'))->set($token, $user);
         cookie('token', $token);
         Db::name('users')->where('phone', $data['phone'])->update(['token' => $token, 'last_login_time' => time()]);
-        Db::name('user_behavior')->insert([
-            'type'     => 0,
-            'add_time' => time(),
-            'user_id'  => $user['user_id']
-        ]);
+        user_log('login', $user['user_id']);
         return json(['token' => $token]);
     }
 
@@ -92,7 +88,34 @@ class User extends Base
             $site_info = Db::name('config')->where("type='site_info'")->cache(true, 86400)->column('value', 'name');
             return $this->fetch('', ['site' => $site_info]);
         }
-        dump(input('post.'));
+        $data   = input('post.');
+        $result = $this->validate($data, [
+            'phone'    => 'require|mobile',
+            'nickname' => 'require',
+            'password' => 'require|min:6',
+            'sex'      => 'require',
+        ], [
+            'phone'    => '手机号码错误',
+            'nickname' => '请填写昵称',
+            'password' => '密码长度至少6位',
+            'sex'      => '你是小姐姐还是小哥哥?',
+        ]);
+        if (true !== $result) {
+            return json($result, 403);
+        }
+        $data['password']        = password_hash($data['password'], PASSWORD_BCRYPT);
+        $data['last_login_time'] = $data['create_time'] = time();
+        $token                   = create_token('h5');
+        $data['token']           = $token;
+        //TODO 注册赠送积分
+        $user_id = Db::name('users')->insertGetId($data);
+        $user    = Db::name('users')->where('user_id', $user_id)->field('password', true)->find();
+        if (!$user) return json('注册失败', 403);
+
+        Cache::connect(config('spec_cache'))->set($token, $user);
+        user_log('login', $user_id);
+        cookie('token', $token);
+        return json($token);
     }
 
     public function message()

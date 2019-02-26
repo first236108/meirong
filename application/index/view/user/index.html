@@ -51,7 +51,7 @@
 </style>
 <div class="u-header">
     <div class="top clearfix">
-        <a href="{:url('user/message')}" class="msg">
+        <a href="javascript:;" class="msg">
             <i class="fa fa-envelope"></i>
             <span id="msgNum" class="badge badge-hollow">2</span>
         </a>
@@ -60,7 +60,7 @@
         <a href="userInfo.html" class="info">
             <!-- 头像 -->
             <div class="fl avatar">
-                <img src="{$user.avatar}">
+                <img src="{$user.avatar|default='http://image.igccc.com/FlqnB7TlnbjUbneqwUx7T9vySHGw'}">
             </div>
             <!-- 名字和电话 -->
             <div class="tel fl">
